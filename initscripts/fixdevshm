@@ -37,11 +37,11 @@ do_start(){
     log_daemon_msg "Starting $(basename fixdevshm)"
 
     # Make sure we have our PIDDIR, even if it's on a tmpfs
-    install -o root -g root -m 755 -d $$PIDDIR
+    install -o root -g root -m 755 -d $PIDDIR
 
     #log_progress_msg "daemonizing"
 
-    if ! start-stop-daemon --start --quiet --oknodo --exec /usr/sbin/fixdevshmd -- -D
+    if ! start-stop-daemon --start --quiet --background --oknodo --exec /usr/sbin/fixdevshmd -- -D
     then
 	log_end_msg 1
 	exit 1
@@ -82,9 +82,8 @@ case "$1" in
         do_stop
         ;;
     restart|reload|force-reload)
-        $0 stop
-        sleep 1
-        $0 start
+        "$0" stop
+        "$0" start
         ;;
     *)
         echo "Usage: fixdevshm [start|stop]" >&2

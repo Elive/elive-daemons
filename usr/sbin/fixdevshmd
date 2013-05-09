@@ -1,4 +1,5 @@
 #!/bin/sh
+# note: argument -D is ignored, we do the background from another side
 
 # first fix
 chmod 1777 /dev/shm
