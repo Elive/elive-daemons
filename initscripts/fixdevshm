@@ -82,9 +82,9 @@ case "$1" in
         do_stop
         ;;
     restart|reload|force-reload)
-        #0 stop
-        #sleep 1
-        #0 start
+        $0 stop
+        sleep 1
+        $0 start
         ;;
     *)
         echo "Usage: fixdevshm [start|stop]" >&2

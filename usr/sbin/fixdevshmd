@@ -1,4 +1,15 @@
-#!/bin/bash
-source /usr/lib/elive-tools/functions
+#!/bin/sh
 
-howdy
+# first fix
+chmod 1777 /dev/shm
+
+# watch and fix
+while inotifywait -e modify -e attrib /dev/shm
+do
+    echo "fixing /dev/shm permissions"
+    chmod 1777 /dev/shm
+    # second fix, just in case has changed again
+    sleep 1
+    chmod 1777 /dev/shm
+done
+
