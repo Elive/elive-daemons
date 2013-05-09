@@ -48,7 +48,7 @@ do_start(){
     fi
 
 
-    log_progress_msg "step 1 completed"
+    log_progress_msg "watcher added"
     true
     log_end_msg 0
 }
