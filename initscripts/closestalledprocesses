@@ -70,7 +70,7 @@ do_stop(){
     log_end_msg 0
 }
 
-case "$0" in
+case "$1" in
     "")
         echo "Error: closestalledprocesses should be called with the 'start' argument." >&2
         ;;
