@@ -2,27 +2,74 @@
 # note: argument -D is ignored, we do the background from another side
 
 #===  FUNCTION  ================================================================
+#          NAME:  kill_processes_zombie
+#   DESCRIPTION:  search and kill for zombie proceses
+#    PARAMETERS:  -
+#       RETURNS:  -
+#===============================================================================
+kill_processes_zombie(){
+    # pre {{{
+    local z_ppid z_pid z_state no_more_zombies
+
+    no_more_zombies=0
+
+    # }}}
+    until ((no_more_zombies))
+    do
+	while read -ru 3 z_state z_pid z_ppid z_comm
+	do
+	    if [[ -z "$z_ppid" ]] || [[ -z "$z_pid" ]] ; then
+		unset z_pid z_ppid
+		continue
+	    fi
+
+	    echo "Trying to recover the zombie '$z_pid' which parent is '$z_ppid' - (${z_comm})" 1>&2
+	    kill -s SIGCHLD "$z_ppid"
+
+	    sleep 3
+	    if ps axo stat,pid,ppid | grep -q "^Z.*${z_pid}.*${z_ppid}" ; then
+		echo "No luck, Killing parent of the zombie '$z_pid' which is '$z_ppid' - ($(ps axo pid,comm | awk -v pid="$z_ppid" '{if($1 == pid)  { $1="" ; print $0 }}' | sed 's| $||g' ))" 1>&2
+
+		kill -9 "$z_ppid"
+	    fi
+
+	    unset z_pid z_ppid z_state z_comm
+	done 3<<< "$( ps axo stat,pid,ppid,comm | grep "^Z" )"
+
+	# they are all killed ? good job...
+	if ! ps axo stat,pid,ppid | grep -q "^Z" ; then
+	    no_more_zombies=1
+	fi
+    done
+}
+#===  FUNCTION  ================================================================
 #          NAME:  kill_process
 #   DESCRIPTION:  kills a process
-#    PARAMETERS:  $1 = pid, $2 (opt) = command/name , $3 (opt) = message
+#    PARAMETERS:  $1 = pid, $2 (opt) = state, $3 (opt) = command/name , $4 (opt) = message
 #       RETURNS:  -
 #===============================================================================
 kill_process(){
     # pre {{{
     local pid command
     pid="$1"
-    command="$2"
-    message="$3"
+    state="$2"
+    command="$3"
+    message="$4"
 
     # }}}
     if [[ -n "$pid" ]] ; then
+	# zombies around, kill them
+	if [[ "$state" = *Z* ]] ; then
+	    kill_processes_zombie
+	fi
 
 	if [[ -n "$message" ]] ; then
-	    el_warning "$message"
+	    #el_warning "$message"
+	    echo -e "$message" 1>&2
 	else
 	    if [[ -n "$command" ]] ; then
-		el_warning "closing process ${command} suspiciously blocked and wasting our resources"
-		echo "killing $command at ${pid}, cpu is at ${cpu_usage} since ${time_minutes} minutes"
+		#el_warning "closing process ${command} suspiciously blocked and wasting our resources"
+		echo "killing $command at ${pid}, cpu is at ${cpu_usage} since ${time_minutes} minutes" 1>&2
 	    fi
 	fi
 
@@ -35,16 +82,23 @@ kill_process(){
 
 main(){
     # pre {{{
-    local sleeptime pid user priority nice memvrit memresident memshared status cpu_usage mem_usage time_minutes command
+    local sleeptime pid user priority nice memvrit memresident memshared status cpu_usage mem_usage time_minutes command arg
 
+    arg="$1"
 
     # }}}
     # sleep times: 120 = 2 minutes, 300 = 5 minutes
     sleeptime=240
 
+    if [[ "$arg" = "onetime" ]] ; then
+	is_onetime=1
+    fi
     # watch and fix
     while true
     do
+	# zombies
+	kill_processes_zombie
+	# scan for annoying processes
 	top -b -n 1 | head -n 14  | tail -n 7 | while read -r pid user priority nice memvrit memresident memshared status cpu_usage mem_usage time_minutes command
 	do
 	    cpu_usage="${cpu_usage%,*}"
@@ -56,23 +110,31 @@ main(){
 
 	    # gvfsd-daemon sometimes blocks sucking cpu cycles
 	    if [[ "${command}" = "gvfsd-metadata" ]] && [[ "${time_minutes}" -gt 5 ]] && [[ "${cpu_usage}" -gt 70 ]] ; then
-		kill_process "$pid" "$command"
+		kill_process "$pid" "${status}" "$command"
 	    fi
 
 	    # tumblerd sucking around
 	    if [[ "${command}" = "tumblerd" ]] && [[ "${time_minutes}" -gt 5 ]] && [[ "${cpu_usage}" -gt 70 ]] ; then
-		kill_process "$pid" "$command"
+		kill_process "$pid" "${status}" "$command"
 	    fi
 
 	    # zombies ? kill them with a chainsaw!
-	    if [[ "$status" = *Z* ]] && [[ "${time_minutes}" -gt 20 ]] ; then
-		kill_process "$pid" "$command" "killing zombie process"
-	    fi
+	    #if [[ "$status" = *Z* ]] && [[ "${time_minutes}" -gt 1 ]] ; then
+		#kill_process "$pid" "${status}" "$command" "killing zombie process"
+	    #fi
 
 	done
 
+	# we only want to run it one time
+	if ((is_onetime)) ; then
+	    exit
+	fi
+
+	# pause until the next loop
 	sleep "$sleeptime"
 
+	# clean vars
+	unset pid user priority nice memvrit memresident memshared status cpu_usage mem_usage time_minutes command
     done
 
 }
