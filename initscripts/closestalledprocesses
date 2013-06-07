@@ -1,8 +1,8 @@
 #!/bin/sh
 ### BEGIN INIT INFO
 # Provides:          closestalledprocesses
-# Required-Start:    $all
-# Required-Stop:     $all
+# Required-Start:    $local_fs $remote_fs $syslog
+# Required-Stop:
 # Should-Start:
 # Should-Stop:
 # X-Start-Before:
