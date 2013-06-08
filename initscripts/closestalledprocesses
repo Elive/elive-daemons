@@ -40,7 +40,7 @@ do_start(){
     install -o root -g root -m 755 -d $PIDDIR
 
 
-    if ! start-stop-daemon --start --quiet --background --make-pidfile --pidfile $closestalledprocessesPID --oknodo --exec /usr/sbin/closestalledprocessesd -- -D
+    if ! start-stop-daemon --start --quiet --background --make-pidfile --pidfile $closestalledprocessesPID --oknodo --exec /usr/sbin/closestalledprocessesd
     then
 	log_end_msg 1
 	exit 1
