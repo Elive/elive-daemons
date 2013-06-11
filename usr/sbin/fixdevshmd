@@ -8,10 +8,9 @@ chmod 1777 /dev/shm
 while inotifywait -e modify -e attrib /dev/shm
 do
     echo "fixing /dev/shm permissions"
-    logger "$(basename $0) - fixing permissions in /dev/shm"
+    #logger "$(basename $0) - fixing permissions in /dev/shm"
     chmod 1777 /dev/shm
-    # second fix, just in case has changed again
-    sleep 1
-    chmod 1777 /dev/shm
+    # wait a few seconds in order to not overload the system with this daemon, seems like there's something that doesn't finish to change it
+    sleep 10
 done
 
