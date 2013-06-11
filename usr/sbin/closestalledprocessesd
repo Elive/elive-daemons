@@ -24,13 +24,18 @@ kill_processes_zombie(){
 	    fi
 
 	    echo "Trying to recover the zombie '$z_pid' which parent is '$z_ppid' - (${z_comm})" 1>&2
-	    kill -s SIGCHLD "$z_ppid"
+	    logger "$(basename $0) - Trying to recover the zombie '$z_pid' which parent is '$z_ppid' - (${z_comm})"
+	    if kill -s SIGCHLD "$z_ppid" ; then
+		logger "$(basename $0) - $z_ppid killed"
+	    fi
 
 	    sleep 3
 	    if ps axo stat,pid,ppid | grep -q "^Z.*${z_pid}.*${z_ppid}" ; then
-		echo "No luck, Killing parent of the zombie '$z_pid' which is '$z_ppid' - ($(ps axo pid,comm | awk -v pid="$z_ppid" '{if($1 == pid)  { $1="" ; print $0 }}' | sed 's| $||g' ))" 1>&2
+		logger "$(basename $0) - No luck, Killing parent of the zombie '$z_pid' which is '$z_ppid' - ($(ps axo pid,comm | awk -v pid="$z_ppid" '{if($1 == pid)  { $1="" ; print $0 }}' | sed 's| $||g' ))" 1>&2
 
-		kill -9 "$z_ppid"
+		if kill -9 "$z_ppid" ; then
+		    logger "$(basename $0) - $z_ppid killed"
+		fi
 	    fi
 
 	    unset z_pid z_ppid z_state z_comm
@@ -64,18 +69,23 @@ kill_process(){
 	fi
 
 	if [[ -n "$message" ]] ; then
-	    #el_warning "$message"
 	    echo -e "$message" 1>&2
+	    logger "$(basename $0) - $message"
 	else
 	    if [[ -n "$command" ]] ; then
-		#el_warning "closing process ${command} suspiciously blocked and wasting our resources"
 		echo "killing $command at ${pid}, cpu is at ${cpu_usage} since ${time_minutes} minutes" 1>&2
+		logger "$(basename $0) - killing $command at ${pid}, cpu is at ${cpu_usage} since ${time_minutes} minutes"
 	    fi
 	fi
 
-	kill "$pid" 2>/dev/null 1>/dev/null
+	if kill "$pid" 2>/dev/null 1>/dev/null ; then
+	    logger "$(basename $0) - $pid killed"
+	fi
 	sleep 1
-	kill -9 "$pid" 2>/dev/null 1>/dev/null
+
+	if kill -9 "$pid" 2>/dev/null 1>/dev/null ; then
+	    logger "$(basename $0) - $pid killed with -9"
+	fi
     fi
 }
 
@@ -110,11 +120,13 @@ main(){
 
 	    # gvfsd-daemon sometimes blocks sucking cpu cycles
 	    if [[ "${command}" = "gvfsd-metadata" ]] && [[ "${time_minutes}" -gt 5 ]] && [[ "${cpu_usage}" -gt 70 ]] ; then
+		logger "$(basename $0) - annoying process detected (${command}), minutes: ${time_minutes}, cpu usage: ${cpu_usage}, at pid: ${pid} "
 		kill_process "$pid" "${status}" "$command"
 	    fi
 
 	    # tumblerd sucking around
 	    if [[ "${command}" = "tumblerd" ]] && [[ "${time_minutes}" -gt 5 ]] && [[ "${cpu_usage}" -gt 70 ]] ; then
+		logger "$(basename $0) - annoying process detected (${command}), minutes: ${time_minutes}, cpu usage: ${cpu_usage}, at pid: ${pid} "
 		kill_process "$pid" "${status}" "$command"
 	    fi
 

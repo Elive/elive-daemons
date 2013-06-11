@@ -8,6 +8,7 @@ chmod 1777 /dev/shm
 while inotifywait -e modify -e attrib /dev/shm
 do
     echo "fixing /dev/shm permissions"
+    logger "$(basename $0) - fixing permissions in /dev/shm"
     chmod 1777 /dev/shm
     # second fix, just in case has changed again
     sleep 1
