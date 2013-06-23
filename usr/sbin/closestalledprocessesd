@@ -9,7 +9,7 @@
 #===============================================================================
 kill_processes_zombie(){
     # pre {{{
-    local z_ppid z_pid z_state no_more_zombies
+    local z_ppid z_pid z_state no_more_zombies z_ppid_comm
 
     no_more_zombies=0
 
@@ -22,6 +22,18 @@ kill_processes_zombie(){
 		unset z_pid z_ppid
 		continue
 	    fi
+	    # get the parents process name
+	    z_ppid_comm="$(ps axo pid,comm | awk -v pid="$z_ppid" '{if($1 == pid)  { $1="" ; print $0 }}' | sed 's| $||g' )"
+	    read -r z_ppid_comm <<< "$z_ppid_comm"
+
+
+	    # ignore specific cases
+	    # ignore unison processes:
+	    if [[ "$z_comm" = "timeout "* ]] ; then
+		if [[ "${z_ppid_comm}" = "unison" ]] ; then
+		    continue
+		fi
+	    fi
 
 	    echo "Trying to recover the zombie '$z_pid' which parent is '$z_ppid' - (${z_comm})" 1>&2
 	    logger "$(basename $0) - Trying to recover the zombie '$z_pid' which parent is '$z_ppid' - (${z_comm})"
@@ -31,7 +43,7 @@ kill_processes_zombie(){
 
 	    sleep 3
 	    if ps axo stat,pid,ppid | grep -q "^Z.*${z_pid}.*${z_ppid}" ; then
-		logger "$(basename $0) - No luck, Killing parent of the zombie '$z_pid' which is '$z_ppid' - ($(ps axo pid,comm | awk -v pid="$z_ppid" '{if($1 == pid)  { $1="" ; print $0 }}' | sed 's| $||g' ))" 1>&2
+		logger "$(basename $0) - No luck, Killing parent of the zombie '$z_pid' which is '$z_ppid' - (${z_ppid_comm})" 1>&2
 
 		if kill -9 "$z_ppid" ; then
 		    logger "$(basename $0) - $z_ppid killed"
