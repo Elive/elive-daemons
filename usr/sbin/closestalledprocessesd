@@ -34,6 +34,12 @@ kill_processes_zombie(){
 		    continue
 		fi
 	    fi
+	    # ignore chromium processes:
+	    if [[ "$z_comm" = "chromium "* ]] ; then
+		if [[ "${z_ppid_comm}" = "chromium" ]] ; then
+		    continue
+		fi
+	    fi
 
 	    echo "Trying to recover the zombie '$z_pid' which parent is '$z_ppid' - (${z_comm})" 1>&2
 	    logger "$(basename $0) - Trying to recover the zombie '$z_pid' which parent is '$z_ppid' - (${z_comm})"
