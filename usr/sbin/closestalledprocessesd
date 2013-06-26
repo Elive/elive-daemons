@@ -125,7 +125,8 @@ main(){
     while true
     do
 	# zombies
-	kill_processes_zombie
+	#kill_processes_zombie
+
 	# scan for annoying processes
 	top -b -n 1 | head -n 14  | tail -n 7 | while read -r pid user priority nice memvrit memresident memshared status cpu_usage mem_usage time_minutes command
 	do
