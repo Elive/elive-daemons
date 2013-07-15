@@ -1,16 +1,40 @@
 #!/bin/sh
 # note: argument -D is ignored, we do the background from another side
 
-# first fix
-chmod 1777 /dev/shm
+main(){
+    # pre {{{
+    local devshm
 
-# watch and fix
-while inotifywait -e modify -e attrib /dev/shm
-do
-    echo "fixing /dev/shm permissions"
-    #logger "$(basename $0) - fixing permissions in /dev/shm"
-    chmod 1777 /dev/shm
-    # wait a few seconds in order to not overload the system with this daemon, seems like there's something that doesn't finish to change it
-    sleep 10
-done
+    devshm="/dev/shm"
+
+    if [[ -L "${devshm}" ]] ; then
+	devshm="$(readlink ${devshm})"
+    fi
+
+    # }}}
+
+    # first fix
+    chmod 1777 "${devshm}"
+
+    # watch and fix
+    while inotifywait -e modify -e attrib "${devshm}"
+    do
+	echo "fixing ${devshm} permissions"
+	#logger "$(basename $0) - fixing permissions in ${devshm}"
+	chmod 1777 "${devshm}"
+	# wait a few seconds in order to not overload the system with this daemon, seems like there's something that doesn't finish to change it
+	sleep 10
+
+	if [[ "$( ls -ld "${devshm}" | awk '{print $1}' )" != *rwxrwxrwt ]] ; then
+	    chmod 1777 "${devshm}"
+	fi
+    done
+}
+
+#
+#  MAIN
+#
+main "$@"
+
+# vim: set foldmethod=marker :
 
