@@ -149,6 +149,12 @@ main(){
 		kill_process "$pid" "${status}" "$command"
 	    fi
 
+	    # mpg123 sometimes got stucked eating cpu
+	    if [[ "${command}" = "mpg123" ]] && [[ "${time_minutes}" -gt 15 ]] && [[ "${cpu_usage}" -gt 60 ]] ; then
+		logger "$(basename $0) - annoying process detected (${command}), minutes: ${time_minutes}, cpu usage: ${cpu_usage}, at pid: ${pid} "
+		kill_process "$pid" "${status}" "$command"
+	    fi
+
 	    # zombies ? kill them with a chainsaw!
 	    #if [[ "$status" = *Z* ]] && [[ "${time_minutes}" -gt 1 ]] ; then
 		#kill_process "$pid" "${status}" "$command" "killing zombie process"
