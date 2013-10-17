@@ -24,13 +24,13 @@ main(){
 	sleep 5
 
 	#echo "fixing ${devshm} permissions"
-	#logger "$(basename $0) - fixing permissions in ${devshm} | auto"
-	#chmod 1777 "${devshm}"
+	logger "$(basename $0) - fixing permissions in ${devshm} | auto"
+	chmod 1777 "${devshm}"
 
-	if [[ "$( ls -ld "${devshm}" | awk '{print $1}' )" != *rwxrwxrwt ]] ; then
-	    chmod 1777 "${devshm}"
-	    logger "$(basename $0) - fixing permissions in ${devshm}, needs to be in 1777"
-	fi
+	#if [[ "$( ls -ld "${devshm}" | awk '{print $1}' )" != *rwxrwxrwt ]] ; then
+	    #chmod 1777 "${devshm}"
+	    #logger "$(basename $0) - fixing permissions in ${devshm}, needs to be in 1777"
+	#fi
     done
 }
 
