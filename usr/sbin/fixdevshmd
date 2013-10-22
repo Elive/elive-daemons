@@ -1,9 +1,20 @@
 #!/bin/bash
 # note: argument -D is ignored, we do the background from another side
 
+verify_and_fix_shm(){
+    if [[ "$( ls -ld "$(readlink "${devshm}" )" | awk '{print $1}' )" != *rwxrwxrwt ]] ; then
+	chmod 1777 "$(readlink "${devshm}" )"
+	logger "$(basename $0) - fixing permissions in ${devshm}, needs to be in 1777"
+    fi
+
+    # always return true
+    return 0
+}
+
+
 main(){
     # pre {{{
-    local devshm
+    #local devshm
 
     devshm="/dev/shm"
 
@@ -17,20 +28,22 @@ main(){
     chmod 1777 "${devshm}"
 
     # watch and fix
-    while inotifywait -e modify -e attrib -e move "${devshm}"
+    #while inotifywait -e modify -e attrib -e move "${devshm}"
+    while inotifywait -e attrib -e move "${devshm}"
     do
 	# wait a few seconds in order to not overload the system with this daemon, seems like there's something that doesn't finish to change it
 	# this pause must be set before to change permissions, in order to directly listed again after that
-	sleep 5
+	#sleep 5
 
 	#echo "fixing ${devshm} permissions"
-	logger "$(basename $0) - fixing permissions in ${devshm} | auto"
-	chmod 1777 "${devshm}"
+	#echo -e "$(ls -l /dev | grep shm )" 1>&2
+	#echo -e "$(ls -l /run | grep shm | grep -v fixdev )" 1>&2
 
-	#if [[ "$( ls -ld "${devshm}" | awk '{print $1}' )" != *rwxrwxrwt ]] ; then
+	#logger "$(basename $0) - fixing permissions in ${devshm} | auto"
 	    #chmod 1777 "${devshm}"
-	    #logger "$(basename $0) - fixing permissions in ${devshm}, needs to be in 1777"
-	#fi
+
+	verify_and_fix_shm &
+
     done
 }
 
