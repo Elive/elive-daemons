@@ -7,9 +7,9 @@ main(){
 
     devshm="/dev/shm"
 
-    if [[ -L "${devshm}" ]] ; then
-	devshm="$(readlink ${devshm})"
-    fi
+    #if [[ -L "${devshm}" ]] ; then
+	#devshm="$(readlink ${devshm})"
+    #fi
 
     # }}}
 
@@ -17,7 +17,7 @@ main(){
     chmod 1777 "${devshm}"
 
     # watch and fix
-    while inotifywait -e modify -e attrib "${devshm}"
+    while inotifywait -e modify -e attrib -e move "${devshm}"
     do
 	# wait a few seconds in order to not overload the system with this daemon, seems like there's something that doesn't finish to change it
 	# this pause must be set before to change permissions, in order to directly listed again after that
