@@ -14,6 +14,8 @@ kill_processes_zombie(){
     no_more_zombies=0
 
     # }}}
+
+    # get a list of zombie candidates (and only candidates, see grep -E)
     until ((no_more_zombies))
     do
 	while read -ru 3 z_state z_pid z_ppid z_comm
@@ -43,6 +45,7 @@ kill_processes_zombie(){
 
 	    echo "Trying to recover the zombie '$z_pid' which parent is '$z_ppid' - (${z_comm})" 1>&2
 	    logger "$(basename $0) - Trying to recover the zombie '$z_pid' which parent is '$z_ppid' - (${z_comm})"
+
 	    if kill -s SIGCHLD "$z_ppid" ; then
 		logger "$(basename $0) - $z_ppid killed"
 	    fi
@@ -57,10 +60,12 @@ kill_processes_zombie(){
 	    fi
 
 	    unset z_pid z_ppid z_state z_comm
-	done 3<<< "$( ps axo stat,pid,ppid,comm | grep "^Z" )"
 
-	# they are all killed ? good job...
-	if ! ps axo stat,pid,ppid | grep -q "^Z" ; then
+	# candidates for zombies: are you a winner ?
+	done 3<<< "$( ps axo stat,pid,ppid,comm | grep -E "(plugin-conta|gvfsd-metada|tumblerd)" | grep "^Z" )"
+
+	# they are all killed ? good job rude boy...
+	if ! ps axo stat,pid,ppid | grep -E "(plugin-conta|gvfsd-metada|tumblerd)" | grep -q "^Z" ; then
 	    no_more_zombies=1
 	fi
     done
@@ -124,9 +129,6 @@ main(){
     # watch and fix
     while true
     do
-	# zombies
-	#kill_processes_zombie
-
 	# scan for annoying processes
 	top -b -n 1 | head -n 14  | tail -n 7 | while read -r pid user priority nice memvrit memresident memshared status cpu_usage mem_usage time_minutes command
 	do
@@ -161,6 +163,10 @@ main(){
 	    #fi
 
 	done
+
+	# zombies
+	kill_processes_zombie
+
 
 	# we only want to run it one time
 	if ((is_onetime)) ; then
