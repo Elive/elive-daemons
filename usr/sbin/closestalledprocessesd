@@ -182,7 +182,7 @@ main(){
 	    fi
 
 	    # kill it from a different time check, since seems to not have very good reliable info
-	    killall --older-than 1h tumblerd
+	    killall --older-than 1h tumblerd 2>/dev/null
 	    logger "$(basename $0) - stalled process detected (${command}), minutes: ${time_minutes}, cpu usage: (not required to know), at pid: ${pid} | from killall --older-than 1h"
 
 	done
