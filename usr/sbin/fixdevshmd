@@ -3,9 +3,11 @@
 
 verify_and_fix_shm(){
     if [[ "$( ls -ld "$(readlink "${devshm}" )" | awk '{print $1}' )" != *rwxrwxrwt ]] ; then
-	chmod 1777 "$(readlink "${devshm}" )"
 	logger "$(basename $0) - fixing permissions in ${devshm}, needs to be in 1777"
     fi
+
+    # nothing wrong by fixing it all the times no matter what
+    chmod 1777 "$(readlink "${devshm}" )"
 
     # always return true
     return 0
@@ -28,8 +30,8 @@ main(){
     chmod 1777 "${devshm}"
 
     # watch and fix
-    #while inotifywait -e modify -e attrib -e move "${devshm}"
-    while inotifywait -e attrib -e move "${devshm}"
+    while inotifywait -e modify -e attrib -e move "${devshm}"
+    #while inotifywait -e attrib -e move "${devshm}" # this one seems to not catch correctly all the times
     do
 	# wait a few seconds in order to not overload the system with this daemon, seems like there's something that doesn't finish to change it
 	# this pause must be set before to change permissions, in order to directly listed again after that
@@ -43,6 +45,8 @@ main(){
 	    #chmod 1777 "${devshm}"
 
 	verify_and_fix_shm &
+	# a little pause so that we dont enter in infinite loops
+	sleep 4
 
     done
 }
