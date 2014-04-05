@@ -41,10 +41,11 @@ do_start(){
 
     #log_progress_msg "daemonizing"
 
-    if ! start-stop-daemon --start --quiet --background --oknodo --exec /usr/sbin/fixdevshmd -- -D
+    #if ! start-stop-daemon --start --quiet --background --oknodo --exec /usr/sbin/fixdevshmd -- -D
+    if ! start-stop-daemon --start --quiet --background --make-pidfile --pidfile $fixdevshmPID --oknodo --exec /usr/sbin/fixdevshmd -- -D
     then
-	log_end_msg 1
-	exit 1
+        log_end_msg 1
+        exit 1
     fi
 
 
@@ -64,7 +65,7 @@ do_stop(){
     then
         # Stale PID file (fixdevshm was succesfully stopped),
         # remove it (should be removed by fixdevshm itself IMHO.)
-	rm -f $fixdevshmPID
+        rm -f $fixdevshmPID
     fi
 
 

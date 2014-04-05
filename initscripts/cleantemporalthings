@@ -41,8 +41,8 @@ do_start(){
 
     log_progress_msg "daemonizing"
 
-    #if ! start-stop-daemon --start --quiet --background --make-pidfile --pidfile $cleantemporalthingsPID --oknodo --exec /usr/sbin/cleantemporalthingsd -- -D
-    if ! start-stop-daemon --start --quiet --background --oknodo --exec /usr/sbin/cleantemporalthingsd -- -D
+    #if ! start-stop-daemon --start --quiet --background --oknodo --exec /usr/sbin/cleantemporalthingsd -- -D
+    if ! start-stop-daemon --start --quiet --background --make-pidfile --pidfile $cleantemporalthingsPID --oknodo --exec /usr/sbin/cleantemporalthingsd -- -D
     then
         log_end_msg 1
         exit 1

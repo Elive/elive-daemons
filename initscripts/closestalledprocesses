@@ -42,8 +42,8 @@ do_start(){
 
     if ! start-stop-daemon --start --quiet --background --make-pidfile --pidfile $closestalledprocessesPID --oknodo --exec /usr/sbin/closestalledprocessesd
     then
-	log_end_msg 1
-	exit 1
+        log_end_msg 1
+        exit 1
     fi
 
     log_progress_msg "daemonized"
@@ -63,7 +63,7 @@ do_stop(){
     then
         # Stale PID file (closestalledprocesses was succesfully stopped),
         # remove it (should be removed by closestalledprocesses itself IMHO.)
-    rm -f $closestalledprocessesPID
+        rm -f $closestalledprocessesPID
     fi
 
 
