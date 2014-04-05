@@ -1,0 +1,33 @@
+#!/bin/bash
+# note: argument -D is ignored, we do the background from another side
+
+clean_tmp(){
+    rmdir /tmp/*/*/*/*/* 2>/dev/null 1>&2
+    rmdir /tmp/*/*/*/* 2>/dev/null 1>&2
+    rmdir /tmp/*/*/* 2>/dev/null 1>&2
+    rmdir /tmp/*/* 2>/dev/null 1>&2
+    rmdir /tmp/* 2>/dev/null 1>&2
+
+    # always return ok
+    return 0
+}
+
+main(){
+    # pre {{{
+
+    # }}}
+
+    while true
+    do
+        clean_tmp
+        sleep 14400 # 4 hours
+    done
+}
+
+#
+#  MAIN
+#
+main "$@"
+
+# vim: set foldmethod=marker :
+
