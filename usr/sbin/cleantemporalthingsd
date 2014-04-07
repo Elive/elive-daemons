@@ -2,11 +2,8 @@
 # note: argument -D is ignored, we do the background from another side
 
 clean_tmp(){
-    rmdir /tmp/*/*/*/*/* 2>/dev/null 1>&2
-    rmdir /tmp/*/*/*/* 2>/dev/null 1>&2
-    rmdir /tmp/*/*/* 2>/dev/null 1>&2
-    rmdir /tmp/*/* 2>/dev/null 1>&2
-    rmdir /tmp/* 2>/dev/null 1>&2
+    # only clean the known-ones:
+    rmdir /tmp/xdg-* 2>/dev/null 1>&2
 
     # always return ok
     return 0
