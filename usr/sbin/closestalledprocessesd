@@ -20,56 +20,56 @@ kill_processes_zombie(){
     # get a list of zombie candidates (and only candidates, see grep -E)
     until ((no_more_zombies))
     do
-	while read -ru 3 z_state z_pid z_ppid z_comm
-	do
-	    if [[ -z "$z_ppid" ]] || [[ -z "$z_pid" ]] ; then
-		unset z_pid z_ppid
-		continue
-	    fi
-	    # get the parents process name
-	    z_ppid_comm="$(ps axo pid,comm | awk -v pid="$z_ppid" '{if($1 == pid)  { $1="" ; print $0 }}' | sed 's| $||g' )"
-	    read -r z_ppid_comm <<< "$z_ppid_comm"
+        while read -ru 3 z_state z_pid z_ppid z_comm
+        do
+            if [[ -z "$z_ppid" ]] || [[ -z "$z_pid" ]] ; then
+                unset z_pid z_ppid
+                continue
+            fi
+            # get the parents process name
+            z_ppid_comm="$(ps axo pid,comm | awk -v pid="$z_ppid" '{if($1 == pid)  { $1="" ; print $0 }}' | sed 's| $||g' )"
+            read -r z_ppid_comm <<< "$z_ppid_comm"
 
 
-	    # ignore specific cases
-	    # ignore unison processes:
-	    #if [[ "$z_comm" = "timeout "* ]] ; then
-		#if [[ "${z_ppid_comm}" = "unison" ]] ; then
-		    #continue
-		#fi
-	    #fi
-	    # ignore chromium processes:
-	    #if [[ "$z_comm" = "chromium "* ]] ; then
-		#if [[ "${z_ppid_comm}" = "chromium" ]] ; then
-		    #continue
-		#fi
-	    #fi
+            # ignore specific cases
+            # ignore unison processes:
+            #if [[ "$z_comm" = "timeout "* ]] ; then
+            #if [[ "${z_ppid_comm}" = "unison" ]] ; then
+            #continue
+            #fi
+            #fi
+            # ignore chromium processes:
+            #if [[ "$z_comm" = "chromium "* ]] ; then
+            #if [[ "${z_ppid_comm}" = "chromium" ]] ; then
+            #continue
+            #fi
+            #fi
 
-	    echo "Trying to recover the zombie '$z_pid' which parent is '$z_ppid' - (${z_comm})" 1>&2
-	    logger "$(basename $0) - Trying to recover the zombie '$z_pid' which parent is '$z_ppid' - (${z_comm})"
+            echo "Trying to recover the zombie '$z_pid' which parent is '$z_ppid' - (${z_comm})" 1>&2
+            logger "$(basename $0) - Trying to recover the zombie '$z_pid' which parent is '$z_ppid' - (${z_comm})"
 
-	    if kill -s SIGCHLD "$z_ppid" ; then
-		logger "$(basename $0) - $z_ppid killed"
-	    fi
+            if kill -s SIGCHLD "$z_ppid" ; then
+                logger "$(basename $0) - $z_ppid killed"
+            fi
 
-	    sleep 3
-	    if ps axo stat,pid,ppid | grep -q "^Z.*${z_pid}.*${z_ppid}" ; then
-		logger "$(basename $0) - No luck, Killing parent of the zombie '$z_pid' which is '$z_ppid' - (${z_ppid_comm})" 1>&2
+            sleep 3
+            if ps axo stat,pid,ppid | grep -q "^Z.*${z_pid}.*${z_ppid}" ; then
+                logger "$(basename $0) - No luck, Killing parent of the zombie '$z_pid' which is '$z_ppid' - (${z_ppid_comm})" 1>&2
 
-		if kill -9 "$z_ppid" ; then
-		    logger "$(basename $0) - $z_ppid killed"
-		fi
-	    fi
+                if kill -9 "$z_ppid" ; then
+                    logger "$(basename $0) - $z_ppid killed"
+                fi
+            fi
 
-	    unset z_pid z_ppid z_state z_comm
+            unset z_pid z_ppid z_state z_comm
 
-	# candidates for zombies: are you a winner ?
-	done 3<<< "$( ps axo stat,pid,ppid,comm | grep -E "(plugin-conta|gvfsd-metada|tumblerd)" | grep "^Z" )"
+            # candidates for zombies: are you a winner ?
+        done 3<<< "$( ps axo stat,pid,ppid,comm | grep -E "(plugin-conta|gvfsd-metada|tumblerd)" | grep "^Z" )"
 
-	# they are all killed ? good job rude boy...
-	if ! ps axo stat,pid,ppid | grep -E "(plugin-conta|gvfsd-metada|tumblerd)" | grep -q "^Z" ; then
-	    no_more_zombies=1
-	fi
+        # they are all killed ? good job rude boy...
+        if ! ps axo stat,pid,ppid | grep -E "(plugin-conta|gvfsd-metada|tumblerd)" | grep -q "^Z" ; then
+            no_more_zombies=1
+        fi
     done
 }
 #===  FUNCTION  ================================================================
@@ -88,29 +88,29 @@ kill_process(){
 
     # }}}
     if [[ -n "$pid" ]] ; then
-	# zombies around, kill them
-	if [[ "$state" = *Z* ]] ; then
-	    kill_processes_zombie
-	fi
+        # zombies around, kill them
+        if [[ "$state" = *Z* ]] ; then
+            kill_processes_zombie
+        fi
 
-	if [[ -n "$message" ]] ; then
-	    echo -e "$message" 1>&2
-	    logger "$(basename $0) - $message"
-	else
-	    if [[ -n "$command" ]] ; then
-		echo "killing $command at ${pid}, cpu is at ${cpu_usage} since ${time_minutes} minutes" 1>&2
-		logger "$(basename $0) - killing $command at ${pid}, cpu is at ${cpu_usage} since ${time_minutes} minutes"
-	    fi
-	fi
+        if [[ -n "$message" ]] ; then
+            echo -e "$message" 1>&2
+            logger "$(basename $0) - $message"
+        else
+            if [[ -n "$command" ]] ; then
+                echo "killing $command at ${pid}, cpu is at ${cpu_usage} since ${time_minutes} minutes" 1>&2
+                logger "$(basename $0) - killing $command at ${pid}, cpu is at ${cpu_usage} since ${time_minutes} minutes"
+            fi
+        fi
 
-	if kill "$pid" 2>/dev/null 1>/dev/null ; then
-	    logger "$(basename $0) - $pid killed"
-	fi
-	sleep 1
+        if kill "$pid" 2>/dev/null 1>/dev/null ; then
+            logger "$(basename $0) - $pid killed"
+        fi
+        sleep 1
 
-	if kill -9 "$pid" 2>/dev/null 1>/dev/null ; then
-	    logger "$(basename $0) - $pid killed with -9"
-	fi
+        if kill -9 "$pid" 2>/dev/null 1>/dev/null ; then
+            logger "$(basename $0) - $pid killed with -9"
+        fi
     fi
 }
 
@@ -126,81 +126,81 @@ main(){
     sleeptime=240
 
     if [[ "$arg" = "onetime" ]] ; then
-	is_onetime=1
+        is_onetime=1
     fi
     # watch and fix
     while true
     do
-	# scan for annoying processes (sorted by cpu usage)
-	top -b -n 1 | head -n 18 | tail -n 11 | while read -r pid user priority nice memvrit memresident memshared status cpu_usage mem_usage time_minutes command
-	do
-	    cpu_usage="${cpu_usage%.*}"
-	    mem_usage="${mem_usage%.*}"
+        # scan for annoying processes (sorted by cpu usage)
+        top -b -n 1 | head -n 18 | tail -n 11 | while read -r pid user priority nice memvrit memresident memshared status cpu_usage mem_usage time_minutes command
+    do
+        cpu_usage="${cpu_usage%.*}"
+        mem_usage="${mem_usage%.*}"
 
-	    time_minutes="$(( ( ${time_minutes%%:*} * 60 ) + $( echo "${time_minutes%.*}" | sed -e 's|^.*:||g' -e 's|^0||g' ) ))"
-	    time_minutes="${time_minutes%.*}"
+        time_minutes="$(( ( ${time_minutes%%:*} * 60 ) + $( echo "${time_minutes%.*}" | sed -e 's|^.*:||g' -e 's|^0||g' ) ))"
+        time_minutes="${time_minutes%.*}"
 
-	    #
-	    # rules
-	    #
+        #
+        # rules
+        #
 
-	    # gvfsd-daemon sometimes blocks sucking cpu cycles
-	    if [[ "${command}" = "gvfsd-metadata" ]] && [[ "${time_minutes}" -gt 5 ]] && [[ "${cpu_usage}" -gt 60 ]] ; then
-		logger "$(basename $0) - annoying process detected (${command}), minutes: ${time_minutes}, cpu usage: ${cpu_usage}, at pid: ${pid} "
-		kill_process "$pid" "${status}" "$command"
-	    fi
+        # gvfsd-daemon sometimes blocks sucking cpu cycles
+        if [[ "${command}" = "gvfsd-metadata" ]] && [[ "${time_minutes}" -gt 5 ]] && [[ "${cpu_usage}" -gt 60 ]] ; then
+            logger "$(basename $0) - annoying process detected (${command}), minutes: ${time_minutes}, cpu usage: ${cpu_usage}, at pid: ${pid} "
+            kill_process "$pid" "${status}" "$command"
+        fi
 
-	    # tumblerd sucking around
-	    if [[ "${command}" = "tumblerd" ]] && [[ "${time_minutes}" -gt 5 ]] && [[ "${cpu_usage}" -gt 60 ]] ; then
-		logger "$(basename $0) - annoying process detected (${command}), minutes: ${time_minutes}, cpu usage: ${cpu_usage}, at pid: ${pid} "
-		kill_process "$pid" "${status}" "$command"
-	    fi
+        # tumblerd sucking around
+        if [[ "${command}" = "tumblerd" ]] && [[ "${time_minutes}" -gt 5 ]] && [[ "${cpu_usage}" -gt 60 ]] ; then
+            logger "$(basename $0) - annoying process detected (${command}), minutes: ${time_minutes}, cpu usage: ${cpu_usage}, at pid: ${pid} "
+            kill_process "$pid" "${status}" "$command"
+        fi
 
-	    # mpg123 sometimes got stucked eating cpu
-	    if [[ "${command}" = "mpg123" ]] && [[ "${time_minutes}" -gt 15 ]] && [[ "${cpu_usage}" -gt 60 ]] ; then
-		logger "$(basename $0) - annoying process detected (${command}), minutes: ${time_minutes}, cpu usage: ${cpu_usage}, at pid: ${pid} "
-		kill_process "$pid" "${status}" "$command"
-	    fi
+        # mpg123 sometimes got stucked eating cpu
+        if [[ "${command}" = "mpg123" ]] && [[ "${time_minutes}" -gt 15 ]] && [[ "${cpu_usage}" -gt 60 ]] ; then
+            logger "$(basename $0) - annoying process detected (${command}), minutes: ${time_minutes}, cpu usage: ${cpu_usage}, at pid: ${pid} "
+            kill_process "$pid" "${status}" "$command"
+        fi
 
-	    # zombies ? kill them with a chainsaw!
-	    #if [[ "$status" = *Z* ]] && [[ "${time_minutes}" -gt 1 ]] ; then
-		#kill_process "$pid" "${status}" "$command" "killing zombie process"
-	    #fi
+        # zombies ? kill them with a chainsaw!
+        #if [[ "$status" = *Z* ]] && [[ "${time_minutes}" -gt 1 ]] ; then
+        #kill_process "$pid" "${status}" "$command" "killing zombie process"
+        #fi
 
-	done
-	# scan for specific processes
-	top -b -n 1 | grep "tumblerd" | while read -r pid user priority nice memvrit memresident memshared status cpu_usage mem_usage time_minutes command
-	do
-	    cpu_usage="${cpu_usage%,*}"
-	    time_minutes="$(( ( ${time_minutes%%:*} * 60 ) + $( echo "${time_minutes%.*}" | sed -e 's|^.*:||g' ) ))"
-	    command="${command}"
+    done
+    # scan for specific processes
+    top -b -n 1 | grep "tumblerd" | while read -r pid user priority nice memvrit memresident memshared status cpu_usage mem_usage time_minutes command
+do
+    cpu_usage="${cpu_usage%,*}"
+    time_minutes="$(( ( ${time_minutes%%:*} * 60 ) + $( echo "${time_minutes%.*}" | sed -e 's|^.*:||g' ) ))"
+    command="${command}"
 
-	    # tumblerd stalled ?
-	    if [[ "${command}" = "tumblerd" ]] && [[ "${time_minutes}" -gt 5 ]] ; then
-		logger "$(basename $0) - stalled process detected (${command}), minutes: ${time_minutes}, cpu usage: (not required to know), at pid: ${pid} | from detecting time in top"
-		kill_process "$pid" "${status}" "$command"
-	    fi
+    # tumblerd stalled ?
+    if [[ "${command}" = "tumblerd" ]] && [[ "${time_minutes}" -gt 5 ]] ; then
+        logger "$(basename $0) - stalled process detected (${command}), minutes: ${time_minutes}, cpu usage: (not required to know), at pid: ${pid} | from detecting time in top"
+        kill_process "$pid" "${status}" "$command"
+    fi
 
-	    # kill it from a different time check, since seems to not have very good reliable info
-	    killall --older-than 1h tumblerd 2>/dev/null
-	    logger "$(basename $0) - stalled process detected (${command}), minutes: ${time_minutes}, cpu usage: (not required to know), at pid: ${pid} | from killall --older-than 1h"
+    # kill it from a different time check, since seems to not have very good reliable info
+    killall --older-than 1h tumblerd 2>/dev/null
+    logger "$(basename $0) - stalled process detected (${command}), minutes: ${time_minutes}, cpu usage: (not required to know), at pid: ${pid} | from killall --older-than 1h"
 
-	done
+done
 
-	# zombies
-	kill_processes_zombie
+# zombies
+kill_processes_zombie
 
 
-	# we only want to run it one time
-	if ((is_onetime)) ; then
-	    exit
-	fi
+# we only want to run it one time
+if ((is_onetime)) ; then
+    exit
+fi
 
-	# pause until the next loop
-	sleep "$sleeptime"
+# pause until the next loop
+sleep "$sleeptime"
 
-	# clean vars
-	unset pid user priority nice memvrit memresident memshared status cpu_usage mem_usage time_minutes command
+# clean vars
+unset pid user priority nice memvrit memresident memshared status cpu_usage mem_usage time_minutes command
     done
 
 }
