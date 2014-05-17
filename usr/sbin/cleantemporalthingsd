@@ -17,7 +17,7 @@ main(){
     while true
     do
         clean_tmp
-        sleep 14400 # 4 hours
+        sleep 7200 # 2 hours
     done
 }
 
