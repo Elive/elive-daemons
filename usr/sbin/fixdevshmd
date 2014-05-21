@@ -30,24 +30,26 @@ main(){
     chmod 1777 "${devshm}"
 
     # watch and fix
-    while inotifywait -e modify -e attrib -e move "${devshm}"
-        #while inotifywait -e attrib -e move "${devshm}" # this one seems to not catch correctly all the times
+    while true
     do
-        # wait a few seconds in order to not overload the system with this daemon, seems like there's something that doesn't finish to change it
-        # this pause must be set before to change permissions, in order to directly listed again after that
-        #sleep 5
+        while inotifywait -e modify -e attrib -e move "${devshm}"
+            #while inotifywait -e attrib -e move "${devshm}" # this one seems to not catch correctly all the times
+        do
+            # wait a few seconds in order to not overload the system with this daemon, seems like there's something that doesn't finish to change it
+            # this pause must be set before to change permissions, in order to directly listed again after that
+            #sleep 5
 
-        #echo "fixing ${devshm} permissions"
-        #echo -e "$(ls -l /dev | grep shm )" 1>&2
-        #echo -e "$(ls -l /run | grep shm | grep -v fixdev )" 1>&2
+            #echo "fixing ${devshm} permissions"
+            #echo -e "$(ls -l /dev | grep shm )" 1>&2
+            #echo -e "$(ls -l /run | grep shm | grep -v fixdev )" 1>&2
 
-        #logger "$(basename $0) - fixing permissions in ${devshm} | auto"
-        #chmod 1777 "${devshm}"
+            #logger "$(basename $0) - fixing permissions in ${devshm} | auto"
+            #chmod 1777 "${devshm}"
 
-        verify_and_fix_shm &
-        # a little pause so that we dont enter in infinite loops
-        sleep 4
-
+            verify_and_fix_shm &
+            # a little pause so that we dont enter in infinite loops
+            sleep 4
+        done
     done
 }
 
