@@ -154,7 +154,7 @@ main(){
             case "$command" in
                 gvfsd-metadata)
                     # gvfsd-daemon sometimes blocks sucking cpu cycles
-                    if [[ "${time_minutes}" -ge 5 ]] && [[ "${cpu_usage}" -gt 60 ]] ; then
+                    if [[ "${time_minutes}" -ge 3 ]] && [[ "${cpu_usage}" -gt 60 ]] ; then
                         logger "$(basename $0) - annoying process detected (${command}), minutes: ${time_minutes}, cpu usage: ${cpu_usage}, at pid: ${pid} "
                         kill_process "$pid" "${status}" "$command"
                     fi
