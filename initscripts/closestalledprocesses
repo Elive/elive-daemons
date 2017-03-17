@@ -58,7 +58,6 @@ do_stop(){
 
     start-stop-daemon --stop --quiet --pidfile $closestalledprocessesPID
     # Wait a little and remove stale PID file
-    #sleep 1
     if [ -f $closestalledprocessesPID ] && ! ps h $(cat $closestalledprocessesPID) > /dev/null
     then
         # Stale PID file (closestalledprocesses was succesfully stopped),

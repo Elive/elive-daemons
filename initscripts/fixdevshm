@@ -60,7 +60,6 @@ do_stop(){
 
     start-stop-daemon --stop --quiet --pidfile $fixdevshmPID
     # Wait a little and remove stale PID file
-    sleep 1
     if [ -f $fixdevshmPID ] && ! ps h $(cat $fixdevshmPID) > /dev/null
     then
         # Stale PID file (fixdevshm was succesfully stopped),

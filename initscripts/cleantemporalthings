@@ -60,7 +60,6 @@ do_stop(){
 
     start-stop-daemon --stop --quiet --pidfile $cleantemporalthingsPID
     # Wait a little and remove stale PID file
-    #sleep 1
     if [ -f $cleantemporalthingsPID ] && ! ps h $(cat $cleantemporalthingsPID) > /dev/null
     then
         # Stale PID file (cleantemporalthings was succesfully stopped),
