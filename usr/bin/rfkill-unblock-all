@@ -1,0 +1,27 @@
+#!/bin/bash
+#source /usr/lib/elive-tools/functions
+
+if laptop-detect ; then
+    while read -ru 3 line
+    do
+        # know the possible id to unblock
+        if echo "$line" | LC_ALL=C grep -qsE "[[:digit:]]+: " ; then
+            id="$( echo "$line" | sed -e 's|: .*$||g' )"
+            continue
+        fi
+
+        # unblock if we are blocked
+        if echo "$line" | LC_ALL=C grep -qsi "blocked: yes" ; then
+            if echo "$line" | LC_ALL=C grep -qsiE "(soft|hard) blocked: yes" ; then
+                is_unblocked=1
+            fi
+            rfkill unblock "$id" 2>/dev/null 1>&2
+        fi
+    done 3<<< "$( rfkill list 2>/dev/null )"
+fi
+
+if ((is_unblocked)) ; then
+    el_info "Wifi has been reactivated"
+else
+    el_debug "Wifi was already active"
+fi
