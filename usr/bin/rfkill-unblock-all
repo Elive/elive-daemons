@@ -1,7 +1,12 @@
 #!/bin/bash
-#source /usr/lib/elive-tools/functions
+source /usr/lib/elive-tools/functions
 
 if laptop-detect ; then
+
+    if ! el_dependencies_check "rfkill" 2>/dev/null ; then
+        el_dependencies_install "rfkill"
+    fi
+
     while read -ru 3 line
     do
         # know the possible id to unblock
@@ -25,3 +30,5 @@ if ((is_unblocked)) ; then
 else
     el_debug "Wifi was already active"
 fi
+
+# vim: filetype=sh :
