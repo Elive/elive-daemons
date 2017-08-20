@@ -4,7 +4,8 @@ source /usr/lib/elive-tools/functions
 if /usr/sbin/laptop-detect ; then
 
     if ! el_dependencies_check "rfkill" 2>/dev/null ; then
-        el_dependencies_install "rfkill"
+        el_error "package rfkill missing"
+        exit
     fi
 
     while read -ru 3 line
