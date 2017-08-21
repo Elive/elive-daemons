@@ -3,16 +3,36 @@ source /usr/lib/elive-tools/functions
 
 main(){
     # pre {{{
-    local var
+
+    # every 28 days min
+    #seconds_min="$(( 28 * 24 * 60 * 60 ))"
+    seconds_min="$(( 1 * 30 ))"
+    seconds_stamp_now="$(date +%s)"
+    seconds_stamp_needed="$(( $seconds_stamp_now - $seconds_min ))"
+
+    stamp_last="$HOME/.cache/$(basename $0)/suggested_last"
+
+    if ! [[ -s "$stamp_last" ]] ; then
+        mkdir -p "$( dirname "$stamp_last" )"
+        echo "$seconds_stamp_now" > "$stamp_last"
+    fi
+
+    added_date="$( cat "$stamp_last" | grep "^[[:digit:]]*$" | tail -1 )"
 
     # }}}
 
-    #unfollow_seconds_min="$(( 1 * 24 * 60 * 60 ))"
-    #unfollow_seconds_stamps_now="$(date +%s)"
-    #unfollow_seconds_stamps_needed="$(( $unfollow_seconds_stamps_now - $unfollow_seconds_min ))"
+    # check if enough time passed
+    if [[ "$added_date" -le "$seconds_stamp_needed" ]] ; then
+        local message_ask_for_donation
+        message_ask_for_donation="$( printf "$( eval_gettext "Elive only survives thanks to a few donations by the users, do you want to support this project to keep it alive and make it everyday better?" )" "" )"
 
-    ## remove follow if enough time passed
-    #if [[ "$added_date" -le "$unfollow_seconds_stamps_needed" ]] ; then
+        if zenity --question --text="$message_ask_for_donation" ; then
+            /etc/alternatives/x-www-browser "http://www.elivecd.org/donate/?id=system-xdg-$(basename $0)" &
+        fi
+
+        # add a new stamp
+        echo "$seconds_stamp_now" > "$stamp_last"
+    fi
 }
 
 #
