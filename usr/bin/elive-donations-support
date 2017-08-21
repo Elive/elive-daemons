@@ -7,7 +7,12 @@ main(){
 
     # }}}
 
+    #unfollow_seconds_min="$(( 1 * 24 * 60 * 60 ))"
+    #unfollow_seconds_stamps_now="$(date +%s)"
+    #unfollow_seconds_stamps_needed="$(( $unfollow_seconds_stamps_now - $unfollow_seconds_min ))"
 
+    ## remove follow if enough time passed
+    #if [[ "$added_date" -le "$unfollow_seconds_stamps_needed" ]] ; then
 }
 
 #
