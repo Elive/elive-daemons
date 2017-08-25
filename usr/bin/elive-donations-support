@@ -3,6 +3,7 @@ source /usr/lib/elive-tools/functions
 
 main(){
     # pre {{{
+    local seconds_stamp_needed seconds_stamp_now seconds_min stamp_last is_first_run added_date
 
     # every 28 days min
     #seconds_min="$(( 28 * 24 * 60 * 60 ))"
@@ -15,6 +16,7 @@ main(){
     if ! [[ -s "$stamp_last" ]] ; then
         mkdir -p "$( dirname "$stamp_last" )"
         echo "$seconds_stamp_now" > "$stamp_last"
+        is_first_run=1
     fi
 
     added_date="$( cat "$stamp_last" | grep "^[[:digit:]]*$" | tail -1 )"
@@ -22,9 +24,19 @@ main(){
     # }}}
 
     # check if enough time passed
-    if [[ "$added_date" -le "$seconds_stamp_needed" ]] ; then
+    if [[ "$added_date" -le "$seconds_stamp_needed" ]] || ((is_first_run)) ; then
         local message_ask_for_donation
-        message_ask_for_donation="$( printf "$( eval_gettext "Elive only survives thanks to a few donations by the users, do you want to support this project to keep it alive and make it everyday better?" )" "" )"
+
+        message_ask_for_donation="$( printf "$( eval_gettext "Are you happy with Elive? it only survives by a few donations from the users, would you do one to support this project and keep it alive making it everyday better?" )" "" )"
+        # random message generator
+        case "$( shuf -i 1-2 -n 1 )" in
+            1)
+                message_ask_for_donation="$( printf "$( eval_gettext "Are you happy with Elive? it only survives by a few donations from the users, would you do one to support this project and keep it alive making it everyday better?" )" "" )"
+                ;;
+            2)
+                message_ask_for_donation="$( printf "$( eval_gettext "Are you happy with Elive? it only survives by a few donations from the users, would you do one to support this project and keep it alive making it everyday better?" )" "" )"
+                ;;
+        esac
 
         if zenity --question --text="$message_ask_for_donation" ; then
             /etc/alternatives/x-www-browser "http://www.elivecd.org/donate/?id=system-xdg-$(basename $0)" &
