@@ -5,6 +5,11 @@ main(){
     # pre {{{
     local seconds_stamp_needed seconds_stamp_now seconds_min stamp_last is_first_run added_date
 
+    # don't run it in live mode
+    if grep -qs "boot=live" /proc/cmdline ; then
+        exit
+    fi
+
     # every 28 days min
     #seconds_min="$(( 28 * 24 * 60 * 60 ))"
     seconds_min="$(( 1 * 30 ))"
