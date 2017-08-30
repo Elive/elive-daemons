@@ -1,0 +1,28 @@
+#!/bin/bash
+source /usr/lib/elive-tools/functions
+
+main(){
+
+    # unmute audio
+    setvolume unmute
+
+    # set a good volume by default
+    while read -ru 3 line
+    do
+        # remove extra leading blank chars
+        read -r line <<< "$line"
+
+        if [[ "$line" -le 26 ]] ; then
+            setvolume defaults
+            break
+        fi
+    done 3<<< "$( amixer | grep -i "Front Left: Playback" | grep "\[on\]" | grep -vi "Capture" | tr ' ' '\n' | grep "%" | sed -e 's|%||g' )"
+
+}
+
+#
+#  MAIN
+#
+main "$@"
+
+# vim: set foldmethod=marker :
