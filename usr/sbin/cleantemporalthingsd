@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 # note: argument -D is ignored, we do the background from another side
 
 clean_tmp(){
