@@ -11,8 +11,8 @@ main(){
     fi
 
     # every 28 days min
-    #seconds_min="$(( 28 * 24 * 60 * 60 ))"
-    seconds_min="$(( 1 * 30 ))"
+    seconds_min="$(( 28 * 24 * 60 * 60 ))" # almost 1 month
+    #seconds_min="$(( 1 * 30 ))" # 30 seconds
     seconds_stamp_now="$(date +%s)"
     seconds_stamp_needed="$(( $seconds_stamp_now - $seconds_min ))"
 
