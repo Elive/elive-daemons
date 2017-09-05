@@ -34,14 +34,14 @@ main(){
     if [[ "$added_date" -le "$seconds_stamp_needed" ]] || ((is_first_run)) ; then
         local message_ask_for_donation
 
-        message_ask_for_donation="$( printf "$( eval_gettext "Are you happy with Elive? it only survives by a few donations from the users, would you do one to support this project and keep it alive making it everyday better?" )" "" )"
+        message_ask_for_donation="$( printf "$( eval_gettext "Are you happy with Elive? it only survives by a few donations from the users. Would you do one to support this project and keep it alive and everyday better?" )" "" )"
         # random message generator
         case "$( shuf -i 1-2 -n 1 )" in
             1)
-                message_ask_for_donation="$( printf "$( eval_gettext "Are you happy with Elive? it only survives by a few donations from the users, would you do one to support this project and keep it alive making it everyday better?" )" "" )"
+                message_ask_for_donation="$( printf "$( eval_gettext "Are you happy with Elive? it only survives by a few donations from the users. Would you do one to support this project and keep it alive and everyday better?" )" "" )"
                 ;;
             2)
-                message_ask_for_donation="$( printf "$( eval_gettext "Are you happy with Elive? it only survives by a few donations from the users, would you do one to support this project and keep it alive making it everyday better?" )" "" )"
+                message_ask_for_donation="$( printf "$( eval_gettext "Are you happy with Elive? it only survives by a few donations from the users. Would you do one to support this project and keep it alive and everyday better?" )" "" )"
                 ;;
         esac
 
