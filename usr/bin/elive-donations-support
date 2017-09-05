@@ -27,6 +27,8 @@ main(){
     added_date="$( cat "$stamp_last" | grep "^[[:digit:]]*$" | tail -1 )"
 
     # }}}
+    # wait a bit before to show this (desktop needs to be run)
+    sleep 10
 
     # check if enough time passed
     if [[ "$added_date" -le "$seconds_stamp_needed" ]] || ((is_first_run)) ; then
