@@ -64,10 +64,10 @@ kill_processes_zombie(){
             unset z_pid z_ppid z_state z_comm
 
             # candidates for zombies: are you a winner ?
-        done 3<<< "$( ps axo stat,pid,ppid,comm | grep -E "(plugin-conta|gvfsd-metada|tumblerd|enlightenment)" | grep "^Z" )"
+        done 3<<< "$( ps axo stat,pid,ppid,comm | grep -E "(plugin-conta|gvfsd-metada|tumblerd|enlightenment|ecomorph)" | grep "^Z" )"
 
         # they are all killed ? good job rude boy...
-        if ! ps axo stat,pid,ppid | grep -E "(plugin-conta|gvfsd-metada|tumblerd|enlightenment)" | grep -q "^Z" ; then
+        if ! ps axo stat,pid,ppid | grep -E "(plugin-conta|gvfsd-metada|tumblerd|enlightenment|ecomorph)" | grep -q "^Z" ; then
             no_more_zombies=1
         fi
     done
@@ -103,6 +103,7 @@ kill_process(){
             fi
         fi
 
+        # always kill E with a SIGSEGV in order  to recover it
         if [[ "$cmd" = *enlightenment* ]] ; then
             if kill -s SIGSEGV "$pid" 2>/dev/null 1>/dev/null ; then
                 logger "$(basename $0) - $pid given a segfault to recover"
@@ -219,6 +220,13 @@ main(){
                     fi
                     # huge mem usage
                     if [[ "${time_minutes}" -ge 30 ]] && [[ "${memvirt}" -gt 1200000 ]] ; then
+                        kill_process "$pid" "${status}" "$command"
+                    fi
+                    ;;
+                ecomorph)
+                    # huge mem usage
+                    if [[ "${time_minutes}" -ge 30 ]] && [[ "${memvirt}" -gt 400000 ]] ; then
+                        # it should use 50 mb on a small screen computer
                         kill_process "$pid" "${status}" "$command"
                     fi
                     ;;
