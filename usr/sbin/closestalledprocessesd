@@ -1,5 +1,12 @@
 #!/bin/bash
 # note: argument -D is ignored, we do the background from another side
+source /usr/lib/elive-tools/functions
+#el_make_environment
+#. gettext.sh
+#TEXTDOMAIN=""
+#export TEXTDOMAIN
+
+
 
 export LC_NUMERIC=C
 
@@ -59,6 +66,11 @@ kill_processes_zombie(){
                 if kill -9 "$z_ppid" ; then
                     logger "$(basename $0) - $z_ppid killed"
                 fi
+            fi
+            sleep 3
+
+            if kill -0 "$z_ppid" ; then
+                el_warning "still having not-killed zombie processes? $(ps axo  stat,pid,ppid,comm | grep "^Z" )"
             fi
 
             unset z_pid z_ppid z_state z_comm
@@ -124,6 +136,11 @@ kill_process(){
             if kill -9 "$pid" 2>/dev/null 1>/dev/null ; then
                 logger "$(basename $0) - $pid killed with -9"
             fi
+            sleep 1
+        fi
+
+        if kill -0 "$pid" 2>/dev/null ; then
+            el_warning "unable to kill process ${pid}, state ${state}, command ${cmd}, message ${message}"
         fi
     fi
 }
@@ -240,7 +257,8 @@ main(){
 
                 *)
                     if [[ "${time_minutes}" -gt 200 ]] && [[ "${cpu_usage}" -gt 60 ]] ; then
-                        logger "$(basename $0) - PLEASE REPORT TO ELIVE: annoying process detected (${command}) sucking cpu for more than 3 hours at pid: ${pid}, error ? we should kill these ones too ?"
+                        #logger "$(basename $0) - PLEASE REPORT TO ELIVE: annoying process detected (${command}) sucking cpu for more than 3 hours at pid: ${pid}, error ? we should kill these ones too ?"
+                        el_error "Annoying process detected '${command}' sucking cpu for '${time_minutes}', cpu usage '${cpu_usage}', pid '$pid'"
                     fi
                     ;;
 
@@ -251,6 +269,7 @@ main(){
         # always kill long tumblerd's
         if killall --older-than 1h tumblerd 2>/dev/null ; then
             logger "$(basename $0) - stalled process detected (tumblerd), minutes: ${time_minutes}, cpu usage: (not required to know), at pid: (unknown) | from killall --older-than 1h"
+            el_warning "stalled process detected (tumblerd) ${time_minutes} minutes, why was not autokilled?"
         fi
 
         # zombies
