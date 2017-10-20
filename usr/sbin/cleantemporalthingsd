@@ -5,15 +5,15 @@ clean_tmp(){
     # only clean the known-ones:
     rmdir /tmp/xdg-* 2>/dev/null 1>&2
 
+    # clean old efreet files (keep the last 8 ones)
+    cd /tmp
+    ls -1tr efreetd_* | head -n "-8" | xargs rm -f
+
     # always return ok
     return 0
 }
 
 main(){
-    # pre {{{
-
-    # }}}
-
     while true
     do
         clean_tmp
