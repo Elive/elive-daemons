@@ -47,7 +47,7 @@ main(){
             #chmod 1777 "${devshm}"
 
             # a little pause so that we dont enter in infinite loops
-            sleep 4
+            sleep 8
 
             verify_and_fix_shm &
 
