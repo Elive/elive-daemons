@@ -64,10 +64,10 @@ kill_processes_zombie(){
             unset z_pid z_ppid z_state z_comm
 
             # candidates for zombies: are you a winner ?
-        done 3<<< "$( ps axo stat,pid,ppid,comm | grep -E "(plugin-conta|gvfsd-metada|tumblerd)" | grep "^Z" )"
+        done 3<<< "$( ps axo stat,pid,ppid,comm | grep -E "(plugin-conta|gvfsd-metada|tumblerd|enlightenment)" | grep "^Z" )"
 
         # they are all killed ? good job rude boy...
-        if ! ps axo stat,pid,ppid | grep -E "(plugin-conta|gvfsd-metada|tumblerd)" | grep -q "^Z" ; then
+        if ! ps axo stat,pid,ppid | grep -E "(plugin-conta|gvfsd-metada|tumblerd|enlightenment)" | grep -q "^Z" ; then
             no_more_zombies=1
         fi
     done
@@ -80,14 +80,14 @@ kill_processes_zombie(){
 #===============================================================================
 kill_process(){
     # pre {{{
-    local pid command
+    local pid cmd state message
     pid="$1"
     state="$2"
-    command="$3"
+    cmd="$3"
     message="$4"
 
     # }}}
-    if [[ -n "$pid" ]] ; then
+    if [[ -n "$pid" ]] && kill -0 "$pid" 2>/dev/null ; then
         # zombies around, kill them
         if [[ "$state" = *Z* ]] ; then
             kill_processes_zombie
@@ -97,19 +97,32 @@ kill_process(){
             echo -e "$message" 1>&2
             logger "$(basename $0) - $message"
         else
-            if [[ -n "$command" ]] ; then
-                echo "killing $command at ${pid}, cpu is at ${cpu_usage} since ${time_minutes} minutes" 1>&2
-                logger "$(basename $0) - killing $command at ${pid}, cpu is at ${cpu_usage} since ${time_minutes} minutes"
+            if [[ -n "$cmd" ]] ; then
+                echo "killing $cmd at ${pid}, cpu is at ${cpu_usage} since ${time_minutes} minutes" 1>&2
+                logger "$(basename $0) - killing $cmd at ${pid}, cpu is at ${cpu_usage} since ${time_minutes} minutes"
             fi
         fi
 
-        if kill "$pid" 2>/dev/null 1>/dev/null ; then
-            logger "$(basename $0) - $pid killed"
+        if [[ "$cmd" = *enlightenment* ]] ; then
+            if kill -s SIGSEGV "$pid" 2>/dev/null 1>/dev/null ; then
+                logger "$(basename $0) - $pid given a segfault to recover"
+            fi
+            sleep 1
+            # nothing more here, we don't want to kill it more than a SEGV
+            return
         fi
-        sleep 1
 
-        if kill -9 "$pid" 2>/dev/null 1>/dev/null ; then
-            logger "$(basename $0) - $pid killed with -9"
+        if kill -0 "$pid" 2>/dev/null ; then
+            if kill "$pid" 2>/dev/null 1>/dev/null ; then
+                logger "$(basename $0) - $pid killed"
+            fi
+            sleep 1
+        fi
+
+        if kill -0 "$pid" 2>/dev/null ; then
+            if kill -9 "$pid" 2>/dev/null 1>/dev/null ; then
+                logger "$(basename $0) - $pid killed with -9"
+            fi
         fi
     fi
 }
@@ -117,7 +130,7 @@ kill_process(){
 
 main(){
     # pre {{{
-    local sleeptime pid user priority nice memvrit memresident memshared status cpu_usage mem_usage time_minutes command arg
+    local sleeptime pid user priority nice memvirt memresident memshared status cpu_usage mem_usage_percent time_minutes command arg
 
     arg="$1"
 
@@ -132,10 +145,15 @@ main(){
     while true
     do
         # scan for annoying processes (sorted by cpu usage)
-        LC_ALL=C top -b -n 1 | head -n 200 | tail -n +8 | while read -r pid user priority nice memvrit memresident memshared status cpu_usage mem_usage time_minutes command
+        LC_ALL=C top -b -n 1 | head -n 200 | tail -n +8 | while read -r pid user priority nice memvirt memresident memshared status cpu_usage mem_usage_percent time_minutes command
         do
             cpu_usage="${cpu_usage%.*}"
-            mem_usage="${mem_usage%.*}"
+            mem_usage_percent="${mem_usage_percent%.*}"
+
+            memvirt="${memvirt//G/000000}"
+            memvirt="${memvirt//g/000000}"
+            memvirt="${memvirt//M/000}"
+            memvirt="${memvirt//m/000}"
 
             # break the loop from here, we don't need to check more than this
             if [[ "$cpu_usage" -lt 10 ]] ; then
@@ -183,6 +201,27 @@ main(){
                     fi
 
                     ;;
+                enlightenment_fm)
+                    # cpu sucking
+                    if [[ "${time_minutes}" -ge 20 ]] && [[ "${cpu_usage}" -gt 80 ]] ; then
+                        # note: eating cpu' FM's seems like to be in the R status
+                        kill_process "$pid" "${status}" "$command"
+                    fi
+                    # huge mem usage
+                    if [[ "${time_minutes}" -ge 30 ]] && [[ "${memvirt}" -gt 700000 ]] ; then
+                        kill_process "$pid" "${status}" "$command"
+                    fi
+                    ;;
+                enlightenment)
+                    # cpu sucking
+                    if [[ "${time_minutes}" -ge 30 ]] && [[ "${cpu_usage}" -gt 80 ]] ; then
+                        kill_process "$pid" "${status}" "$command"
+                    fi
+                    # huge mem usage
+                    if [[ "${time_minutes}" -ge 30 ]] && [[ "${memvirt}" -gt 1200000 ]] ; then
+                        kill_process "$pid" "${status}" "$command"
+                    fi
+                    ;;
                 # blackisted ones:  yeah, we know that they sucks, and we love them on this way :/
                 songbird-bin|chromium|iceweasel*|firefox*|Xorg)
                         # songbird:  its a simply greedy eater of resoureces
@@ -219,7 +258,7 @@ main(){
         sleep "$sleeptime"
 
         # clean vars
-        unset pid user priority nice memvrit memresident memshared status cpu_usage mem_usage time_minutes command
+        unset pid user priority nice memvirt memresident memshared status cpu_usage mem_usage_percent time_minutes command
     done
 
 }
