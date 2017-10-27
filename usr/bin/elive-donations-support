@@ -47,7 +47,8 @@ main(){
 
         # don't ask, just redirect
         zenity --info --text="$message_ask_for_donation"
-        /etc/alternatives/x-www-browser "http://www.elivecd.org/donate/?id=system-xdg-$(basename $0)" &
+
+        web-launcher "http://www.elivecd.org/donate/?id=system-xdg-$(basename $0)" &
 
         # add a new stamp
         echo "$seconds_stamp_now" > "$stamp_last"
