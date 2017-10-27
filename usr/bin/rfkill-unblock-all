@@ -4,7 +4,7 @@ source /usr/lib/elive-tools/functions
 if /usr/sbin/laptop-detect ; then
 
     if ! el_dependencies_check "rfkill" 2>/dev/null ; then
-        el_error "package rfkill missing"
+        #el_error "package rfkill missing"
         exit
     fi
 
@@ -41,7 +41,7 @@ if /usr/sbin/laptop-detect ; then
                 if grep -qs "boot=live" /proc/cmdline ; then
                     zenity --warning --text="Wifi is disabled. You can activate it from the interruptor, switch or a keyboard hotkey."
                 else
-                    el_warning "Wifi is disabled. You can activate it from the interruptor, switch or a keyboard hotkey."
+                    #el_warning "Wifi is disabled. You can activate it from the interruptor, switch or a keyboard hotkey."
                     el_notify_user "Wifi is disabled" "You can activate it from the interruptor, switch or a keyboard hotkey."
                 fi
             fi
