@@ -28,10 +28,10 @@ main(){
 
     # }}}
     # wait a bit before to show this (desktop needs to be run)
-    sleep 10
+    sleep 20
 
     # check if enough time passed
-    if [[ "$added_date" -le "$seconds_stamp_needed" ]] || ((is_first_run)) ; then
+    if [[ "$added_date" -le "$seconds_stamp_needed" ]] && ! ((is_first_run)) ; then
         local message_ask_for_donation
 
         message_ask_for_donation="$( printf "$( eval_gettext "This project can only progress thanks to the donations from the users, without them it wont exist. Help us to maintain it survive!" )" "" )"
