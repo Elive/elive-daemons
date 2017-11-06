@@ -38,11 +38,15 @@ if /usr/sbin/laptop-detect ; then
                 sleep 10
 
                 # notify
-                if grep -qs "boot=live" /proc/cmdline ; then
-                    zenity --warning --text="Wifi is disabled. You can activate it from the interruptor, switch or a keyboard hotkey."
-                else
-                    #el_warning "Wifi is disabled. You can activate it from the interruptor, switch or a keyboard hotkey."
-                    el_notify_user "Wifi is disabled" "You can activate it from the interruptor, switch or a keyboard hotkey."
+                if ! ((is_user_notified)) ; then
+                    if grep -qs "boot=live" /proc/cmdline ; then
+                        zenity --warning --text="Wifi is disabled. You can activate it from the interruptor, switch or a keyboard hotkey."
+                    else
+                        #el_warning "Wifi is disabled. You can activate it from the interruptor, switch or a keyboard hotkey."
+                        el_notify_user "Wifi is disabled" "You can activate it from the interruptor, switch or a keyboard hotkey."
+                    fi
+
+                    is_user_notified=1
                 fi
             fi
         fi
