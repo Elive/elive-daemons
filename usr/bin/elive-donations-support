@@ -1,5 +1,11 @@
 #!/bin/bash
 source /usr/lib/elive-tools/functions
+#el_make_environment
+. gettext.sh
+TEXTDOMAIN="elive-daemons"
+export TEXTDOMAIN
+
+
 
 main(){
     # pre {{{
