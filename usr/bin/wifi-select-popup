@@ -9,7 +9,7 @@ main(){
     #if grep -qs "boot=live" /proc/cmdline ; then
         if sudo laptop-detect ; then
             # wait that the system has passed enough time to have been connected
-            sleep 30
+            sleep 20
 
             if ! el_verify_internet ; then
 
