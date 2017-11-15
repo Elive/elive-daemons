@@ -254,6 +254,19 @@ main(){
                         # Xorg: sometimes is overloaded, its normal
                         true
                     ;;
+                rage_thumb)
+                    # sometimes block
+                    if [[ "${time_minutes}" -ge 30 ]] && [[ "${cpu_usage}" -gt 60 ]] ; then
+                        kill_process "$pid" "${status}" "$command"
+                    fi
+                    ;;
+                vlc)
+                    # vlc like from /usr/lib/i386-linux-gnu/emotion/generic_players/v-1.13/vlc
+                    # it should never run for more than 3 hours (long long movies?)
+                    if [[ "${time_minutes}" -ge 180 ]] && [[ "${cpu_usage}" -gt 60 ]] ; then
+                        kill_process "$pid" "${status}" "$command"
+                    fi
+                    ;;
 
                 *)
                     if [[ "${time_minutes}" -gt 200 ]] && [[ "${cpu_usage}" -gt 60 ]] ; then
