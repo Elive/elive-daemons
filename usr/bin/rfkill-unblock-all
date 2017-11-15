@@ -44,10 +44,10 @@ if /usr/sbin/laptop-detect ; then
                 # notify
                 if ! ((is_user_notified)) ; then
                     if grep -qs "boot=live" /proc/cmdline ; then
-                        zenity --warning --text="$( eval_gettext "Wifi is disabled. You can activate it from the interruptor, switch or a keyboard hotkey." )"
+                        zenity --warning --text="$( eval_gettext "Wifi is disabled. You can activate it from the interruptor, switch or with a keyboard hotkey." )"
                     else
                         #el_warning "Wifi is disabled. You can activate it from the interruptor, switch or a keyboard hotkey."
-                        el_notify_user "$( eval_gettext "Wifi is disabled" )" "$( eval_gettext "You can activate it from the interruptor, switch or a keyboard hotkey." )"
+                        el_notify_user "$( eval_gettext "Wifi is disabled" )" "$( eval_gettext "You can activate it from the interruptor, switch or with a keyboard hotkey." )"
                     fi
 
                     is_user_notified=1
