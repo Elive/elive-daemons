@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Special detected reconfigurations
+Comment=Autodetect needed modifications
+Icon=logo-elive
+Exec=elive-reconfigurations
+Terminal=false
+Type=Application
+NoDisplay=true
+X-GNOME-Autostart-enabled=true
