@@ -53,6 +53,8 @@ do_start(){
     # if we had already the file is because we didn't shutdown correctly the system
     if test -e /var/tmp/elive-system-running ; then
         touch /var/tmp/elive-system-shutdown-forced
+        # let user be able to delete the file
+        chmod a+rw /var/tmp/elive-system-shutdown-forced
     fi
 
     touch /var/tmp/elive-system-running

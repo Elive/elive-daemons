@@ -12,6 +12,8 @@ main(){
     guitool="zenity --window-icon=/usr/share/icons/Elive/scalable/apps/logo-elive.png"
 
     # }}}
+    # wait desktop ready
+    sleep 15
 
     # was the shutdown forced?
     if [[ -e "/var/tmp/elive-system-shutdown-forced" ]]; then
