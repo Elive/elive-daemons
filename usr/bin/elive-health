@@ -13,14 +13,16 @@ main(){
 
     # }}}
     # wait desktop ready
-    sleep 20
+    if [[ -z "$is_terminal" ]] ; then
+        sleep 20
+    fi
 
     # was the shutdown forced?
     if [[ -e "/var/tmp/elive-system-shutdown-forced" ]]; then
         local message_shutdown_warn
         message_shutdown_warn="$( printf "$( eval_gettext "You previously turned off the computer incorrectly. It is very bad for your data to force the poweroff. You should shutdown the computer from the System option in the menu. You can also try the Hibernation mode if works correctly in your computer." )" "" )"
         # warn the user
-        notify_user "$( eval_gettext "Forced shutdown detected" )" "$message_shutdown_warn"
+        el_notify_user "$( eval_gettext "Forced shutdown detected" )" "$message_shutdown_warn"
 
         # remove the verification file
         rm -f "/var/tmp/elive-system-shutdown-forced"
