@@ -36,11 +36,10 @@ SCRIPTNAME=/etc/init.d/elivehealth
 do_start(){
     local _CMDLINE
     _CMDLINE="$(cat /proc/cmdline)"
-    if ! echo "${_CMDLINE}" | grep -qsE "(boot=live)"
-    then
+    if echo "${_CMDLINE}" | grep -qsE "(boot=live)" ; then
         exit 0
     fi
-    if echo "${_CMDLINE}" | grep -q debug ; then
+    if echo "${_CMDLINE}" | grep -qs "debug" ; then
         set -x
     fi
 
@@ -57,6 +56,7 @@ do_start(){
         chmod a+rw /var/tmp/elive-system-shutdown-forced
     fi
 
+    # mark that the system has booted
     touch /var/tmp/elive-system-running
 
 
