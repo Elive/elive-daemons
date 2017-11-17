@@ -50,14 +50,16 @@ do_start(){
     #exec 0</dev/console 1>/dev/console 2>&1
 
     # if we had already the file is because we didn't shutdown correctly the system
-    if test -e /var/tmp/elive-system-running ; then
-        touch /var/tmp/elive-system-shutdown-forced
+    if test -e /var/tmp/elivehealth/elive-system-running ; then
+        touch /var/tmp/elivehealth/elive-system-shutdown-forced
         # let user be able to delete the file
-        chmod a+rw /var/tmp/elive-system-shutdown-forced
+        chmod a+rw /var/tmp/elivehealth/elive-system-shutdown-forced
     fi
 
     # mark that the system has booted
-    touch /var/tmp/elive-system-running
+    mkdir -p /var/tmp/elivehealth
+    chmod 1777 /var/tmp/elivehealth
+    touch /var/tmp/elivehealth/elive-system-running
 
 
     #log_daemon_msg "Starting $(basename elivehealth)"
