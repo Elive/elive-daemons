@@ -1,0 +1,29 @@
+#!/bin/bash
+SOURCE="$0"
+source /usr/lib/elive-tools/functions
+el_make_environment
+. gettext.sh
+TEXTDOMAIN="elive-daemons"
+export TEXTDOMAIN
+
+main(){
+    # pre {{{
+    local var
+    guitool="zenity --window-icon=/usr/share/icons/Elive/scalable/apps/logo-elive.png"
+
+    # }}}
+
+    # was the shutdown forced?
+    if [[ -e "/var/tmp/elive-system-shutdown-forced" ]]; then
+        $guitool --warning --text="$( eval_gettext "You previously turned off the computer incorrectly. It is very bad for your data to force the poweroff. You should shutdown the computer from the System option in the menu. You can also try the Hibernation mode if works correctly in your computer." )"
+        rm -f "/var/tmp/elive-system-shutdown-forced"
+    fi
+}
+
+#
+#  MAIN
+#
+main "$@"
+
+# vim: set foldmethod=marker :
+
