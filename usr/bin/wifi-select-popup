@@ -7,33 +7,36 @@ main(){
     # }}}
 
     #if grep -qs "boot=live" /proc/cmdline ; then
-        if sudo laptop-detect ; then
+        if /usr/sbin/laptop-detect ; then
             # wait that the system has passed enough time to have been connected
-            sleep 20
+            if ! ((is_terminal)) ; then
+                # wait also for rfkill to be run
+                sleep 25
+            fi
 
             if ! el_verify_internet ; then
 
                 # get device name
-                wifi_dev="$( LC_ALL=C sudo iwconfig | grep IEEE | awk '{print $1}' | grep "[[:alpha:]]" | head -1 )"
+                wifi_dev="$( LC_ALL=C /sbin/iwconfig | grep IEEE | awk '{print $1}' | grep "[[:alpha:]]" | head -1 )"
 
                 if [[ -n "$wifi_dev" ]] ; then
                     # activate wifi if was not
-                    if sudo iwlist $wifi_dev scan | grep -qs "Nework is down" ; then
+                    if /sbin/iwlist $wifi_dev scan | grep -qs "Network is down" ; then
                         wifi-activate
                         sleep 10
                     fi
 
                     # check if we have ESSID's available to connet
-                    if ! sudo iwlist $wifi_dev scan | grep -qs "ESSID:" ; then
+                    if ! /sbin/iwlist $wifi_dev scan | grep -qs "ESSID:" ; then
                         sleep 10
-                        if ! sudo iwlist $wifi_dev scan | grep -qs "ESSID:" ; then
+                        if ! /sbin/iwlist $wifi_dev scan | grep -qs "ESSID:" ; then
                             sleep 10
                         fi
                     fi
 
                     sleep 2
                     # check if we have ESSID's available to connet
-                    if sudo iwlist $wifi_dev scan | grep -qs "ESSID:" ; then
+                    if /sbin/iwlist $wifi_dev scan | grep -qs "ESSID:" ; then
 
                         # if still not internet, popup it
                         if ! el_verify_internet ; then
