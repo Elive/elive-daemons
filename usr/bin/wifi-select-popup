@@ -21,22 +21,22 @@ main(){
 
                 if [[ -n "$wifi_dev" ]] ; then
                     # activate wifi if was not
-                    if /sbin/iwlist $wifi_dev scan | grep -qs "Network is down" ; then
+                    if /sbin/iwlist $wifi_dev scan 2>&1 | grep -qs "Network is down" ; then
                         wifi-activate
                         sleep 10
                     fi
 
                     # check if we have ESSID's available to connet
-                    if ! /sbin/iwlist $wifi_dev scan | grep -qs "ESSID:" ; then
+                    if ! /sbin/iwlist $wifi_dev scan 2>&1 | grep -qs "ESSID:" ; then
                         sleep 10
-                        if ! /sbin/iwlist $wifi_dev scan | grep -qs "ESSID:" ; then
+                        if ! /sbin/iwlist $wifi_dev scan 2>&1 | grep -qs "ESSID:" ; then
                             sleep 10
                         fi
                     fi
 
                     sleep 2
                     # check if we have ESSID's available to connet
-                    if /sbin/iwlist $wifi_dev scan | grep -qs "ESSID:" ; then
+                    if /sbin/iwlist $wifi_dev scan 2>&1 | grep -qs "ESSID:" ; then
 
                         # if still not internet, popup it
                         if ! el_verify_internet ; then
