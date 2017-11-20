@@ -22,7 +22,7 @@ if /usr/sbin/laptop-detect ; then
 
         # unblock Soft if we are blocked
         if echo "$line" | LC_ALL=C grep -qsi "Soft blocked: yes" ; then
-            /usr/sbin/rfkill unblock "$id" 2>/dev/null 1>&2
+            timeout 10 sudo /usr/sbin/rfkill unblock "$id" 2>/dev/null 1>&2
             #sleep 1
             # we can have multiple devices so this result is not very reliable, don't use it as an important result:
             if /usr/sbin/rfkill list 2>/dev/null | grep -qsi "Soft blocked: no" ; then
@@ -33,7 +33,7 @@ if /usr/sbin/laptop-detect ; then
         # unblock Hard if we are blocked
         if echo "$line" | LC_ALL=C grep -qsi "Hard blocked: yes" ; then
             # try to unblock but it may not work
-            /usr/sbin/rfkill unblock "$id" 2>/dev/null 1>&2
+            timeout 10 sudo /usr/sbin/rfkill unblock "$id" 2>/dev/null 1>&2
             #if echo "$line" | LC_ALL=C grep -qsi "Hard blocked: no" ; then
                 #is_unblocked=1
             #else
