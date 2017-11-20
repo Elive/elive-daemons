@@ -88,7 +88,7 @@ do_start(){
 do_stop(){
     #log_daemon_msg "Stopping elivehealth"
     #log_progress_msg "almost"
-    rm -f /var/tmp/elive-system-running /var/tmp/elive-system-shutdown-forced
+    rm -f /var/tmp/elivehealth/elive-system-running /var/tmp/elivehealth/elive-system-shutdown-forced
 
     #start-stop-daemon --stop --quiet --pidfile $elivehealthPID
     # Wait a little and remove stale PID file
