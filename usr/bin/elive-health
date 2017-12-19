@@ -17,14 +17,14 @@ main(){
     fi
 
     # was the shutdown forced?
-    if [[ -e "/var/tmp/elivehealth/elive-system-shutdown-forced" ]] && grep -qs "^yes$" "/var/tmp/elivehealth/elive-system-shutdown-forced" ; then
+    if [[ -e "/var/tmp/elivehealth/elive-system-shutdown-forced" ]] && grep -qsE "^(yes|user notified pre)$" "/var/tmp/elivehealth/elive-system-shutdown-forced" ; then
         local message_shutdown_warn
         message_shutdown_warn="$( printf "$( eval_gettext "You previously turned off the computer incorrectly. It is very bad for your data to force the poweroff. You should shutdown the computer from the System option in the menu. You can also try the Hibernation mode if works correctly in your computer." )" "" )"
         # warn the user
         el_notify_user "$( eval_gettext "Forced shutdown detected" )" "$message_shutdown_warn"
 
         # remove the verification file
-        echo "user notified" > "/var/tmp/elivehealth/elive-system-shutdown-forced"
+        echo "user notified post" > "/var/tmp/elivehealth/elive-system-shutdown-forced"
     fi
 }
 
