@@ -271,7 +271,9 @@ main(){
                 *)
                     if [[ "${time_minutes}" -gt 200 ]] && [[ "${cpu_usage}" -gt 60 ]] ; then
                         #logger "$(basename $0) - PLEASE REPORT TO ELIVE: annoying process detected (${command}) sucking cpu for more than 3 hours at pid: ${pid}, error ? we should kill these ones too ?"
-                        el_error "Annoying process detected '${command}' sucking cpu for '${time_minutes}' min, cpu usage '${cpu_usage}', pid '$pid'"
+                        if [[ "$command" != "chrome" ]] && [[ "$command" != "Web Content" ]] &&  [[ "$command" != "dropbox" ]] && [[ "$command" != "FlatCAM.exe" ]] ; then
+                            el_warning "Annoying process detected '${command}' sucking cpu for '${time_minutes}' min, cpu usage '${cpu_usage}', pid '$pid' (ignored)"
+                        fi
                     fi
                     ;;
 
