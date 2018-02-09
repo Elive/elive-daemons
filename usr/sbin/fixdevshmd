@@ -2,15 +2,22 @@
 # note: argument -D is ignored, we do the background from another side
 
 verify_and_fix_shm(){
-    result="$( ls -ld "$(readlink "${devshm}" )" | awk '{print $1}' )"
+    result="$( ls -ld "$(readlink -f "${devshm}" )" | awk '{print $1}' )"
 
-    if [ "$result" != *rwxrwxrwt ] ; then
-        logger "$(basename $0) - fixing permissions in ${devshm}, needs to be in 1777"
-        #echo "$(basename $0) - fixing permissions in ${devshm}, needs to be in 1777"
+    #note: asterisk * not works in /bin/sh
+    #if [ "$result" != *rwxrwxrwt ] ; then
+    if [ "$(readlink -f "$devshm" )" = "/run/shm" ] ; then
+        if [ "$result" != drwxrwxrwt ] ; then
+            logger "$(basename $0) - fixing permissions in ${devshm}, needs to be in 1777 and was '$result'"
+            #echo "$(basename $0) - fixing permissions in ${devshm}, needs to be in 1777"
+            chmod 1777 "$(readlink -f "${devshm}" )"
+        fi
+    else
+        chmod 1777 "$(readlink -f "${devshm}" )"
     fi
 
     # nothing wrong by fixing it all the times no matter what
-    chmod 1777 "$(readlink "${devshm}" )"
+    #chmod 1777 "$(readlink -f "${devshm}" )"
 
     # always return true
     unset result
@@ -31,7 +38,7 @@ main(){
     # }}}
 
     # first fix
-    chmod 1777 "${devshm}"
+    chmod 1777 "$( readlink -f "${devshm}" )"
 
     # watch and fix
     while true
@@ -51,9 +58,9 @@ main(){
             #chmod 1777 "${devshm}"
 
             # a little pause so that we dont enter in infinite loops
-            sleep 8
+            sleep 4
 
-            verify_and_fix_shm &
+            verify_and_fix_shm
 
         done
     done
