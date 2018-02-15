@@ -6,8 +6,16 @@ export TEXTDOMAIN
 
 
 if /usr/sbin/laptop-detect ; then
-    if ! el_verify_internet ; then
+    for i in $(seq 10)
+    do
+        if el_verify_internet ; then
+            break
+        else
+            sleep 6
+        fi
+    done
 
+    if ! el_verify_internet ; then
         if ! el_dependencies_check "rfkill" 2>/dev/null ; then
             #el_error "package rfkill missing"
             exit

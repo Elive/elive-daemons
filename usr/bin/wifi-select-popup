@@ -14,6 +14,15 @@ main(){
                 sleep 25
             fi
 
+            for i in $(seq 10)
+            do
+                if el_verify_internet ; then
+                    break
+                else
+                    sleep 6
+                fi
+            done
+
             if ! el_verify_internet ; then
 
                 # get device name
