@@ -31,8 +31,9 @@ main(){
                 if [[ -n "$wifi_dev" ]] ; then
                     # activate wifi if was not
                     if /sbin/iwlist $wifi_dev scan 2>&1 | grep -qs "Network is down" ; then
-                        wifi-activate
-                        sleep 10
+                        # not needed to activate here since we already activate it as a desktop start
+                        #wifi-activate
+                        sleep 15
                     fi
 
                     # check if we have ESSID's available to connet

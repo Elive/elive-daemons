@@ -48,7 +48,7 @@ if /usr/sbin/laptop-detect ; then
                 #else
                 if /usr/sbin/rfkill list 2>/dev/null | grep -qsi "Hard blocked: yes" ; then
                     # wait that the desktop is loaded
-                    sleep 10
+                    sleep 6
 
                     # notify
                     if ! ((is_user_notified)) ; then
