@@ -56,6 +56,8 @@ main(){
 
         web-launcher "http://www.elivecd.org/donate/?id=system-xdg-$(basename $0)" &
 
+        notify-send -t 30000 -i star "$( eval_gettext "Elive Donations Reminder" )" "$( eval_gettext "If you want to disable this notification that helps to keep this project alive, you can edit your Startup Applications from the preferences to deactivate it." )"
+
         # add a new stamp
         echo "$seconds_stamp_now" > "$stamp_last"
     fi
