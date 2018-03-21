@@ -62,7 +62,16 @@ main(){
         if zenity --question --text="$( eval_gettext "Do you want to this tool remove some unneded and temporal files automatically now?" )" ; then
             # delete unneeded things now
             find "$HOME/.cache" -not -path "*/.cache/zsh/*" -not -path "*/.cache/elive*" -type f -delete
+            find "$HOME/.thumbnails" -type f -delete
+
             find -type f "$HOME/.local/share/Trash" -delete
+
+            : > "$HOME/.xsession-errors"
+
+            # wine apps
+            #rm -rf ${DHOME}/${result}/.local/share/applications/wine
+            #rm -rf ${DHOME}/${result}/.local/share/desktop-directories/wine* 2>/dev/null
+            #rm -rf ${DHOME}/${result}/.wine 2>/dev/null
             sync
         fi
         percent_new="$( LC_ALL=C df -m | awk '{if ($6 == "/home") print $5}' | head -1 )"
