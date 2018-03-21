@@ -16,7 +16,9 @@ main(){
         sleep 20
     fi
 
+    #
     # was the shutdown forced?
+    #
     if [[ -e "/var/tmp/elivehealth/elive-system-shutdown-forced" ]] && grep -qsE "^(yes|user notified pre)$" "/var/tmp/elivehealth/elive-system-shutdown-forced" ; then
         local message_shutdown_warn
         message_shutdown_warn="$( printf "$( eval_gettext "You previously turned off the computer incorrectly. It is very bad for your data to force the poweroff. You should shutdown the computer from the System option in the menu. You can also try the Hibernation mode if works correctly in your computer." )" "" )"
@@ -26,6 +28,55 @@ main(){
         # remove the verification file
         echo "user notified post" > "/var/tmp/elivehealth/elive-system-shutdown-forced"
     fi
+
+    #
+    # max temperature reached?
+    #
+    if cat /var/log/syslog /var/log/kern.log /var/log/syslog.1 /var/log/kern.log.1 2>/dev/null | grep -qs "critical temperature reached.*shutting down" ; then
+        zenity --warning --text="$( eval_gettext "Your computer previously reached a critical temperature and forced a shutdown, this is commonly caused in old computers where some dust is accumulated in the fans. To solve the issue you should open the computer and clean any dust from them." )"
+    fi
+
+    #
+    # filesystem almost full
+    #
+    percent="$( LC_ALL=C df -m | awk '{if ($6 == "/home") print $5}' )"
+    percent="${percent%\%}"
+    # no extra /home? use /
+    if [[ -z "$percent" ]] ; then
+        percent="$( LC_ALL=C df -m | awk '{if ($6 == "/") print $5}' )"
+        percent="${percent%\%}"
+        # root almost full, always warning
+        if [[ "${percent}" -ge "95" ]] ; then
+            el_notify_user "$( eval_gettext "Hard disk almost full" )" "$( eval_gettext "Your root partition is almost full, we recommend to remove some unneeded software or to resize your partition to be bigger and reinstall Elive if is needed. Your computer risks to become unbootable if the disk is full." )"
+        fi
+    fi
+
+    if [[ "${percent}" -ge "92" ]] ; then
+        zenity --warning --text="$( eval_gettext "You have a partition almost full. We recommend you to delete old files to free up some space, your computer is in risk to be blocked if there's no more space left." ) Partition: $mountpoint"
+
+        if zenity --question --text="$( eval_gettext "Do you want to this tool remove some unneded and temporal files automatically now?" )" ; then
+            # delete unneeded things now
+            find "$HOME/.cache" -not -path "*/.cache/zsh/*" -not -path "*/.cache/elive*" -type f -delete
+            find -type f "$HOME/.local/share/Trash" -delete
+            sync
+        fi
+        percent_new="$( LC_ALL=C df -m | awk '{if ($6 == "/home") print $5}' )"
+        percent_new="${percent_new%\%}"
+
+        local message_ask_for_scan
+        message_ask_for_scan="$( printf "$( eval_gettext "Your home partition usage was %s and now is %s. Do you want to scan your partition to know where the bigger usage waste belongs to?" )" "${percent}%" "${percent_new}%" )"
+
+        if zenity --question --text="$message_ask_for_scan" ; then
+            if ! el_dependencies_check "baobab" ; then
+                el_dependencies_install "baobab"
+            fi
+            baobab "$HOME" &
+        fi
+
+        sleep 3
+        zenity --info --text="$( eval_gettext "Please wait that the scanning finishes to see the distribution. In the meantime we recommend to delete every unneeded file from your Downloads which is where most of the wasted space happens." )"
+    fi
+
 }
 
 #
