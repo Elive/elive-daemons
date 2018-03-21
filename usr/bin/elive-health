@@ -39,20 +39,25 @@ main(){
     #
     # filesystem almost full
     #
-    percent="$( LC_ALL=C df -m | awk '{if ($6 == "/home") print $5}' )"
+    percent="$( LC_ALL=C df -m | awk '{if ($6 == "/home") print $5}' | head -1 )"
     percent="${percent%\%}"
+
+    # default values to check
+    percent_max="92"
+    percent_max_crit="95"
+
     # no extra /home? use /
     if [[ -z "$percent" ]] ; then
-        percent="$( LC_ALL=C df -m | awk '{if ($6 == "/") print $5}' )"
+        percent="$( LC_ALL=C df -m | awk '{if ($6 == "/") print $5}' | head -1 )"
         percent="${percent%\%}"
         # root almost full, always warning
-        if [[ "${percent}" -ge "95" ]] ; then
+        if [[ "${percent}" -ge "$percent_max_crit" ]] ; then
             el_notify_user "$( eval_gettext "Hard disk almost full" )" "$( eval_gettext "Your root partition is almost full, we recommend to remove some unneeded software or to resize your partition to be bigger and reinstall Elive if is needed. Your computer risks to become unbootable if the disk is full." )"
         fi
     fi
 
-    if [[ "${percent}" -ge "92" ]] ; then
-        zenity --warning --text="$( eval_gettext "You have a partition almost full. We recommend you to delete old files to free up some space, your computer is in risk to be blocked if there's no more space left." ) Partition: $mountpoint"
+    if [[ "${percent}" -ge "$percent_max" ]] ; then
+        zenity --warning --text="$( eval_gettext "Your partition almost full. We recommend you to delete old files to free up some space, your computer is in risk to be blocked if there's no more space left." )"
 
         if zenity --question --text="$( eval_gettext "Do you want to this tool remove some unneded and temporal files automatically now?" )" ; then
             # delete unneeded things now
@@ -60,11 +65,15 @@ main(){
             find -type f "$HOME/.local/share/Trash" -delete
             sync
         fi
-        percent_new="$( LC_ALL=C df -m | awk '{if ($6 == "/home") print $5}' )"
+        percent_new="$( LC_ALL=C df -m | awk '{if ($6 == "/home") print $5}' | head -1 )"
         percent_new="${percent_new%\%}"
+        if [[ -z "$percent_new" ]] ; then
+            percent_new="$( LC_ALL=C df -m | awk '{if ($6 == "/") print $5}' | head -1 )"
+            percent_new="${percent_new%\%}"
+        fi
 
         local message_ask_for_scan
-        message_ask_for_scan="$( printf "$( eval_gettext "Your home partition usage was %s and now is %s. Do you want to scan your partition to know where the bigger usage waste belongs to?" )" "${percent}%" "${percent_new}%" )"
+        message_ask_for_scan="$( printf "$( eval_gettext "Your home partition usage was %s and now is %s. Do you want to scan your files to know where the bigger usage waste belongs to?" )" "${percent}%" "${percent_new}%" )"
 
         if zenity --question --text="$message_ask_for_scan" ; then
             if ! el_dependencies_check "baobab" ; then
