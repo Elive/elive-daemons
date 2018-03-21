@@ -43,6 +43,24 @@ do_start(){
         set -x
     fi
 
+    # check disk usage and cleanup it if needed
+    # note: this is needed to always keep the system in a bootable status
+    percent_max="90"
+    percent="$( LC_ALL=C df -m | awk '{if ($6 == "/") print $5}' | head -1 )"
+    percent="${percent%\%}"
+    if [[ -n "$percent" ]] ; then
+        if [[ "${percent}" -ge "$percent_max" ]] ; then
+            # logs
+            #service rsyslog stop || true
+            find /var/log/ -type f -iname '*'gz -delete || true
+            #service rsyslog start || true
+
+            # apt
+            find "/var/lib/apt/lists" -type f -delete 1>/dev/null 2>&1 || true
+            find "/var/cache/apt/" -type f -delete 1>/dev/null 2>&1 || true
+        fi
+    fi
+
     # oly if we are bash (not sh)
     #source /usr/lib/elive-tools/functions
 

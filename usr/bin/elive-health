@@ -39,20 +39,19 @@ main(){
     #
     # filesystem almost full
     #
-    percent="$( LC_ALL=C df -m | awk '{if ($6 == "/home") print $5}' | head -1 )"
-    percent="${percent%\%}"
-
     # default values to check
     percent_max="92"
     percent_max_crit="95"
 
+    percent="$( LC_ALL=C df -m | awk '{if ($6 == "/home") print $5}' | head -1 )"
+    percent="${percent%\%}"
     # no extra /home? use /
     if [[ -z "$percent" ]] ; then
         percent="$( LC_ALL=C df -m | awk '{if ($6 == "/") print $5}' | head -1 )"
         percent="${percent%\%}"
         # root almost full, always warning
         if [[ "${percent}" -ge "$percent_max_crit" ]] ; then
-            el_notify_user "$( eval_gettext "Hard disk almost full" )" "$( eval_gettext "Your root partition is almost full, we recommend to remove some unneeded software or to resize your partition to be bigger and reinstall Elive if is needed. Your computer risks to become unbootable if the disk is full." )"
+            el_notify_user "$( eval_gettext "Hard disk almost full" )" "$( eval_gettext "Your root partition is almost full, we recommend to remove some unneeded software or to resize your partition to be bigger and reinstall Elive with the special options if is needed. Your computer risks to become unbootable if the disk is full." )"
         fi
     fi
 
