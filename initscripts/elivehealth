@@ -43,6 +43,11 @@ do_start(){
         set -x
     fi
 
+    # check for iface network TODO: make it working back (add /etc/hosts needed file)
+    if ! ping -c 1 localhost ; then
+        el_error "localhost not reachable from elivehealth daemon step"
+    fi
+
     # check disk usage and cleanup it if needed
     # note: this is needed to always keep the system in a bootable status
     percent_max="90"
