@@ -57,6 +57,7 @@ do_start(){
 
             # apt
             find "/var/lib/apt/lists" -type f -delete 1>/dev/null 2>&1 || true
+            find "/var/cache/apt/archives" -type f -iname '*'deb -delete 1>/dev/null 2>&1 || true
             find "/var/cache/apt/" -type f -delete 1>/dev/null 2>&1 || true
         fi
     fi
