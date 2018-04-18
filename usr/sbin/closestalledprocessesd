@@ -248,7 +248,7 @@ main(){
                     fi
                     ;;
                 # blackisted ones:  yeah, we know that they sucks, and we love them on this way :/
-                songbird-bin|chromium|iceweasel*|firefox*|Xorg)
+                songbird-bin|chromium|iceweasel*|firefox*|Xorg|opera)
                         # songbird:  its a simply greedy eater of resoureces
                         # chromium:  when we play videos cpu becomes high, and we could have it running since long time
                         # Xorg: sometimes is overloaded, its normal
