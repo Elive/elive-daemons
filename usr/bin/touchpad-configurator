@@ -25,6 +25,11 @@ main(){
     for arg in "$@"
     do
         case "$arg" in
+            --load)
+                is_load=1
+                is_configure=0
+                shift
+                ;;
             -f|--force)
                 is_force=1
                 shift

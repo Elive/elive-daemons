@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Touchpad configurations
+Comment=Configurations for your touchpad mouse
+Icon=input-touchpad
+Exec=touchpad-configurator --load
+Terminal=false
+Type=Application
+NoDisplay=true
+X-GNOME-Autostart-enabled=true
