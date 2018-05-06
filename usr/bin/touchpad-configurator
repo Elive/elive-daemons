@@ -1,0 +1,308 @@
+#!/bin/bash
+SOURCE="$0"
+source /usr/lib/elive-tools/functions
+el_make_environment
+. gettext.sh
+TEXTDOMAIN="elive-daemons"
+export TEXTDOMAIN
+
+
+main(){
+    # pre {{{
+    local result arg
+    export LC_NUMERIC=C
+
+    # always run configure by default
+    is_configure=1
+
+    # disable default run in live unless wanted
+    if grep -qs "boot=live" /proc/cmdline ; then
+        is_live=1
+        is_configure=0
+    fi
+
+
+    for arg in "$@"
+    do
+        case "$arg" in
+            -f|--force)
+                is_force=1
+                shift
+                ;;
+            -c|--configure)
+                is_configure=1
+                shift
+                ;;
+            *)
+                el_warning "unknown option $arg"
+                shift
+                ;;
+        esac
+    done
+
+    # exit if we don't have a touchpad to use
+    if ! grep -qsiE 'synap|alps|cyapa|trackpad|etps|elan' /proc/bus/input/devices && ! ((is_force)) ; then
+        el_debug "no touchpad found, ignoring $SOURCE"
+        exit
+    fi
+
+
+    # }}}
+    # set defaults {{{
+    conf_emulate_click_corners="TRUE"
+    conf_emulate_click_multifinger="TRUE"
+    conf_locked_drags="FALSE"
+    conf_scroll_edges="FALSE"
+    conf_scroll_fingers="TRUE"
+    conf_scroll_natural="FALSE"
+    conf_scroll_staying="FALSE"
+    conf_speed_accel="0.03600"
+    conf_speed_max="1.75"
+    conf_speed_min="1"
+    conf_taps_disabled_while_typing="TRUE"
+    conf_taps_disabled_while_typing_seconds="1.2"
+
+    # }}}
+
+    # get hardware default confs {{{
+    # update: we don't want to get default confs for this because is our first run (our first configuration values setting)
+    #conf_taps_disabled_while_typing_seconds="$( ps ux | grep synda | grep -v grep | grep "syndaemon .*-i" | sed -e 's|^.*syndaemon ||g' | tr ' ' '\n' | grep "[[:digit:]]" | tail -1 )"
+    #if [[ -n "$conf_taps_disabled_while_typing_seconds" ]] ; then
+        #conf_taps_disabled_while_typing="TRUE"
+    #else
+        #conf_taps_disabled_while_typing="FALSE"
+        #conf_taps_disabled_while_typing_seconds="1.2"
+    #fi
+
+    conf_speed_min="$( synclient -l | grep -E "\s+MinSpeed\s+.*=" | sed -e 's|^.*= ||' | tail -1 )"
+    if [[ -z "$conf_speed_min" ]] ; then
+        conf_speed_min="1"
+        el_error "min speed incorrectly get: $( synclient -l | grep MinSpeed )"
+    fi
+    conf_speed_max="$( synclient -l | grep -E "\s+MaxSpeed\s+.*=" | sed -e 's|^.*= ||' | tail -1 )"
+    if [[ -z "$conf_speed_max" ]] ; then
+        conf_speed_max="1.75"
+        el_error "max speed incorrectly get: $( synclient -l | grep MaxSpeed )"
+    fi
+    conf_speed_accel="$( synclient -l | grep -E "\s+AccelFactor\s+.*=" | sed -e 's|^.*= ||' | tail -1 )"
+    if [[ -z "$conf_speed_accel" ]] ; then
+        conf_speed_accel="0.03600"
+        el_error "accel speed incorrectly get: $( synclient -l | grep AccelFactor )"
+    fi
+
+    # }}}
+    # get user confs {{{
+    el_config_get "conf_emulate_click_corners"
+    el_config_get "conf_emulate_click_multifinger"
+    el_config_get "conf_locked_drags"
+    el_config_get "conf_scroll_edges"
+    el_config_get "conf_scroll_fingers"
+    el_config_get "conf_scroll_natural"
+    el_config_get "conf_scroll_staying"
+    el_config_get "conf_speed_accel"
+    el_config_get "conf_speed_max"
+    el_config_get "conf_speed_min"
+    el_config_get "conf_taps_disabled_while_typing"
+    el_config_get "conf_taps_disabled_while_typing_seconds"
+    # - get user confs }}}
+
+    # WARNING: if you change the order you need to change the order of the next get confs too!
+    if ((is_configure)) ; then
+        result="$( yad --form --center --image-on-top --image=input-touchpad \
+            --title="Touchpad Configurator" \
+            --text="$( eval_gettext "The Amazing Touchpad Configurator for Elive" )" \
+            --field="$( eval_gettext "Disable the touchpad tapping while typing in the keyboard" )":CHK $conf_taps_disabled_while_typing \
+            --field="$( eval_gettext "Seconds to wait before to enable back" )":NUM "${conf_taps_disabled_while_typing_seconds}!0.0..4.0!0.1!1" \
+            --field="$( eval_gettext "Emulate the other mouse clicks when tapping the top corners" )":CHK ${conf_emulate_click_corners} \
+            --field="$( eval_gettext "Emulate the other mouse clicks tapping with multiple fingers" )":CHK ${conf_emulate_click_multifinger} \
+            --field="$( eval_gettext "Double tap to lock your mouse drag until the next tap" )":CHK ${conf_locked_drags} \
+            --field="$( eval_gettext "Scroll using side edges" )":CHK ${conf_scroll_edges} \
+            --field="$( eval_gettext "Scroll using two fingers" )":CHK ${conf_scroll_fingers} \
+            --field="$( eval_gettext "Natural scrolling mode (inverted)" )":CHK ${conf_scroll_natural} \
+            --field="$( eval_gettext "Continue scrolling when finger stays in corner" )":CHK ${conf_scroll_staying} \
+            --field="$( eval_gettext "Minimum speed" )":NUM "${conf_speed_min}!0.0..10!0.02!2" \
+            --field="$( eval_gettext "Maximum speed" )":NUM "${conf_speed_max}!0.1..30!0.02!2" \
+            --field="$( eval_gettext "Acceleration speed" )":NUM "${conf_speed_accel}!0.001..2.0!0.0002!5" \
+            $NULL )"
+        #--field="$( eval_gettext "" )":CHK ${conf_locked_drags}
+        #--field="$( eval_gettext "Improve this tool" )":FBTN
+
+        if [[ -z "$result" ]] ; then
+            el_debug "canceled by the user"
+            exit
+        fi
+
+        # get new selected configurations {{{
+        conf_taps_disabled_while_typing="$( echo "${result}" | awk -v FS="|" '{print $1}' )"
+        conf_taps_disabled_while_typing_seconds="$( echo "${result}" | awk -v FS="|" '{print $2}' )"
+        conf_emulate_click_corners="$( echo "${result}" | awk -v FS="|" '{print $3}' )"
+        conf_emulate_click_multifinger="$( echo "${result}" | awk -v FS="|" '{print $4}' )"
+        conf_locked_drags="$( echo "${result}" | awk -v FS="|" '{print $5}' )"
+        conf_scroll_edges="$( echo "${result}" | awk -v FS="|" '{print $6}' )"
+        conf_scroll_fingers="$( echo "${result}" | awk -v FS="|" '{print $7}' )"
+        conf_scroll_natural="$( echo "${result}" | awk -v FS="|" '{print $8}' )"
+        conf_scroll_staying="$( echo "${result}" | awk -v FS="|" '{print $9}' )"
+        conf_speed_min="$( echo "${result}" | awk -v FS="|" '{print $10}' )"
+        conf_speed_max="$( echo "${result}" | awk -v FS="|" '{print $11}' )"
+        conf_speed_accel="$( echo "${result}" | awk -v FS="|" '{print $12}' )"
+
+        # }}}
+        # save new selected configurations {{{
+        el_config_save "conf_emulate_click_corners"
+        el_config_save "conf_emulate_click_multifinger"
+        el_config_save "conf_locked_drags"
+        el_config_save "conf_scroll_edges"
+        el_config_save "conf_scroll_fingers"
+        el_config_save "conf_scroll_natural"
+        el_config_save "conf_scroll_staying"
+        el_config_save "conf_speed_accel"
+        el_config_save "conf_speed_max"
+        el_config_save "conf_speed_min"
+        el_config_save "conf_taps_disabled_while_typing"
+        el_config_save "conf_taps_disabled_while_typing_seconds"
+        # - save new selected configurations }}}
+    fi
+
+    # run new settings {{{
+    if [[ "${conf_taps_disabled_while_typing}" = "TRUE" ]] ; then
+        if [[ -n "$conf_taps_disabled_while_typing_seconds" ]] ; then
+            killall syndaemon 1>/dev/null 2>&1 || true
+            syndaemon -d -t -K -R -i "$conf_taps_disabled_while_typing_seconds" &
+        else
+            el_error "touchpad configurator: 'conf_taps_disabled_while_typing_seconds' not set? $conf_taps_disabled_while_typing_seconds"
+        fi
+    fi
+
+    # click in corners
+    case "$conf_emulate_click_corners" in
+        TRUE)
+            synclient LTCornerButton=2
+            synclient RTCornerButton=3
+            ;;
+        FALSE)
+            synclient LTCornerButton=0
+            synclient RTCornerButton=0
+            ;;
+        *)
+            el_error "touchpad configurator: conf_emulate_click_corners wrongly set: $conf_emulate_click_corners"
+            ;;
+    esac
+
+    # click with multifingers
+    case "$conf_emulate_click_multifinger" in
+        TRUE)
+            synclient TapButton1=1
+            synclient TapButton2=2
+            synclient TapButton3=3
+            ;;
+        FALSE)
+            synclient TapButton1=1
+            synclient TapButton2=0
+            synclient TapButton3=0
+            ;;
+        *)
+            el_error "touchpad configurator: conf_emulate_click_multifinger wrongly set: $conf_emulate_click_multifinger"
+            ;;
+    esac
+
+    # locked drags
+    case "$conf_locked_drags" in
+        TRUE)
+            synclient LockedDrags=1
+            ;;
+        FALSE)
+            synclient LockedDrags=0
+            ;;
+        *)
+            el_error "touchpad configurator: conf_locked_drags wrongly set: $conf_locked_drags"
+            ;;
+    esac
+
+    # scroll with edges
+    case "$conf_scroll_edges" in
+        TRUE)
+            synclient VertEdgeScroll=1
+            synclient HorizEdgeScroll=1
+            ;;
+        FALSE)
+            synclient VertEdgeScroll=0
+            synclient HorizEdgeScroll=0
+            ;;
+        *)
+            el_error "touchpad configurator: conf_locked_drags wrongly set: $conf_locked_drags"
+            ;;
+    esac
+
+
+    # scroll with two fingers
+    case "$conf_scroll_fingers" in
+        TRUE)
+            synclient VertTwoFingerScroll=1
+            synclient HorizTwoFingerScroll=1
+            ;;
+        FALSE)
+            synclient VertTwoFingerScroll=0
+            synclient HorizTwoFingerScroll=0
+            ;;
+        *)
+            el_error "touchpad configurator: conf_locked_drags wrongly set: $conf_locked_drags"
+            ;;
+    esac
+
+
+    # scroll natural / inverted
+    conf_scroll_natural_vert_delta="$( synclient -l | grep -E "\s+VertScrollDelta\s+.*=" | sed -e 's|^.*= ||' | grep "[[:digit:]]" | tail -1 | sed -e 's|^-||g' )"
+    conf_scroll_natural_horiz_delta="$( synclient -l | grep -E "\s+HorizScrollDelta\s+.*=" | sed -e 's|^.*= ||' | grep "[[:digit:]]" | tail -1 | sed -e 's|^-||g' )"
+
+    if [[ -n "$conf_scroll_natural_horiz_delta" ]] && [[ -n "$conf_scroll_natural_vert_delta" ]] ; then
+        case "$conf_scroll_natural" in
+            TRUE)
+                synclient VertScrollDelta=-${conf_scroll_natural_vert_delta}
+                synclient HorizScrollDelta=-${conf_scroll_natural_horiz_delta}
+                ;;
+            FALSE)
+                synclient VertScrollDelta=${conf_scroll_natural_vert_delta}
+                synclient HorizScrollDelta=${conf_scroll_natural_horiz_delta}
+                ;;
+            *)
+                el_error "touchpad configurator: conf_scroll_natural wrongly set: $conf_scroll_natural"
+                ;;
+        esac
+    else
+        el_error "unable to get values for scroll delta, in order to set natural scrolling: vert: $conf_scroll_natural_vert_delta , horiz: $conf_scroll_natural_horiz_delta"
+    fi
+
+
+    # scroll stayed in corners
+    case "$conf_scroll_staying" in
+        TRUE)
+            synclient CornerCoasting=1
+            ;;
+        FALSE)
+            synclient CornerCoasting=0
+            ;;
+        *)
+            el_error "touchpad configurator: conf_scroll_staying wrongly set: $conf_scroll_staying"
+            ;;
+    esac
+
+    # speeds
+    synclient MinSpeed=$conf_speed_min
+    synclient MaxSpeed=$conf_speed_max
+    synclient AccelFactor=$conf_speed_accel
+
+
+
+
+
+
+    # }}}
+
+}
+
+#
+#  MAIN
+#
+main "$@"
+
+# vim: set foldmethod=marker :
