@@ -180,6 +180,8 @@ main(){
         else
             el_error "touchpad configurator: 'conf_taps_disabled_while_typing_seconds' not set? $conf_taps_disabled_while_typing_seconds"
         fi
+    else
+        killall syndaemon 1>/dev/null 2>&1 || true
     fi
 
     # click in corners
