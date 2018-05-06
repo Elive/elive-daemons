@@ -53,7 +53,6 @@ main(){
 
         el_debug "no touchpad found, ignoring $SOURCE"
         exit
-        vi
     fi
 
 
