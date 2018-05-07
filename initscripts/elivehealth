@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 ### BEGIN INIT INFO
 # Provides:          elivehealth
 # Required-Start:    $local_fs $remote_fs $syslog
