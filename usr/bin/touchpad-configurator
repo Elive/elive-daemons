@@ -55,6 +55,14 @@ main(){
         exit
     fi
 
+    # first run? always configure
+    if ! ((is_live)) ; then
+        el_config_get "conf_emulate_click_corners"
+        if [[ -z "$conf_emulate_click_corners" ]] ; then
+            is_configure=1
+        fi
+    fi
+
 
     # }}}
     # set defaults {{{
