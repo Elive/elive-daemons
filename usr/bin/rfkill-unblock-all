@@ -6,16 +6,7 @@ export TEXTDOMAIN
 
 
 if /usr/sbin/laptop-detect ; then
-    for i in $(seq 10)
-    do
-        if el_verify_internet ; then
-            break
-        else
-            sleep 6
-        fi
-    done
-
-    if ! el_verify_internet ; then
+    if ! el_verify_internet fast ; then
         if ! el_dependencies_check "rfkill" 2>/dev/null ; then
             #el_error "package rfkill missing"
             exit
@@ -47,8 +38,9 @@ if /usr/sbin/laptop-detect ; then
                 #is_unblocked=1
                 #else
                 if /usr/sbin/rfkill list 2>/dev/null | grep -qsi "Hard blocked: yes" ; then
+
                     # wait that the desktop is loaded
-                    sleep 6
+                    sleep 3
 
                     # notify
                     if ! ((is_user_notified)) ; then
