@@ -48,10 +48,11 @@ main(){
                     # check if we have ESSID's available to connet
                     if /sbin/iwlist $wifi_dev scan 2>&1 | grep -qs "ESSID:" ; then
 
+                        # appear after a bit of time
+                        sleep 30
+
                         # if still not internet, popup it
                         if ! el_verify_internet ; then
-                            # appear after a bit of time
-                            sleep 30
 
                             nm-applet --popup &
 
