@@ -7,6 +7,9 @@ main(){
 
     # }}}
 
+    # load multiscreens configuration if needed
+    elive-multiscreens -l -q
+
     # reconfigure GL in elementary based in E configurations
     if [[ -d "$HOME/.elementary/config/standard" ]] ; then
         cd_previous="$(pwd)"
