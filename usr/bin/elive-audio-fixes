@@ -22,16 +22,17 @@ main(){
     amixer -q set Master,1 100% 2>/dev/null
 
     # set a good volume by default
-    while read -ru 3 line
-    do
-        # remove extra leading blank chars
-        read -r line <<< "$line"
+    # update: we dont want to "setvolume defaults" on this unreliable way
+    #while read -ru 3 line
+    #do
+        ## remove extra leading blank chars
+        #read -r line <<< "$line"
 
-        if [[ "$line" -le 42 ]] ; then
-            setvolume defaults
-            break
-        fi
-    done 3<<< "$( amixer | grep -i "Front Left: Playback" | grep "\[on\]" | grep -vi "Capture" | tr ' ' '\n' | grep "%" | sed -e 's|%||g' -e 's|\[||g' -e 's|\]||g' )"
+        #if [[ "$line" -le 42 ]] ; then
+            #setvolume defaults
+            #break
+        #fi
+    #done 3<<< "$( amixer | grep -i "Front Left: Playback" | grep "\[on\]" | grep -vi "Capture" | tr ' ' '\n' | grep "%" | sed -e 's|%||g' -e 's|\[||g' -e 's|\]||g' )"
 
 }
 
