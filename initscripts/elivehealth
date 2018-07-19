@@ -99,11 +99,6 @@ do_start(){
         #exit 1
     #fi
 
-    # b43 fixes (plugged new device? maybe..)
-    if [[ "$( lspci -nn -d "14e4:" | wc -l )" -gt 0 ]] ; then
-        b43-driver-fixes
-    fi
-
     # turn off debugging if we have finished
     if echo "${_CMDLINE}" | grep -q debug ; then
         set +x
