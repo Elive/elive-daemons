@@ -82,6 +82,8 @@ if [[ "$( lspci -nn -d "14e4:" | wc -l )" -gt 0 ]] && ! ((is_b43_unworking_notif
     done
 
     if ! ((is_scanning_working)) ; then
+        el_error "B43 device not scanning correctly: \n$( lspci -nn -d "14e4:" )"
+
         zenity --error --text="$( eval_gettext "You have a B43 wireless device that has not been magically configured by Elive. Use our new forums to assist making your wifi connection working, this will benefit all the Elive community." )"
 
         is_b43_unworking_notified=1
