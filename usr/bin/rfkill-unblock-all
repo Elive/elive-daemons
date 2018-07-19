@@ -43,7 +43,7 @@ if /usr/sbin/laptop-detect ; then
                     sleep 3
 
                     # notify
-                    if ! ((is_user_notified)) ; then
+                    if ! ((is_user_notified)) && [[ -n "$DISPLAY" ]] ; then
                         if grep -qs "boot=live" /proc/cmdline ; then
                             zenity --warning --text="$( eval_gettext "Wifi is disabled. You can activate it from the interruptor, switch or with a keyboard hotkey." )"
                         else
