@@ -34,6 +34,8 @@ main(){
         #fi
     #done 3<<< "$( amixer | grep -i "Front Left: Playback" | grep "\[on\]" | grep -vi "Capture" | tr ' ' '\n' | grep "%" | sed -e 's|%||g' -e 's|\[||g' -e 's|\]||g' )"
 
+    # never fail when exiting
+    true
 }
 
 #
