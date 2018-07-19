@@ -73,7 +73,7 @@ fi
 
 # b43 checks (plugged new device)
 if [[ "$( lspci -nn -d "14e4:" | wc -l )" -gt 0 ]] && ! ((is_b43_unworking_notified)) ; then
-    for dev in $( LC_ALL=C /sbin/iwconfig | grep IEEE | awk '{print $1}' | grep "[[:alpha:]]" | tr '\n' ' ' )
+    for dev in $( LC_ALL=C /sbin/iwconfig 2>&1 | grep IEEE | awk '{print $1}' | grep "[[:alpha:]]" | tr '\n' ' ' )
     do
         [[ -z "$dev" ]] && continue
         if iwlist $dev scan 1>/dev/null 2>&1 ; then

@@ -25,27 +25,27 @@ main(){
             done
 
             # get device name
-            wifi_dev="$( LC_ALL=C /sbin/iwconfig | grep IEEE | awk '{print $1}' | grep "[[:alpha:]]" | head -1 )"
+            wifi_dev="$( LC_ALL=C /sbin/iwconfig 2>&1 | grep IEEE | awk '{print $1}' | grep "[[:alpha:]]" | head -1 )"
 
             if [[ -n "$wifi_dev" ]] ; then
                 # activate wifi if was not
-                if /sbin/iwlist $wifi_dev scan 2>&1 | grep -qs "Network is down" ; then
+                if LC_ALL=C /sbin/iwlist $wifi_dev scan 2>&1 | grep -qs "Network is down" ; then
                     # not needed to activate here since we already activate it as a desktop start
                     #wifi-activate
                     sleep 10
                 fi
 
                 # check if we have ESSID's available to connet
-                if ! /sbin/iwlist $wifi_dev scan 2>&1 | grep -qs "ESSID:" ; then
+                if ! LC_ALL=C /sbin/iwlist $wifi_dev scan 2>&1 | grep -qs "ESSID:" ; then
                     sleep 10
-                    if ! /sbin/iwlist $wifi_dev scan 2>&1 | grep -qs "ESSID:" ; then
+                    if ! LC_ALL=C /sbin/iwlist $wifi_dev scan 2>&1 | grep -qs "ESSID:" ; then
                         sleep 10
                     fi
                 fi
 
                 sleep 1
                 # check if we have ESSID's available to connet
-                if /sbin/iwlist $wifi_dev scan 2>&1 | grep -qs "ESSID:" ; then
+                if LC_ALL=C /sbin/iwlist $wifi_dev scan 2>&1 | grep -qs "ESSID:" ; then
 
                     # appear after a bit of time
                     sleep 5
