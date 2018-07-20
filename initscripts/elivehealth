@@ -129,7 +129,7 @@ do_stop(){
     if [[ "$( lsmod | grep -E "^b43\s+" | awk '{print $3}' | head -1 )" -gt 0 ]] ; then
         # b43: Problem with bcm43xx: there is a common problem with some cards managed with the b43 driver, it gets disconnected randomly, - source: https://wiki.archlinux.org/index.php/Talk:Broadcom_wireless
         if dmesg | grep -qs "No probe response from AP .* after .* disconnecting" ; then
-            if ! grep -qs "options b43 pio=1 qos=0" "/etc/modprobe.d/b43.conf" ; then
+            if ! grep -qs "options b43 pio=1 qos=0" "/etc/modprobe.d/b43.conf" 2>/dev/null ; then
                 echo "options b43 pio=1 qos=0" >> "/etc/modprobe.d/b43.conf"
                 log_progress_msg "Added a fix for your B43 wifi that fixes disconnections"
                 sleep 5
