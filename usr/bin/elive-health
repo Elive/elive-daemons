@@ -91,7 +91,7 @@ main(){
         fi
 
         sleep 3
-        zenity --info --text="$( eval_gettext "Please wait that the scanning finishes to see the distribution. In the meantime we recommend to delete every unneeded file from your Downloads which is where most of the wasted space happens." )"
+        zenity --info --text="$( eval_gettext "Wait that the scanning finishes to see the results. In the meantime we recommend to delete every unneeded file from your Downloads which is where most of the wasted space happens." )"
     fi
 
 }
