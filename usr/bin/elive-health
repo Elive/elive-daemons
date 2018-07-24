@@ -11,6 +11,11 @@ main(){
     guitool="zenity --window-icon=/usr/share/icons/Elive/scalable/apps/logo-elive.png"
 
     # }}}
+    # dump the dbus address to use in other places if we need to
+    if [[ -n "$DBUS_SESSION_BUS_ADDRESS" ]] ; then
+        echo "$DBUS_SESSION_BUS_ADDRESS" > "$HOME/.cache/dbus-session-address-last.txt"
+    fi
+
     # wait desktop ready
     if [[ -z "$is_terminal" ]] ; then
         sleep 20
