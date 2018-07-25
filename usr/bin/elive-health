@@ -9,6 +9,7 @@ export TEXTDOMAIN
 main(){
     # pre {{{
     guitool="zenity --window-icon=/usr/share/icons/Elive/scalable/apps/logo-elive.png"
+    el_mark_state
 
     # }}}
     # dump the dbus address to use in other places if we need to
