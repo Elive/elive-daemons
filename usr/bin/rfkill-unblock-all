@@ -73,6 +73,7 @@ fi
 
 # b43 checks (plugged new device)
 if [[ "$( lspci -nn -d "14e4:" | wc -l )" -gt 0 ]] && ! ((is_b43_unworking_notified)) ; then
+    # scan test
     for dev in $( LC_ALL=C /sbin/iwconfig 2>&1 | grep IEEE | awk '{print $1}' | grep "[[:alpha:]]" | tr '\n' ' ' )
     do
         [[ -z "$dev" ]] && continue
@@ -82,9 +83,32 @@ if [[ "$( lspci -nn -d "14e4:" | wc -l )" -gt 0 ]] && ! ((is_b43_unworking_notif
     done
 
     if ! ((is_scanning_working)) ; then
-        el_error "B43 device not scanning correctly: \n$( lspci -nn -d "14e4:" )"
 
-        zenity --error --text="$( eval_gettext "You have a B43 wireless device that has not been magically configured by Elive. Use our new forums to assist making your wifi connection working, this will benefit all the Elive community." )"
+        if grep -qs "boot=live" /proc/cmdline ; then
+            sudo -H /usr/sbin/b43-driver-fixes
+        else
+            gksu /usr/sbin/b43-driver-fixes
+        fi
+
+        # scan test
+        for dev in $( LC_ALL=C /sbin/iwconfig 2>&1 | grep IEEE | awk '{print $1}' | grep "[[:alpha:]]" | tr '\n' ' ' )
+        do
+            [[ -z "$dev" ]] && continue
+            if iwlist $dev scan 1>/dev/null 2>&1 ; then
+                is_scanning_working=1
+            fi
+        done
+
+        # show the wifi's to the user
+        if ((is_scanning_working)) ; then
+            # notify the user
+            notify-send -t 8000 -i desktop-effects "$( eval_gettext "Broadcom B43 Wifi" )" "$( eval_gettext "Your wireless device uses difficult drivers, but Elive was able to make it working just for you!" )"
+
+            # show him the wifis
+            sleep 3
+            nm-applet --popup &
+        fi
+
 
         is_b43_unworking_notified=1
         el_config_save "is_b43_unworking_notified"
