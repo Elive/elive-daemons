@@ -110,6 +110,7 @@ if [[ "$( lspci -nn -d "14e4:" | wc -l )" -gt 0 ]] && ! ((is_b43_unworking_notif
         fi
 
 
+        # save a conf to not run this again (if failed)
         is_b43_unworking_notified=1
         el_config_save "is_b43_unworking_notified"
     fi
