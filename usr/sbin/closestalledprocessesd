@@ -272,7 +272,6 @@ main(){
 
                 *)
                     if [[ "${time_minutes}" -gt 200 ]] && [[ "${cpu_usage}" -gt 60 ]] ; then
-                        #logger "$(basename $0) - PLEASE REPORT TO ELIVE: annoying process detected (${command}) sucking cpu for more than 3 hours at pid: ${pid}, error ? we should kill these ones too ?"
                         # note: keep this list updated so that we can always know if there's specific processes that should be included
                         if ! echo "$command" | grep -qsR "^(chrome|google|Web Content|dropbox|FlatCAM.exe|mencoder|ffmpeg|lame)$" ; then
                             el_warning "Annoying process detected '${command}' sucking cpu for '${time_minutes}' min, cpu usage '${cpu_usage}', pid '$pid' (ignored)"
