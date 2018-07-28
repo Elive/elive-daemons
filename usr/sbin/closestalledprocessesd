@@ -116,6 +116,7 @@ kill_process(){
         fi
 
         # always kill E with a SIGSEGV in order  to recover it
+        # TODO: sometimes we have duplicated/zombified E processes that should be killed -9
         if [[ "$cmd" = *enlightenment* ]] ; then
             if kill -s SIGSEGV "$pid" 2>/dev/null 1>/dev/null ; then
                 logger "$(basename $0) - $pid given a segfault to recover"
@@ -233,6 +234,7 @@ main(){
                 enlightenment)
                     # cpu sucking
                     if [[ "${time_minutes}" -ge 30 ]] && [[ "${cpu_usage}" -gt 80 ]] ; then
+                        el_warning "enlightenment is consuming high cpu for more than 30 min, pidofs: $(pidof enlightenment), ps: $(ps aux | grep -vE '(grep|enlightenment_s)' | tr '\n' ';' ), top: $(top -b -n 1 | head -n 200 | tail -n +8 | grep -vE '(grep|enlightenment_s)' | tr '\n' ';' )"
                         kill_process "$pid" "${status}" "$command"
                     fi
                     # huge mem usage
