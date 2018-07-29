@@ -44,7 +44,7 @@ do_start(){
     fi
 
     # check for iface network TODO: make it working back (add /etc/hosts needed file), we have a .bak copy in new versions, but specially check and create the /etc/network/interfaces file to have the loopback configuration
-    if ! timeout 5 ping -c 1 localhost 2>/dev/null ; then
+    if ! timeout 5 ping -c 1 localhost 1>/dev/null 2>&1 ; then
         #el_error "localhost not reachable from elivehealth daemon step"
         if ! grep -qs "auto lo" /etc/network/interfaces && ! grep -qs "iface lo inet loopback" /etc/network/interfaces ; then
             echo -e "auto lo\niface lo inet loopback" >> /etc/network/interfaces
