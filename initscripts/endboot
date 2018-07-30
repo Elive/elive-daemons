@@ -1,0 +1,113 @@
+#! /bin/sh
+### BEGIN INIT INFO
+# Provides:          endboot
+# Required-Start:    $remote_fs $all rmnologin
+# Required-Stop:
+# Default-Start:     2 3 4 5
+# Default-Stop:
+# X-Interactive:     false
+# Short-Description: Configure endboot
+# Description:       This file should be used to construct scripts to be
+#                    placed in /etc/init.d.
+### END INIT INFO
+# Policy Info:  http://wiki.debian.org/LSBInitScripts
+# also check /etc/init.d/skeleton
+
+# Author: Thanatermesis
+
+
+# Defaults
+#PIDDIR=/var/run/endboot
+#endbootPID=$PIDDIR/endboot.pid
+DESC="Boot process end"
+SCRIPTNAME=/etc/init.d/endboot
+
+
+# Reads config file (will override defaults above)
+[ -r /etc/default/endboot ] && . /etc/default/endboot
+
+. /lib/lsb/init-functions
+
+
+do_start(){
+    #local _CMDLINE
+    #_CMDLINE="$(cat /proc/cmdline)"
+    #if ! echo "${_CMDLINE}" | grep -qsE "(boot=live)"
+    #then
+        #exit 0
+    #fi
+    #if echo "${_CMDLINE}" | grep -q debug ; then
+        #set -x
+    #fi
+
+    # oly if we are bash (not sh)
+    #source /usr/lib/elive-tools/functions
+
+    # make sure that the working console reads and outputs things correctly (otherwise tab not works on dialog's unless we do a "login" or "getty")
+    #exec 0</dev/console 1>/dev/console 2>&1
+
+
+    log_daemon_msg "Starting $(basename endboot)"
+
+    # Make sure we have our PIDDIR, even if it's on a tmpfs
+    #install -o root -g root -m 755 -d $PIDDIR
+
+    #log_progress_msg "daemonizing"
+
+    #if ! start-stop-daemon --start --quiet --background --make-pidfile --pidfile $endbootPID --oknodo --exec /usr/sbin/endbootd -- -D
+    #then
+        #log_end_msg 1
+        #exit 1
+    #fi
+
+    # always stop splash, if user removes lightdm he needs a prompt!
+    plymouth --ping 1>/dev/null 2>&1  && plymouth --hide-splash && chvt 1 #&& chvt 7
+
+    # turn off debugging if we have finished
+    #if echo "${_CMDLINE}" | grep -q debug ; then
+        #set +x
+    #fi
+
+    log_progress_msg "boot process finished"
+    true
+    log_end_msg 0
+}
+
+do_stop(){
+    log_daemon_msg "Stopping endboot"
+    #log_progress_msg "almost"
+
+    #start-stop-daemon --stop --quiet --pidfile $endbootPID
+    # Wait a little and remove stale PID file
+    #if [ -f $endbootPID ] && ! ps h $(cat $endbootPID) > /dev/null
+    #then
+        ## Stale PID file (endboot was succesfully stopped),
+        ## remove it (should be removed by endboot itself IMHO.)
+    #rm -f $endbootPID
+    #fi
+
+
+    log_end_msg 0
+}
+
+case "$1" in
+    "")
+        echo "Error: endboot should be called with the 'start' argument." >&2
+        ;;
+    start)
+        do_start
+        ;;
+    stop)
+        do_stop
+        ;;
+    restart|reload|force-reload)
+        "$0" stop
+        "$0" start
+        ;;
+    *)
+        echo "Usage: endboot [start|stop]" >&2
+        exit 3
+        ;;
+esac
+
+# vim: set filetype=sh :
