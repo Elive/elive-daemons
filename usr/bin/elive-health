@@ -64,10 +64,13 @@ main(){
     if [[ "${percent}" -ge "$percent_max" ]] ; then
         zenity --warning --text="$( eval_gettext "Your partition is almost full. We recommend you to delete old files to free up some space, your computer is in risk to be blocked if there's no more space left." )"
 
-        if zenity --question --text="$( eval_gettext "Do you want to this tool remove some unneded and temporal files automatically now?" )" ; then
+        if zenity --question --text="$( eval_gettext "Do you want Elive to clean some unneded and temporal files automatically now?" )" ; then
             # delete unneeded things now
             find "$HOME/.cache" -not -path "*/.cache/zsh/*" -not -path "*/.cache/elive*" -type f -delete
             find "$HOME/.thumbnails" -type f -delete
+
+            # clean compiling caches
+            ccache -c -C 2>/dev/null || true
 
             find -type f "$HOME/.local/share/Trash" -delete
 
