@@ -1,13 +1,19 @@
 #!/bin/bash
 source /usr/lib/elive-tools/functions
 
+# include sbin in our PATH since its needed sometimes, and there's nothing wrong by using it!
+if [[ "$PATH" != *"/usr/sbin"* ]] ; then
+    # needed for: laptop-detect
+    export PATH="${PATH}:/usr/local/sbin:/usr/sbin:/sbin"
+fi
+
 main(){
     # pre {{{
 
     # }}}
 
     #if grep -qs "boot=live" /proc/cmdline ; then
-        if /usr/sbin/laptop-detect ; then
+        if laptop-detect ; then
             # wait that the system has passed enough time to have been connected
             if ! ((is_terminal)) ; then
                 # wait also for rfkill to be run

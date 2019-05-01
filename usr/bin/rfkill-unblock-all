@@ -6,8 +6,14 @@ export TEXTDOMAIN
 
 el_config_get
 
+# include sbin in our PATH since its needed sometimes, and there's nothing wrong by using it!
+if [[ "$PATH" != *"/usr/sbin"* ]] ; then
+    # needed for: laptop-detect
+    export PATH="${PATH}:/usr/local/sbin:/usr/sbin:/sbin"
+fi
 
-if /usr/sbin/laptop-detect ; then
+
+if laptop-detect ; then
     if ! el_verify_internet fast ; then
         if ! el_dependencies_check "rfkill" 2>/dev/null ; then
             #el_error "package rfkill missing"
