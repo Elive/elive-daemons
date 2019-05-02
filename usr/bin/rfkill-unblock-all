@@ -78,7 +78,7 @@ fi
 
 
 # b43 checks (plugged new device)
-if [[ "$( lspci -nn -d "14e4:" | wc -l )" -gt 0 ]] && ! ((is_b43_unworking_notified)) ; then
+if [[ "$( lspci -nn -d "14e4:" | wc -l )" -gt 0 ]] && ! ((conf_is_b43_unworking_notified)) ; then
     # scan test
     for dev in $( LC_ALL=C /sbin/iwconfig 2>&1 | grep IEEE | awk '{print $1}' | grep "[[:alpha:]]" | tr '\n' ' ' )
     do
@@ -117,8 +117,8 @@ if [[ "$( lspci -nn -d "14e4:" | wc -l )" -gt 0 ]] && ! ((is_b43_unworking_notif
 
 
         # save a conf to not run this again (if failed)
-        is_b43_unworking_notified=1
-        el_config_save "is_b43_unworking_notified"
+        conf_is_b43_unworking_notified=1
+        el_config_save "conf_is_b43_unworking_notified"
     fi
 fi
 

@@ -41,12 +41,12 @@ main(){
     el_config_get
     _notification_max_temperature_reached="$( cat /var/log/syslog /var/log/kern.log /var/log/syslog.1 /var/log/kern.log.1 2>/dev/null | grep "critical temperature reached.*shutting down" | sort -u | tr '\n' ' ' )"
 
-    if [[ -n "$_notification_max_temperature_reached" ]] && [[ "$_notification_max_temperature_reached" != "$notification_max_temperature_reached" ]] ; then
+    if [[ -n "$_notification_max_temperature_reached" ]] && [[ "$_notification_max_temperature_reached" != "$conf_notification_max_temperature_reached" ]] ; then
         zenity --warning --text="$( eval_gettext "Elive detected that your computer reached a critical temperature which forced a shutdown for its security, this is commonly caused in old computers where dust is accumulated in the fans. To solve the issue you should open the computer and clean any dust from them. Optionally you can set your CPU speed gadget to work a little slower, this can make your computer not forcing a shutdown, but it will turn your computer a bit slower." )"
 
         # make sure to not show again the message if we already did it
-        notification_max_temperature_reached="$_notification_max_temperature_reached"
-        el_config_save "notification_max_temperature_reached"
+        conf_notification_max_temperature_reached="$_notification_max_temperature_reached"
+        el_config_save "conf_notification_max_temperature_reached"
     fi
 
     #
