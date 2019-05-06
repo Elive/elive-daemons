@@ -25,8 +25,7 @@ main(){
     # get configurations
     el_config_get
 
-    #
-    # was the shutdown forced?
+    # was the shutdown forced? {{{
     #
     if [[ -e "/var/tmp/elivehealth/elive-system-shutdown-forced" ]] && grep -qsE "^(yes|user notified pre)$" "/var/tmp/elivehealth/elive-system-shutdown-forced" ; then
         local message_shutdown_warn
@@ -38,8 +37,8 @@ main(){
         echo "user notified post" > "/var/tmp/elivehealth/elive-system-shutdown-forced"
     fi
 
-    #
-    # max temperature reached?
+    # }}}
+    # max temperature reached? {{{
     #
     _notification_max_temperature_reached="$( cat /var/log/syslog /var/log/kern.log /var/log/syslog.1 /var/log/kern.log.1 2>/dev/null | grep "critical temperature reached.*shutting down" | sort -u | tr '\n' ' ' )"
 
@@ -51,8 +50,8 @@ main(){
         el_config_save "conf_notification_max_temperature_reached"
     fi
 
-    #
-    # filesystem almost full
+    # }}}
+    # filesystem almost full {{{
     #
     # default values to check
     percent_max="92"
@@ -113,6 +112,7 @@ main(){
     fi
 
 
+    # }}}
     # Disk health {{{
     #
 
@@ -160,13 +160,11 @@ main(){
                 fi
 
                 local message_badblocks_pending
-                message_badblocks_pending="$( printf "$( eval_gettext "One of your hard disks has some bad blocks. This is not exactly bad but shows a degradation in your hard disk health. The problem appears when data wants to be saved in a future bad block not yet found. This message is basically to remember you that is important to save backups of your important or personal information in order to never lose it, since your hard disk is starting to have a delicated state." )" "" )"
+                message_badblocks_pending="$( printf "$( eval_gettext "Bad blocks pending to reallocate has been found in one of your hard disks. This means that some data are stored on it and cannot be recovered yet, if this data is from your operating system you can experience a crash in a random application, if belongs to any of your personal or important data then you could have lost it. Because of this, we recommend to backup all your important files and after, reinstall Elive entirely. You can also replace your hard disk with a new one, where is strongly suggested if is an SDD disk." )" "" )"
                 local message_badblocks_pending_counted
-                message_badblocks_pending_counted="$( printf "$( eval_gettext "Bad blocks actually registered:" )" "" )"
-                local message_badblocks_pending_counted_before
-                message_badblocks_pending_counted_before="$( printf "$( eval_gettext "Previously registered:" )" "" )"
+                message_badblocks_pending_counted="$( printf "$( eval_gettext "Pending sectors for reallocation:" )" "" )"
 
-                zenity --warning --text="$message_badblocks_pending $message_badblocks_pending_counted $count_sectors_pending $message_badblocks_pending_counted_before $_count_sectors_pending"
+                zenity --warning --text="$message_badblocks_pending $message_badblocks_pending_counted $count_sectors_pending"
 
                 # save to not repeat
                 _count_sectors_pending="$count_sectors_pending"
