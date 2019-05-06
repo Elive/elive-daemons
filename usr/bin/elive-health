@@ -22,6 +22,9 @@ main(){
         sleep 20
     fi
 
+    # get configurations
+    el_config_get
+
     #
     # was the shutdown forced?
     #
@@ -38,7 +41,6 @@ main(){
     #
     # max temperature reached?
     #
-    el_config_get
     _notification_max_temperature_reached="$( cat /var/log/syslog /var/log/kern.log /var/log/syslog.1 /var/log/kern.log.1 2>/dev/null | grep "critical temperature reached.*shutting down" | sort -u | tr '\n' ' ' )"
 
     if [[ -n "$_notification_max_temperature_reached" ]] && [[ "$_notification_max_temperature_reached" != "$conf_notification_max_temperature_reached" ]] ; then
@@ -111,18 +113,70 @@ main(){
     fi
 
 
-    #
-    # Disk health
+    # Disk health {{{
     #
 
-    # determine disks to scan / use
-    for id in $( cat /etc/crypttab 2>/dev/null | grep -v "^#" | grep "UUID=" | sed -e 's|^.*UUID=||g' | awk '{print $1}' )
-    do
-        echo "$id"
-    done
-    #HD_DEV_BADBLOCK_SECTORS="$( LC_ALL="$EL_LC_EN" smartctl -s on -A "${HD_DEV}" | grep -iE "Reallocated_Sector_C" | tr ' ' '\n' | grep "[[:digit:]]" | tail -1 )"
-    #if [[ "$HD_DEV_BADBLOCK_SECTORS" -gt 0 ]] ; then
+    if [[ -s "/etc/elive/disks-health" ]] ; then
+        source "/etc/elive/disks-health"
 
+        # gshock reports
+        if [[ "$count_gshock" -gt 0 ]] ; then
+            if [[ "$count_gshock" != "$_count_gshock" ]] ; then
+                el_notify_user "Elive $( eval_gettext "shacking alert" )" "$( eval_gettext "Please do not shake the computer while is running, it is very bad for your hard disk. Shocks received so far:" ) $count_gshock"
+
+                # save to not repeat
+                _count_gshock="$count_gshock"
+                el_config_save "_count_gshock"
+            fi
+        fi
+
+        # bad blocks reports
+        if [[ "$count_sectors_reallocated" -gt 0 ]] ; then
+            if [[ "$count_sectors_reallocated" != "$_count_sectors_reallocated" ]] ; then
+                if [[ -z "$_count_sectors_reallocated" ]] ; then
+                    _count_sectors_reallocated="0"
+                fi
+
+                local message_badblocks
+                message_badblocks="$( printf "$( eval_gettext "One of your hard disks has some bad blocks. This is not exactly bad but shows a degradation in your hard disk health. The problem appears when data wants to be saved in a future bad block not yet found. This message is basically to remember you that is important to save backups of your important or personal information in order to never lose it, since your hard disk is starting to have a delicated state." )" "" )"
+                local message_badblocks_counted
+                message_badblocks_counted="$( printf "$( eval_gettext "Bad blocks actually registered:" )" "" )"
+                local message_badblocks_counted_before
+                message_badblocks_counted_before="$( printf "$( eval_gettext "Previously registered:" )" "" )"
+
+                zenity --warning --text="$message_badblocks $message_badblocks_counted $count_sectors_reallocated $message_badblocks_counted_before $_count_sectors_reallocated"
+
+                # save to not repeat
+                _count_sectors_reallocated="$count_sectors_reallocated"
+                el_config_save "_count_sectors_reallocated"
+            fi
+        fi
+
+        # bad blocks reports
+        if [[ "$count_sectors_pending" -gt 0 ]] ; then
+            if [[ "$count_sectors_pending" != "$_count_sectors_pending" ]] ; then
+                if [[ -z "$_count_sectors_pending" ]] ; then
+                    _count_sectors_pending="0"
+                fi
+
+                local message_badblocks_pending
+                message_badblocks_pending="$( printf "$( eval_gettext "One of your hard disks has some bad blocks. This is not exactly bad but shows a degradation in your hard disk health. The problem appears when data wants to be saved in a future bad block not yet found. This message is basically to remember you that is important to save backups of your important or personal information in order to never lose it, since your hard disk is starting to have a delicated state." )" "" )"
+                local message_badblocks_pending_counted
+                message_badblocks_pending_counted="$( printf "$( eval_gettext "Bad blocks actually registered:" )" "" )"
+                local message_badblocks_pending_counted_before
+                message_badblocks_pending_counted_before="$( printf "$( eval_gettext "Previously registered:" )" "" )"
+
+                zenity --warning --text="$message_badblocks_pending $message_badblocks_pending_counted $count_sectors_pending $message_badblocks_pending_counted_before $_count_sectors_pending"
+
+                # save to not repeat
+                _count_sectors_pending="$count_sectors_pending"
+                el_config_save "_count_sectors_pending"
+            fi
+        fi
+    fi
+
+
+    # }}}
 
 }
 
