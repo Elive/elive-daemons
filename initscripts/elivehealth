@@ -33,7 +33,122 @@ SCRIPTNAME=/etc/init.d/elivehealth
 . /lib/lsb/init-functions
 
 
+SOURCE="$0"
+source /usr/lib/elive-tools/functions
+#el_make_environment
+#. gettext.sh
+#TEXTDOMAIN=""
+#export TEXTDOMAIN
+
+
+# CODE functions get from installer: {{{
+get_disk_from_partition_complex(){
+    # pre {{{
+    local part vg_name line device pv_name
+
+    part="$1"
+    # just for fallback
+    device="$1"
+
+    # }}}
+    # valid disk values
+    if echo "$part" | grep -v "/dev/mapper/" | grep -qsE "((xvd|sd|hd|vd)[a-z]|nvme[[:digit:]]+n[[:digit:]]+|mmcblk[[:digit:]]+)" ; then
+        device="$( get_disk_from_partition "$part" )"
+
+        if [[ -b "$device" ]] ; then
+            echo "$device"
+            return
+        fi
+    fi
+
+    # lvs / cryptsetup
+    if echo "$part" | grep -qs "/dev/mapper/" ; then
+        vg_name="$( LC_ALL="$EL_LC_EN" LVM_SUPRESS_FD_WARNINGS=1 lvs --noheadings --separator : -o vg_name "$part" 2>/dev/null || true )"
+        if [[ -n "$vg_name" ]] ; then
+            while read -ru 3 line
+            do
+                if [[ "$line" = "PV Name"* ]] ; then
+                    pv_name="$( echo "$line" | sed -e 's|^.*/dev/|/dev/|g' )"
+                fi
+
+                if [[ "$line" = "VG Name"*${vg_name} ]] ; then
+                    device="$pv_name"
+                    break
+                fi
+
+            done 3<<< "$( LC_ALL="$EL_LC_EN" pvdisplay -m 2>/dev/null )"
+        fi
+
+        # decode cryptsetup info
+        if [[ -n "$device" ]] ; then
+            # it may be an encrypted one in any case, so lets translate it
+            if LC_ALL="$EL_LC_EN" cryptsetup status "$device" 2>/dev/null | grep -qs "type:.*LUKS" ; then
+                device="$( LC_ALL="$EL_LC_EN" cryptsetup status "$device" | grep "device:" | sed -e 's|^.*device:||g' )"
+                # remove extra leading blank chars
+                read -r device <<< "$device"
+            fi
+        fi
+    fi
+
+    # finally print it, if not did before
+    if [[ -b "$device" ]] ; then
+        device="$( get_disk_from_partition "$device" )"
+        echo "$device"
+    fi
+}
+get_disk_from_partition(){
+    local disk partition is_part_found
+    partition="$1"
+
+    if ! [[ -b "$partition" ]] ; then
+        return
+    fi
+
+    #get from lsblk
+    while read -ru 3 line
+    do
+        unset is_part_found
+
+        if echo "$line" | grep -qs "${partition##*/}" ; then
+            is_part_found=1
+        fi
+
+        if ((is_part_found)) ; then
+            if echo "$line" | grep -qsE "^[[:alpha:]].*disk$" ; then
+                disk="$( echo "/dev/$line" | awk '{print $1}' )"
+
+                if [[ -b "$disk" ]] ; then
+                    # found!
+                    echo "$disk"
+                    #break
+                    return
+                fi
+            fi
+        fi
+    done 3<<< "$( lsblk -rino NAME,TYPE | tac )"
+
+    # try fast mode
+    if [[ "$partition" = /dev/nvme* ]] || [[ "$partition" = /dev/mmcblk* ]] ; then
+        disk="${partition%%p[0-9]*}"
+    else
+        disk="${partition%%[0-9]*}"
+    fi
+
+
+    if [[ -b "$disk" ]] ; then
+        echo "$disk"
+    else
+        # give the default parameter given, useful for trying to get device from live cdrom
+        echo "$partition"
+    fi
+}
+############# }}}
+
+
+
+
 do_start(){
+    # pre {{{
     local _CMDLINE
     _CMDLINE="$(cat /proc/cmdline)"
     if echo "${_CMDLINE}" | grep -qsE "(boot=live)" ; then
@@ -43,7 +158,9 @@ do_start(){
         set -x
     fi
 
+    # - pre }}}
     # check for iface network TODO: make it working back (add /etc/hosts needed file), we have a .bak copy in new versions, but specially check and create the /etc/network/interfaces file to have the loopback configuration
+    # loopback network {{{
     if ! timeout 5 ping -c 1 localhost 1>/dev/null 2>&1 ; then
         #el_error "localhost not reachable from elivehealth daemon step"
         if ! grep -qs "auto lo" /etc/network/interfaces && ! grep -qs "iface lo inet loopback" /etc/network/interfaces ; then
@@ -54,7 +171,8 @@ do_start(){
         fi
     fi
 
-    # check disk usage and cleanup it if needed
+    # - loopback network }}}
+    # check disk usage and cleanup it if needed {{{
     # note: this is needed to always keep the system in a bootable status
     percent_max="90"
     percent="$( LC_ALL=C df -m | awk '{if ($6 == "/") print $5}' | head -1 )"
@@ -73,12 +191,12 @@ do_start(){
         fi
     fi
 
-    # oly if we are bash (not sh)
-    #source /usr/lib/elive-tools/functions
+    # }}}
 
     # make sure that the working console reads and outputs things correctly (otherwise tab not works on dialog's unless we do a "login" or "getty")
     #exec 0</dev/console 1>/dev/console 2>&1
 
+    # shutdown correct state {{{
     # if we had already the file is because we didn't shutdown correctly the system
     if test -e /var/tmp/elivehealth/elive-system-running ; then
         echo "yes" > /var/tmp/elivehealth/elive-system-shutdown-forced
@@ -90,6 +208,64 @@ do_start(){
     mkdir -p /var/tmp/elivehealth
     chmod 1777 /var/tmp/elivehealth
     touch /var/tmp/elivehealth/elive-system-running
+
+
+    # - shutdown correct state }}}
+    # disk health data {{{
+    # determine disks to scan / use
+    if [[ -x "$( which smartctl )" ]] ; then
+        local id disk part count_gshock count_sectors_pending count_sectors_reallocated
+        count_gshock="0"
+        count_sectors_reallocated="0"
+        count_sectors_pending="0"
+
+        while read -ru 3 line
+        do
+            #part="$( echo "$line" | awk '{if ($2 == "/" || $2 == "/home" )  print $1}' )"
+            part="$( echo "$line" | awk '{if ($2 ~ "^/" )  print $1}' )"
+
+            if [[ -n "$part" ]] ; then
+                disk="$( get_disk_from_partition_complex "$part" )"
+
+                if [[ -n "$disk" ]] ; then
+                    #el_debug "adding $disk"
+                    el_array_member_add "$disk" "${disks_check[@]}" ; disks_check=("${_out[@]}")
+                fi
+            fi
+        done 3<<< "$( cat "/etc/fstab" )"
+
+        if [[ -n "${disks_check[@]}" ]] ; then
+            #el_info "${disks_check[@]}"
+            for disk in "${disks_check[@]}"
+            do
+                while read -ru 3 line
+                do
+                    # shacking computer
+                    if [[ "$line" = *"G-Sense_Error_Rate"* ]] ; then
+                        count_gshock="$(( $count_gshock + $( echo "$line" | awk '{print $NF}' ) ))"
+                    fi
+                    # badblocks: pending
+                    if [[ "$line" = *"Current_Pending_Sector"* ]] ; then
+                        count_sectors_pending="$(( $count_sectors_pending + $( echo "$line" | awk '{print $NF}' ) ))"
+                    fi
+                    # badblocks: reallocated
+                    if [[ "$line" = *"Reallocated_Sector_C"* ]] ; then
+                        count_sectors_reallocated="$(( $count_sectors_pending + $( echo "$line" | awk '{print $NF}' ) ))"
+                    fi
+                done 3<<< "$( smartctl -s on -A "$disk")"
+            done
+        fi
+
+        # save data
+        rm -f /etc/elive/disks-health
+        echo -e "disks_scanned=\"${disks_check[@]}\"" >> /etc/elive/disks-health
+        echo -e "count_gshock=\"${count_gshock}\"" >> /etc/elive/disks-health
+        echo -e "count_sectors_reallocated=\"${count_sectors_reallocated}\"" >> /etc/elive/disks-health
+        echo -e "count_sectors_pending=\"${count_sectors_pending}\"" >> /etc/elive/disks-health
+    fi
+
+    # - disk health data }}}
+
 
 
     #log_daemon_msg "Starting $(basename elivehealth)"
@@ -112,11 +288,10 @@ do_start(){
 
     #log_progress_msg "step 1 completed"
     true
-    log_end_msg 0
 }
 
 do_stop(){
-    log_daemon_msg "Running elive-health (shutdown mode)"
+    #log_daemon_msg "Running elive-health (shutdown mode)"
     #log_progress_msg "almost"
     rm -f /var/tmp/elivehealth/elive-system-running /var/tmp/elivehealth/elive-system-shutdown-forced
 
@@ -145,7 +320,7 @@ do_stop(){
 
 
 
-    log_end_msg 0
+    #log_end_msg 0
 }
 
 case "$1" in

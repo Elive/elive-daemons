@@ -110,6 +110,20 @@ main(){
         fi
     fi
 
+
+    #
+    # Disk health
+    #
+
+    # determine disks to scan / use
+    for id in $( cat /etc/crypttab 2>/dev/null | grep -v "^#" | grep "UUID=" | sed -e 's|^.*UUID=||g' | awk '{print $1}' )
+    do
+        echo "$id"
+    done
+    #HD_DEV_BADBLOCK_SECTORS="$( LC_ALL="$EL_LC_EN" smartctl -s on -A "${HD_DEV}" | grep -iE "Reallocated_Sector_C" | tr ' ' '\n' | grep "[[:digit:]]" | tail -1 )"
+    #if [[ "$HD_DEV_BADBLOCK_SECTORS" -gt 0 ]] ; then
+
+
 }
 
 #
