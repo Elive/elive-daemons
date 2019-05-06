@@ -160,7 +160,7 @@ main(){
                 fi
 
                 local message_badblocks_pending
-                message_badblocks_pending="$( printf "$( eval_gettext "Bad blocks pending to reallocate has been found in one of your hard disks. This means that some data are stored on it and cannot be recovered yet, if this data is from your operating system you can experience a crash in a random application, if belongs to any of your personal or important data then you could have lost it. Because of this, we recommend to backup all your important files and after, reinstall Elive entirely. You can also replace your hard disk with a new one, where is strongly suggested if is an SDD disk." )" "" )"
+                message_badblocks_pending="$( printf "$( eval_gettext "Bad blocks pending to reallocate has been found in one of your hard disks. This means that some data are stored on it and cannot be recovered yet, if this data is from your operating system you can experience a crash in a random application, if belongs to any of your personal or important data then you could have lost it. Because of this, we recommend to backup all your important files and after, reinstall Elive entirely. You can also replace your hard disk with a new one, where it is strongly suggested to be an SSD disk." )" "" )"
                 local message_badblocks_pending_counted
                 message_badblocks_pending_counted="$( printf "$( eval_gettext "Pending sectors for reallocation:" )" "" )"
 
