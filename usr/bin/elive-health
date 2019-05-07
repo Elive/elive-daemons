@@ -121,20 +121,20 @@ main(){
 
         # gshock reports
         if [[ "$count_gshock" -gt 0 ]] ; then
-            if [[ "$count_gshock" != "$_count_gshock" ]] ; then
+            if [[ "$count_gshock" != "$conf_count_gshock" ]] ; then
                 el_notify_user "Elive $( eval_gettext "shacking alert" )" "$( eval_gettext "Please do not shake the computer while is running, it is very bad for your hard disk. Shocks received so far:" ) $count_gshock"
 
                 # save to not repeat
-                _count_gshock="$count_gshock"
-                el_config_save "_count_gshock"
+                conf_count_gshock="$count_gshock"
+                el_config_save "conf_count_gshock"
             fi
         fi
 
         # bad blocks reports
         if [[ "$count_sectors_reallocated" -gt 0 ]] ; then
-            if [[ "$count_sectors_reallocated" != "$_count_sectors_reallocated" ]] ; then
-                if [[ -z "$_count_sectors_reallocated" ]] ; then
-                    _count_sectors_reallocated="0"
+            if [[ "$count_sectors_reallocated" != "$conf_count_sectors_reallocated" ]] ; then
+                if [[ -z "$conf_count_sectors_reallocated" ]] ; then
+                    conf_count_sectors_reallocated="0"
                 fi
 
                 local message_badblocks
@@ -144,19 +144,19 @@ main(){
                 local message_badblocks_counted_before
                 message_badblocks_counted_before="$( printf "$( eval_gettext "Previously registered:" )" "" )"
 
-                zenity --warning --text="$message_badblocks $message_badblocks_counted $count_sectors_reallocated $message_badblocks_counted_before $_count_sectors_reallocated"
+                zenity --warning --text="$message_badblocks $message_badblocks_counted $count_sectors_reallocated $message_badblocks_counted_before $conf_count_sectors_reallocated"
 
                 # save to not repeat
-                _count_sectors_reallocated="$count_sectors_reallocated"
-                el_config_save "_count_sectors_reallocated"
+                conf_count_sectors_reallocated="$count_sectors_reallocated"
+                el_config_save "conf_count_sectors_reallocated"
             fi
         fi
 
         # bad blocks reports
         if [[ "$count_sectors_pending" -gt 0 ]] ; then
-            if [[ "$count_sectors_pending" != "$_count_sectors_pending" ]] ; then
-                if [[ -z "$_count_sectors_pending" ]] ; then
-                    _count_sectors_pending="0"
+            if [[ "$count_sectors_pending" != "$conf_count_sectors_pending" ]] ; then
+                if [[ -z "$conf_count_sectors_pending" ]] ; then
+                    conf_count_sectors_pending="0"
                 fi
 
                 local message_badblocks_pending
@@ -167,8 +167,8 @@ main(){
                 zenity --warning --text="$message_badblocks_pending $message_badblocks_pending_counted $count_sectors_pending"
 
                 # save to not repeat
-                _count_sectors_pending="$count_sectors_pending"
-                el_config_save "_count_sectors_pending"
+                conf_count_sectors_pending="$count_sectors_pending"
+                el_config_save "conf_count_sectors_pending"
             fi
         fi
     fi
