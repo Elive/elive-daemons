@@ -141,6 +141,7 @@ get_disk_from_partition(){
         # give the default parameter given, useful for trying to get device from live cdrom
         echo "$partition"
     fi
+
 }
 ############# }}}
 
