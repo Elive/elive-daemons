@@ -250,9 +250,9 @@ do_start(){
                     fi
                     # badblocks: reallocated
                     if [[ "$line" = *"Reallocated_Sector_C"* ]] ; then
-                        count_sectors_reallocated="$(( $count_sectors_pending + $( echo "$line" | awk '{print $NF}' ) ))"
+                        count_sectors_reallocated="$(( $count_sectors_reallocated + $( echo "$line" | awk '{print $NF}' ) ))"
                     fi
-                done 3<<< "$( LC_ALL="$EL_LC_EN" smartctl -s on -A "$disk")"
+                done 3<<< "$( LC_ALL="$EL_LC_EN" smartctl -s on -A "$disk" )"
             done
         fi
 
