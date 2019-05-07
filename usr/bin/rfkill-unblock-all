@@ -85,6 +85,12 @@ if [[ "$( lspci -nn -d "14e4:" | wc -l )" -gt 0 ]] && ! ((conf_is_b43_unworking_
         [[ -z "$dev" ]] && continue
         if iwlist $dev scan 1>/dev/null 2>&1 ; then
             is_scanning_working=1
+        else
+            sleep 20
+
+            if iwlist $dev scan 1>/dev/null 2>&1 ; then
+                is_scanning_working=1
+            fi
         fi
     done
 
