@@ -242,15 +242,24 @@ do_start(){
                 do
                     # shacking computer
                     if [[ "$line" = *"G-Sense_Error_Rate"* ]] ; then
-                        count_gshock="$(( $count_gshock + $( echo "$line" | awk '{print $NF}' ) ))"
+                        _count_gshock="$( echo "$line" | awk '{print $NF}' )"
+                        if echo "$_count_gshock" | grep -qs "[[:digit:]]" ; then
+                            count_gshock="$(( $count_gshock + $_count_gshock ))"
+                        fi
                     fi
                     # badblocks: pending
                     if [[ "$line" = *"Current_Pending_Sector"* ]] ; then
-                        count_sectors_pending="$(( $count_sectors_pending + $( echo "$line" | awk '{print $NF}' ) ))"
+                        _count_sectors_pending="$( echo "$line" | awk '{print $NF}' )"
+                        if echo "$_count_sectors_pending" | grep -qs "[[:digit:]]" ; then
+                            count_sectors_pending="$(( $count_sectors_pending + $_count_sectors_pending ))"
+                        fi
                     fi
                     # badblocks: reallocated
                     if [[ "$line" = *"Reallocated_Sector_C"* ]] ; then
-                        count_sectors_reallocated="$(( $count_sectors_reallocated + $( echo "$line" | awk '{print $NF}' ) ))"
+                        _count_sectors_reallocated="$( echo "$line" | awk '{print $NF}' )"
+                        if echo "$_count_sectors_reallocated" | grep -qs "[[:digit:]]" ; then
+                            count_sectors_reallocated="$(( $count_sectors_reallocated + $_count_sectors_reallocated ))"
+                        fi
                     fi
                 done 3<<< "$( LC_ALL="$EL_LC_EN" smartctl -s on -A "$disk" )"
             done
