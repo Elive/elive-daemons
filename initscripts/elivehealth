@@ -259,7 +259,7 @@ do_start(){
                     if [[ "$line" = *"Reallocated_Sector_C"* ]] ; then
                         _count_sectors_reallocated="$( echo "$line" | awk '{print $NF}' )"
                         if echo "$_count_sectors_reallocated" | grep -qs "[[:digit:]]" ; then
-                            count_sectors_reallocated="$(( $count_sectors_reallocated + $_count_sectors_reallocated ))"
+                            count_sectors_reallocated="$(( $count_sectors_reallocated + $_count_sectors_reallocXXXXXXated ))"
                         fi
                     fi
                 done 3<<< "$( LC_ALL="$EL_LC_EN" smartctl -s on -A "$disk" )"
