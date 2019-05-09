@@ -41,7 +41,30 @@ source /usr/lib/elive-tools/functions
 #export TEXTDOMAIN
 
 
-# CODE functions get from installer: {{{
+# CODEs functions get from installer: {{{
+hd_uuid_decode(){
+    local uuid_partition uuid_name
+
+    uuid_name="${1#UUID=}"
+    uuid_name="$( echo "$uuid_name" | sed -e 's|"||g' )"
+
+    if [[ -z "$1" ]] || [[ "$1" = "#"* ]] ; then
+        el_error "argument passed to $FUNCNAME is not valid: $1"
+        return
+    fi
+
+    if echo "$uuid_name" | grep -sq "^/dev" ; then
+        el_debug "UUID '$uuid_name' is already a device, no need to decode"
+        echo "$uuid_name"
+        return
+    fi
+
+    uuid_name="$(readlink -f "/dev/disk/by-uuid/$uuid_name" 2>/dev/null )"
+
+    if [[ -n "$uuid_name" ]] ; then
+        echo "$uuid_name"
+    fi
+}
 get_disk_from_partition_complex(){
     # pre {{{
     local part vg_name line device pv_name
@@ -52,7 +75,7 @@ get_disk_from_partition_complex(){
 
     # }}}
     # valid disk values
-    if echo "$part" | grep -v "/dev/mapper/" | grep -qsE "((xvd|sd|hd|vd)[a-z]|nvme[[:digit:]]+n[[:digit:]]+|mmcblk[[:digit:]]+)" ; then
+    if echo "$part" | grep -v "^/dev/mapper/" | grep -qsE "((xvd|sd|hd|vd)[a-z]|nvme[[:digit:]]+n[[:digit:]]+|mmcblk[[:digit:]]+)" ; then
         device="$( get_disk_from_partition "$part" )"
 
         if [[ -b "$device" ]] ; then
@@ -62,7 +85,7 @@ get_disk_from_partition_complex(){
     fi
 
     # lvs / cryptsetup
-    if echo "$part" | grep -qs "/dev/mapper/" ; then
+    if echo "$part" | grep -qs "^/dev/mapper/" ; then
         vg_name="$( LC_ALL="$EL_LC_EN" LVM_SUPRESS_FD_WARNINGS=1 lvs --noheadings --separator : -o vg_name "$part" 2>/dev/null || true )"
         if [[ -n "$vg_name" ]] ; then
             while read -ru 3 line
@@ -88,6 +111,10 @@ get_disk_from_partition_complex(){
                 read -r device <<< "$device"
             fi
         fi
+    fi
+    # decode uuid
+    if [[ "$device" = "UUID="* ]] ; then
+        device="$( hd_uuid_decode "$device" )"
     fi
 
     # finally print it, if not did before
