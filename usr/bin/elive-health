@@ -11,6 +11,23 @@ main(){
     guitool="zenity --window-icon=/usr/share/icons/Elive/scalable/apps/logo-elive.png"
     el_mark_state
 
+    case "$( cat /etc/debian_version )" in
+        10.*|"buster"*)
+            is_buster=1
+            ;;
+        7.*|"wheezy"*)
+            is_wheezy=1
+            ;;
+    esac
+
+    eliveversion="$( awk '$1 ~ /elive-version/ {($1="");print $0}' /etc/elive-version | sed 's/^\ //g' )"
+    case "$eliveversion" in
+        *.7.*)  is_alpha=1 ; ;;
+        *.8.*)  is_beta=1 ; ;;
+        *.9.*)  is_rc=1 ; ;;
+        *.0.*)  is_stable=1 ; ;;
+    esac
+
     # }}}
     # dump the dbus address to use in other places if we need to
     if [[ -n "$DBUS_SESSION_BUS_ADDRESS" ]] ; then
@@ -175,6 +192,15 @@ main(){
 
 
     # }}}
+    # stability status {{{
+    if ((is_buster)) && ((is_alpha)) ; then
+        if [[ -n "$ESTART" ]] && [[ -f "/usr/share/doc/e17-stable/versions.history.Elive.gz" ]] ; then
+            el_notify_user "$( eval_gettext "Remember" )" "$( eval_gettext "The E17 desktop is not ready to be used in this new version of Elive. It has multiple issues and is slow and unstable. Help us to make Elive more known so that we can continue developing it." )"
+        fi
+    fi
+
+    # - stability status }}}
+
 
 }
 
