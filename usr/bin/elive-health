@@ -194,7 +194,7 @@ main(){
     # }}}
     # stability status {{{
     if ((is_buster)) && ((is_alpha)) ; then
-        if [[ -n "$ESTART" ]] && [[ -f "/usr/share/doc/e17-stable/versions.history.Elive.gz" ]] ; then
+        if [[ -n "$E_START" ]] && [[ -f "/usr/share/doc/e17-stable/versions.history.Elive.gz" ]] ; then
             el_notify_user "$( eval_gettext "Remember" )" "$( eval_gettext "The E17 desktop is not ready to be used in this new version of Elive. It has multiple issues and is slow and unstable. Help us to make Elive more known so that we can continue developing it." )"
         fi
     fi
