@@ -206,37 +206,47 @@ main(){
 
     # scanners support {{{
     if ((is_buster)) ; then
-        if lsub | grep -qs "Brother Industries" || grep -qs "Brother Industries" /tmp/.hwinfo.txt 2>/dev/null ; then
-            # get models
-            brother_scanner="$( cat /tmp/.hwinfo 2>/dev/null | grep "Brother Industries" ; lsusb | grep "Brother Industries" )"
+        if ! ((conf_brscan_installed)) ; then
+            if lsusb | grep -qs "Brother Industries" || grep -qs "Brother Industries" /tmp/.hwinfo.txt 2>/dev/null ; then
+                # get models
+                brother_scanner="$( cat /tmp/.hwinfo 2>/dev/null | grep "Brother Industries" ; lsusb | grep "Brother Industries" )"
 
-            local message_brother_scanner
-            message_brother_scanner="$( printf "$( eval_gettext "Elive detected a Brother scanner. Do you want to install the drivers needed to make it work?" )" "" )"
+                local message_brother_scanner
+                message_brother_scanner="$( printf "$( eval_gettext "Elive detected a Brother scanner. Do you want to install the drivers needed to make it work?" )" "" )"
 
-            # brscan
-            if echo "$brother_scanner" | grep -qsE "(DCP-1000|DCP-1400|DCP-8020|DCP-8025D|DCP-8040|DCP-8045|DFAX-4750e|FAX-5750e|MFC-3220C|MFC-3320CN|MFC-3420C|MFC-3820CN|MFC-4800|MFC-6800|MFC-8220|MFC-8420|MFC-8440|MFC-8500|MFC-8820D|MFC-8840D|MFC-9030|MFC-9070|MFC-9160|MFC-9180|MFC-9660|MFC-9700|MFC-9760|MFC-9800|MFC-9860|MFC-9880)" ; then
-                # brscan driver needed
-                if $guitool --question --text="$message_brother_scanner" ; then
-                    el_dependencies_install "brscan"
-                fi
-            else
-                # brscan 2
-                if echo "$brother_scanner" | grep -qsE "(DCP-110C|DCP-115C|DCP-117C|DCP-120C|DCP-130C|DCP-135C|DCP-150C|DCP-153C|DCP-155C|DCP-310CN|DCP-315CN|DCP-330C|DCP-340CW|DCP-350C|DCP-353C|DCP-357C|DCP-540CN|DCP-560CN|DCP-7010|DCP-7020|DCP-7025|DCP-750CW|DCP-770CW|DCP-8060|DCP-8065DN|MFC-210C|MFC-215C|MFC-230C|MFC-235C|MFC-240C|MFC-260C|MFC-3240C|MFC-3340CN|MFC-3360C|MFC-410CN|MFC-420CN|MFC-425CN|MFC-440CN|MFC-465CN|MFC-5440CN|MFC-5460CN|MFC-5840CN|MFC-5860CN|MFC-620CN|MFC-640CW|MFC-660CN|MFC-665CW|MFC-680CN|MFC-685CW|MFC-7220|MFC-7225N|MFC-7420|MFC-7820N|MFC-820CW|MFC-845CW|MFC-8460N|MFC-8660DN|MFC-8670DN|MFC-885CW|MFC-8860DN|MFC-8870DW|MFC-9420CN)" ; then
+                # brscan
+                if echo "$brother_scanner" | grep -qsE "(DCP-1000|DCP-1400|DCP-8020|DCP-8025D|DCP-8040|DCP-8045|DFAX-4750e|FAX-5750e|MFC-3220C|MFC-3320CN|MFC-3420C|MFC-3820CN|MFC-4800|MFC-6800|MFC-8220|MFC-8420|MFC-8440|MFC-8500|MFC-8820D|MFC-8840D|MFC-9030|MFC-9070|MFC-9160|MFC-9180|MFC-9660|MFC-9700|MFC-9760|MFC-9800|MFC-9860|MFC-9880)" ; then
                     # brscan driver needed
                     if $guitool --question --text="$message_brother_scanner" ; then
-                        el_dependencies_install "brscan2"
+                        el_dependencies_install "brscan"
+                        conf_brscan_installed=1
+                        el_config_save "conf_brscan_installed"
                     fi
                 else
-                    # brscan 3
-                    if echo "$brother_scanner" | grep -qsE "(DCP-145C|DCP-163C|DCP-165C|DCP-167C|DCP-185C|DCP-195C|DCP-197C|DCP-365CN|DCP-373CW|DCP-375CW|DCP-377CW|DCP-383C|DCP-385C|DCP-387C|DCP-395CN|DCP-585CW|DCP-6690CW|DCP-7030|DCP-7040|DCP-7045N|DCP-8070D|DCP-8080DN|DCP-8085DN|DCP-9010CN|DCP-9040CN|DCP-9042CDN|DCP-9045CDN|DCP-J125|DCP-J315W|DCP-J515W|DCP-J715W|MFC-250C|MFC-255CW|MFC-257CW|MFC-290C|MFC-295CN|MFC-297C|MFC-490CW|MFC-495CW|MFC-5490CN|MFC-5890CN|MFC-5895CW|MFC-6490CW|MFC-6890CDW|MFC-7320|MFC-7340|MFC-7345N|MFC-7440N|MFC-7450|MFC-7840N|MFC-7840W|MFC-790CW|MFC-795CW|MFC-8370DN|MFC-8380DN|MFC-8480DN|MFC-8680DN|MFC-8880DN|MFC-8890DW|MFC-9010CN|MFC-9120CN|MFC-9320CW|MFC-9440CN|MFC-9450CDN|MFC-9840CDW|MFC-990CW|MFC-J220|MFC-J265W|MFC-J270W|MFC-J410|MFC-J410W|MFC-J415W|MFC-J615W|MFC-J630W)" ; then # brscan driver needed
+                    # brscan 2
+                    if echo "$brother_scanner" | grep -qsE "(DCP-110C|DCP-115C|DCP-117C|DCP-120C|DCP-130C|DCP-135C|DCP-150C|DCP-153C|DCP-155C|DCP-310CN|DCP-315CN|DCP-330C|DCP-340CW|DCP-350C|DCP-353C|DCP-357C|DCP-540CN|DCP-560CN|DCP-7010|DCP-7020|DCP-7025|DCP-750CW|DCP-770CW|DCP-8060|DCP-8065DN|MFC-210C|MFC-215C|MFC-230C|MFC-235C|MFC-240C|MFC-260C|MFC-3240C|MFC-3340CN|MFC-3360C|MFC-410CN|MFC-420CN|MFC-425CN|MFC-440CN|MFC-465CN|MFC-5440CN|MFC-5460CN|MFC-5840CN|MFC-5860CN|MFC-620CN|MFC-640CW|MFC-660CN|MFC-665CW|MFC-680CN|MFC-685CW|MFC-7220|MFC-7225N|MFC-7420|MFC-7820N|MFC-820CW|MFC-845CW|MFC-8460N|MFC-8660DN|MFC-8670DN|MFC-885CW|MFC-8860DN|MFC-8870DW|MFC-9420CN)" ; then
+                        # brscan driver needed
                         if $guitool --question --text="$message_brother_scanner" ; then
-                            el_dependencies_install "brscan3"
+                            el_dependencies_install "brscan2"
+                            conf_brscan_installed=1
+                            el_config_save "conf_brscan_installed"
                         fi
                     else
-                        # brscan 4
-                        if echo "$brother_scanner" | grep -qsE "(DCP-1510|DCP-1510R|DCP-1511|DCP-1512|DCP-1512R|DCP-1518|DCP-7055|DCP-7055W|DCP-7057|DCP-7057WR|DCP-7060D|DCP-7065DN|DCP-7070DW|DCP-8110D|DCP-8110DN|DCP-8112DN|DCP-8150DN|DCP-8152DN|DCP-8155DN|DCP-8157DN|DCP-8250DN|DCP-9020CDW|DCP-9055CDN|DCP-9270CDN|DCP-J132W|DCP-J140W|DCP-J152W|DCP-J172W|DCP-J4110DW|DCP-J525W|DCP-J552DW|DCP-J725DW|DCP-J752DW|DCP-J925DWFAX-2950FAX-2990HL-2280DW|MFC-1810|MFC-1810R|MFC-1811|MFC-1813|MFC-1815|MFC-1815R|MFC-1818|MFC-7240|MFC-7290|MFC-7360|MFC-7360N|MFC-7362N|MFC-7365DN|MFC-7460DN|MFC-7470D|MFC-7860DN|MFC-7860DW|MFC-8510DN|MFC-8512DN|MFC-8515DN|MFC-8520DN|MFC-8690DW|MFC-8710DW|MFC-8712DW|MFC-8810DW|MFC-8910DW|MFC-8912DW|MFC-8950DW/|MFC-8950DWT|MFC-8952DW|MFC-9125CN|MFC-9130CW|MFC-9140CDN|MFC-9325CW|MFC-9330CDW|MFC-9340CDW|MFC-9460CDN|MFC-9465CDN|MFC-9560CDW|MFC-9970CDW|MFC-J2310|MFC-J245|MFC-J2510|MFC-J280W|MFC-J285DW|MFC-J425W|MFC-J430W|MFC-J4310DW|MFC-J432W|MFC-J435W|MFC-J4410DW|MFC-J450DW|MFC-J4510DW|MFC-J4610DW|MFC-J470DW|MFC-J4710DW|MFC-J475DW|MFC-J5910DW|MFC-J625DW|MFC-J650DW|MFC-J6510DW|MFC-J6710DW|MFC-J6910DW|MFC-J825DW|MFC-J835DW|MFC-J870DW|MFC-J875DW|ADS-1000WwADS-1100W|ADS-1500W|ADS-1600W|ADS-2000|ADS-2100|ADS-2500W|ADS-2600W)" ; then # brscan driver needed
+                        # brscan 3
+                        if echo "$brother_scanner" | grep -qsE "(DCP-145C|DCP-163C|DCP-165C|DCP-167C|DCP-185C|DCP-195C|DCP-197C|DCP-365CN|DCP-373CW|DCP-375CW|DCP-377CW|DCP-383C|DCP-385C|DCP-387C|DCP-395CN|DCP-585CW|DCP-6690CW|DCP-7030|DCP-7040|DCP-7045N|DCP-8070D|DCP-8080DN|DCP-8085DN|DCP-9010CN|DCP-9040CN|DCP-9042CDN|DCP-9045CDN|DCP-J125|DCP-J315W|DCP-J515W|DCP-J715W|MFC-250C|MFC-255CW|MFC-257CW|MFC-290C|MFC-295CN|MFC-297C|MFC-490CW|MFC-495CW|MFC-5490CN|MFC-5890CN|MFC-5895CW|MFC-6490CW|MFC-6890CDW|MFC-7320|MFC-7340|MFC-7345N|MFC-7440N|MFC-7450|MFC-7840N|MFC-7840W|MFC-790CW|MFC-795CW|MFC-8370DN|MFC-8380DN|MFC-8480DN|MFC-8680DN|MFC-8880DN|MFC-8890DW|MFC-9010CN|MFC-9120CN|MFC-9320CW|MFC-9440CN|MFC-9450CDN|MFC-9840CDW|MFC-990CW|MFC-J220|MFC-J265W|MFC-J270W|MFC-J410|MFC-J410W|MFC-J415W|MFC-J615W|MFC-J630W)" ; then # brscan driver needed
                             if $guitool --question --text="$message_brother_scanner" ; then
                                 el_dependencies_install "brscan3"
+                                conf_brscan_installed=1
+                                el_config_save "conf_brscan_installed"
+                            fi
+                        else
+                            # brscan 4
+                            if echo "$brother_scanner" | grep -qsE "(DCP-1510|DCP-1510R|DCP-1511|DCP-1512|DCP-1512R|DCP-1518|DCP-7055|DCP-7055W|DCP-7057|DCP-7057WR|DCP-7060D|DCP-7065DN|DCP-7070DW|DCP-8110D|DCP-8110DN|DCP-8112DN|DCP-8150DN|DCP-8152DN|DCP-8155DN|DCP-8157DN|DCP-8250DN|DCP-9020CDW|DCP-9055CDN|DCP-9270CDN|DCP-J132W|DCP-J140W|DCP-J152W|DCP-J172W|DCP-J4110DW|DCP-J525W|DCP-J552DW|DCP-J725DW|DCP-J752DW|DCP-J925DWFAX-2950FAX-2990HL-2280DW|MFC-1810|MFC-1810R|MFC-1811|MFC-1813|MFC-1815|MFC-1815R|MFC-1818|MFC-7240|MFC-7290|MFC-7360|MFC-7360N|MFC-7362N|MFC-7365DN|MFC-7460DN|MFC-7470D|MFC-7860DN|MFC-7860DW|MFC-8510DN|MFC-8512DN|MFC-8515DN|MFC-8520DN|MFC-8690DW|MFC-8710DW|MFC-8712DW|MFC-8810DW|MFC-8910DW|MFC-8912DW|MFC-8950DW/|MFC-8950DWT|MFC-8952DW|MFC-9125CN|MFC-9130CW|MFC-9140CDN|MFC-9325CW|MFC-9330CDW|MFC-9340CDW|MFC-9460CDN|MFC-9465CDN|MFC-9560CDW|MFC-9970CDW|MFC-J2310|MFC-J245|MFC-J2510|MFC-J280W|MFC-J285DW|MFC-J425W|MFC-J430W|MFC-J4310DW|MFC-J432W|MFC-J435W|MFC-J4410DW|MFC-J450DW|MFC-J4510DW|MFC-J4610DW|MFC-J470DW|MFC-J4710DW|MFC-J475DW|MFC-J5910DW|MFC-J625DW|MFC-J650DW|MFC-J6510DW|MFC-J6710DW|MFC-J6910DW|MFC-J825DW|MFC-J835DW|MFC-J870DW|MFC-J875DW|ADS-1000WwADS-1100W|ADS-1500W|ADS-1600W|ADS-2000|ADS-2100|ADS-2500W|ADS-2600W)" ; then # brscan driver needed
+                                if $guitool --question --text="$message_brother_scanner" ; then
+                                    el_dependencies_install "brscan4"
+                                    conf_brscan_installed=1
+                                    el_config_save "conf_brscan_installed"
+                                fi
                             fi
                         fi
                     fi
