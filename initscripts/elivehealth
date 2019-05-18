@@ -219,6 +219,9 @@ do_start(){
         fi
     fi
 
+    # clean temporal problematic files
+    find /boot/ -iname '*'.old-dkms -delete
+
     # }}}
 
     # make sure that the working console reads and outputs things correctly (otherwise tab not works on dialog's unless we do a "login" or "getty")
@@ -380,4 +383,4 @@ case "$1" in
         ;;
 esac
 
-# vim: set filetype=sh :
+# vim: set filetype=sh foldmethod=marker :
