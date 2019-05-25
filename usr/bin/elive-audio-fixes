@@ -2,6 +2,10 @@
 source /usr/lib/elive-tools/functions
 
 main(){
+    # never touch volumes in pulseaudio
+    if [[ -n "$(pidof pulseaudio)" ]] && ! [[ -n "$( grep -E "^(7\.|wheezy)" /etc/debian_version 2>/dev/null )" ]] ; then
+        return
+    fi
 
     # unmute audio
     setvolume unmute
