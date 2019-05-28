@@ -195,7 +195,7 @@ main(){
     # stability status {{{
     if ((is_buster)) && ((is_alpha)) ; then
         if [[ -n "$E_START" ]] && [[ -f "/usr/share/doc/e17-stable/versions.history.Elive.gz" ]] ; then
-            el_notify_user_important "$( eval_gettext "Remember" )" "$( eval_gettext "E17 desktop is not working correctly yet on the new versions. It's slow, consumes cpu, no systray, no special effects, and menus or windows disappear." )"
+            el_notify_user_important "$( eval_gettext "Remember" )" "$( eval_gettext "E17 desktop is not working correctly yet on the new versions. It's slow, consumes cpu, no systray, no special effects, and menus or windows disappear. We recommend switching to E16 which is more integrated." )"
         fi
     fi
 
