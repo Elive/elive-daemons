@@ -11,7 +11,7 @@ main(){
     elive-multiscreens -l -q
 
     # reconfigure GL in elementary based in E configurations
-    if [[ -d "$HOME/.elementary/config/standard" ]] ; then
+    if [[ -n "$E_START" ]] && [[ -d "$HOME/.elementary/config/standard" ]] ; then
         cd_previous="$(pwd)"
         if [[ -z "$E_CONF_PROFILE" ]] ; then
             E_CONF_PROFILE="standard"
