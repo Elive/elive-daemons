@@ -9,7 +9,30 @@ source /usr/lib/elive-tools/functions
 
 
 export LC_NUMERIC=C
+export devshm="/dev/shm"
 
+verify_and_fix_shm(){
+    result="$( ls -ld "$(readlink -f "${devshm}" )" | awk '{print $1}' )"
+
+    #note: asterisk * not works in /bin/sh
+    #if [ "$result" != *rwxrwxrwt ] ; then
+    if [ "$(readlink -f "$devshm" )" = "/run/shm" ] ; then
+        if [ "$result" != drwxrwxrwt ] ; then
+            logger "$(basename $0) - fixing permissions in ${devshm}, needs to be in 1777 and was '$result'"
+            #echo "$(basename $0) - fixing permissions in ${devshm}, needs to be in 1777"
+            chmod 1777 "$(readlink -f "${devshm}" )"
+        fi
+    else
+        chmod 1777 "$(readlink -f "${devshm}" )"
+    fi
+
+    # nothing wrong by fixing it all the times no matter what
+    #chmod 1777 "$(readlink -f "${devshm}" )"
+
+    # always return true
+    unset result
+    return 0
+}
 #===  FUNCTION  ================================================================
 #          NAME:  kill_processes_zombie
 #   DESCRIPTION:  search and kill for zombie proceses
@@ -292,6 +315,50 @@ main(){
         # zombies
         kill_processes_zombie
 
+        # clean some tmp things from E17 {{{
+        # only clean the known-ones:
+        rmdir /tmp/xdg-* 2>/dev/null 1>&2
+
+        # clean old efreet files (keep the last 12 ones)
+        if ls -1tr efreetd_* 1>/dev/null 2>&1 ; then
+            ls -1tr efreetd_* | head -n "-12" | xargs rm -f
+        fi
+
+        # }}}
+        # fix /dev/shm  {{{
+        # ORIGINAL code from the old daemon, which run in a loop waiting for changes:
+        # first fix
+        #chmod 1777 "$( readlink -f "${devshm}" )"
+
+        ## watch and fix
+        #while true
+        #do
+            #while inotifywait -q -e modify -e attrib -e move -e create -e delete -e unmount "${devshm}" 1>/dev/null
+                ##while inotifywait -e attrib -e move "${devshm}" # this one seems to not catch correctly all the times
+            #do
+                ## wait a few seconds in order to not overload the system with this daemon, seems like there's something that doesn't finish to change it
+                ## this pause must be set before to change permissions, in order to directly listed again after that
+                ##sleep 5
+
+                ##echo "fixing ${devshm} permissions"
+                ##echo -e "$(ls -l /dev | grep shm )" 1>&2
+                ##echo -e "$(ls -l /run | grep shm | grep -v fixdev )" 1>&2
+
+                ##logger "$(basename $0) - fixing permissions in ${devshm} | auto"
+                ##chmod 1777 "${devshm}"
+
+                ## a little pause so that we dont enter in infinite loops
+                #sleep 4
+
+                #verify_and_fix_shm
+
+            #done
+        #done
+
+        # new code, just fix from time to time:
+        verify_and_fix_shm
+
+        # }}}
 
         # we only want to run it one time
         if ((is_onetime)) ; then
