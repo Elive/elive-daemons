@@ -77,6 +77,7 @@ main(){
     conf_speed_max="1.75"
     conf_speed_min="1"
     conf_taps_disabled_while_typing="TRUE"
+    conf_movement_disabled_while_typing="FALSE"
     conf_taps_disabled_while_typing_seconds="1.2"
 
     # }}}
@@ -120,6 +121,7 @@ main(){
     el_config_get "conf_speed_max"
     el_config_get "conf_speed_min"
     el_config_get "conf_taps_disabled_while_typing"
+    el_config_get "conf_movement_disabled_while_typing"
     el_config_get "conf_taps_disabled_while_typing_seconds"
     # - get user confs }}}
 
@@ -129,6 +131,7 @@ main(){
             --title="Touchpad Configurator" \
             --text="$( eval_gettext "The Amazing Touchpad Configurator for Elive" )" \
             --field="$( eval_gettext "Disable the touchpad tapping while typing in the keyboard" )":CHK $conf_taps_disabled_while_typing \
+            --field="$( eval_gettext "And disable the touchpad mouse movement too" )":CHK $conf_movement_disabled_while_typing \
             --field="$( eval_gettext "Seconds to wait before to enable back" )":NUM "${conf_taps_disabled_while_typing_seconds}!0.0..4.0!0.1!1" \
             --field="$( eval_gettext "Emulate the other mouse clicks when tapping the top corners" )":CHK ${conf_emulate_click_corners} \
             --field="$( eval_gettext "Emulate the other mouse clicks tapping with multiple fingers" )":CHK ${conf_emulate_click_multifinger} \
@@ -151,17 +154,18 @@ main(){
 
         # get new selected configurations {{{
         conf_taps_disabled_while_typing="$( echo "${result}" | awk -v FS="|" '{print $1}' )"
-        conf_taps_disabled_while_typing_seconds="$( echo "${result}" | awk -v FS="|" '{print $2}' )"
-        conf_emulate_click_corners="$( echo "${result}" | awk -v FS="|" '{print $3}' )"
-        conf_emulate_click_multifinger="$( echo "${result}" | awk -v FS="|" '{print $4}' )"
-        conf_locked_drags="$( echo "${result}" | awk -v FS="|" '{print $5}' )"
-        conf_scroll_edges="$( echo "${result}" | awk -v FS="|" '{print $6}' )"
-        conf_scroll_fingers="$( echo "${result}" | awk -v FS="|" '{print $7}' )"
-        conf_scroll_natural="$( echo "${result}" | awk -v FS="|" '{print $8}' )"
-        conf_scroll_staying="$( echo "${result}" | awk -v FS="|" '{print $9}' )"
-        conf_speed_min="$( echo "${result}" | awk -v FS="|" '{print $10}' )"
-        conf_speed_max="$( echo "${result}" | awk -v FS="|" '{print $11}' )"
-        conf_speed_accel="$( echo "${result}" | awk -v FS="|" '{print $12}' )"
+        conf_movement_disabled_while_typing="$( echo "${result}" | awk -v FS="|" '{print $2}' )"
+        conf_taps_disabled_while_typing_seconds="$( echo "${result}" | awk -v FS="|" '{print $3}' )"
+        conf_emulate_click_corners="$( echo "${result}" | awk -v FS="|" '{print $4}' )"
+        conf_emulate_click_multifinger="$( echo "${result}" | awk -v FS="|" '{print $5}' )"
+        conf_locked_drags="$( echo "${result}" | awk -v FS="|" '{print $6}' )"
+        conf_scroll_edges="$( echo "${result}" | awk -v FS="|" '{print $7}' )"
+        conf_scroll_fingers="$( echo "${result}" | awk -v FS="|" '{print $8}' )"
+        conf_scroll_natural="$( echo "${result}" | awk -v FS="|" '{print $9}' )"
+        conf_scroll_staying="$( echo "${result}" | awk -v FS="|" '{print $10}' )"
+        conf_speed_min="$( echo "${result}" | awk -v FS="|" '{print $11}' )"
+        conf_speed_max="$( echo "${result}" | awk -v FS="|" '{print $12}' )"
+        conf_speed_accel="$( echo "${result}" | awk -v FS="|" '{print $13}' )"
 
         # }}}
         # save new selected configurations {{{
@@ -176,6 +180,7 @@ main(){
         el_config_save "conf_speed_max"
         el_config_save "conf_speed_min"
         el_config_save "conf_taps_disabled_while_typing"
+        el_config_save "conf_movement_disabled_while_typing"
         el_config_save "conf_taps_disabled_while_typing_seconds"
         # - save new selected configurations }}}
     fi
@@ -184,7 +189,13 @@ main(){
     if [[ "${conf_taps_disabled_while_typing}" = "TRUE" ]] ; then
         if [[ -n "$conf_taps_disabled_while_typing_seconds" ]] ; then
             killall syndaemon 1>/dev/null 2>&1 || true
-            syndaemon -d -t -K -R -i "$conf_taps_disabled_while_typing_seconds" &
+
+            if [[ "${conf_movement_disabled_while_typing}" = "TRUE" ]] ; then
+                syndaemon -d -K -R -i "$conf_taps_disabled_while_typing_seconds" &
+            else
+                syndaemon -d -t -K -R -i "$conf_taps_disabled_while_typing_seconds" &
+            fi
+
         else
             el_error "touchpad configurator: 'conf_taps_disabled_while_typing_seconds' not set? $conf_taps_disabled_while_typing_seconds"
         fi
