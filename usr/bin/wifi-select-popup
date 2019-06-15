@@ -21,12 +21,12 @@ main(){
             fi
 
             # check for internet at start
-            for i in $(seq 10)
+            for i in $(seq 4)
             do
                 if el_verify_internet fast ; then
                     exit
                 else
-                    sleep 3
+                    sleep 2
                 fi
             done
 
@@ -54,7 +54,7 @@ main(){
                 if LC_ALL=C /sbin/iwlist $wifi_dev scan 2>&1 | grep -qs "ESSID:" ; then
 
                     # appear after a bit of time
-                    sleep 5
+                    sleep 2
 
                     # if still not internet, popup it
                     if ! el_verify_internet fast ; then
