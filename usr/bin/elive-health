@@ -139,7 +139,7 @@ main(){
         # gshock reports
         if [[ "$count_gshock" -gt 0 ]] ; then
             if [[ "$count_gshock" != "$conf_count_gshock" ]] ; then
-                el_notify_user "Elive $( eval_gettext "shacking alert" )" "$( eval_gettext "Please do not shake the computer while is running, it is very bad for your hard disk. Shocks received so far:" ) $count_gshock"
+                el_notify_user "Elive $( eval_gettext "Shaking alert" )" "$( eval_gettext "Please do not shake the computer while is running, it is very bad for your hard disk. Shocks received so far:" ) $count_gshock"
 
                 # save to not repeat
                 conf_count_gshock="$count_gshock"
