@@ -78,9 +78,14 @@ main(){
     conf_speed_min="1"
     conf_taps_disabled_while_typing="TRUE"
     conf_movement_disabled_while_typing="FALSE"
-    conf_taps_disabled_while_typing_seconds="1.2"
+    conf_taps_disabled_while_typing_seconds="0.9"
 
     # }}}
+
+    # clickpads should have this disabled by default because is annoying
+    if grep -qsi "clickpad" /var/log/Xorg.0.log 2>/dev/null 1>&2 ; then
+        conf_movement_disabled_while_typing="TRUE"
+    fi
 
     # get hardware default confs {{{
     # update: we don't want to get default confs for this because is our first run (our first configuration values setting)
