@@ -100,17 +100,17 @@ main(){
     conf_speed_min="$( synclient -l | grep -E "\s+MinSpeed\s+.*=" | sed -e 's|^.*= ||' | tail -1 )"
     if [[ -z "$conf_speed_min" ]] ; then
         conf_speed_min="1"
-        el_error "min speed incorrectly get: $( synclient -l | grep MinSpeed )"
+        el_debug "min speed incorrectly get: $( synclient -l | grep MinSpeed )"
     fi
     conf_speed_max="$( synclient -l | grep -E "\s+MaxSpeed\s+.*=" | sed -e 's|^.*= ||' | tail -1 )"
     if [[ -z "$conf_speed_max" ]] ; then
         conf_speed_max="1.75"
-        el_error "max speed incorrectly get: $( synclient -l | grep MaxSpeed )"
+        el_debug "max speed incorrectly get: $( synclient -l | grep MaxSpeed )"
     fi
     conf_speed_accel="$( synclient -l | grep -E "\s+AccelFactor\s+.*=" | sed -e 's|^.*= ||' | tail -1 )"
     if [[ -z "$conf_speed_accel" ]] ; then
         conf_speed_accel="0.03600"
-        el_error "accel speed incorrectly get: $( synclient -l | grep AccelFactor )"
+        el_debug "accel speed incorrectly get: $( synclient -l | grep AccelFactor )"
     fi
 
     # }}}
