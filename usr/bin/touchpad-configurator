@@ -304,7 +304,7 @@ main(){
                 ;;
         esac
     else
-        el_error "unable to get values for scroll delta, in order to set natural scrolling: vert: $conf_scroll_natural_vert_delta , horiz: $conf_scroll_natural_horiz_delta"
+        NOREPORTS=1 el_error "unable to get values for scroll delta, in order to set natural scrolling: vert: $conf_scroll_natural_vert_delta , horiz: $conf_scroll_natural_horiz_delta"
     fi
 
 
