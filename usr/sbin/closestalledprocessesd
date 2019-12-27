@@ -116,6 +116,7 @@ kill_processes_zombie(){
 kill_process(){
     # pre {{{
     local pid cmd state message
+
     pid="$1"
     state="$2"
     cmd="$3"
@@ -172,7 +173,7 @@ kill_process(){
 
 main(){
     # pre {{{
-    local sleeptime pid user priority nice memvirt memresident memshared status cpu_usage mem_usage_percent time_minutes command arg
+    #local sleeptime pid user priority nice memvirt memresident memshared status cpu_usage mem_usage_percent command arg
 
     arg="$1"
 
