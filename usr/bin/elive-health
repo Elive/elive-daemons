@@ -97,7 +97,8 @@ main(){
             # clean compiling caches
             ccache -c -C 2>/dev/null || true
 
-            find -type f "$HOME/.local/share/Trash" -delete
+            # free the trash
+            find "$HOME/.local/share/Trash" -type f -delete
 
             : > "$HOME/.xsession-errors"
 
