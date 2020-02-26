@@ -223,7 +223,7 @@ main(){
                     ;;
                 tumblerd)
                     # tumblerd sucking around
-                    if [[ "${time_minutes}" -ge 5 ]] && [[ "${cpu_usage}" -gt 60 ]] ; then
+                    if [[ "${time_minutes}" -ge 10 ]] && [[ "${cpu_usage}" -gt 60 ]] ; then
                         logger "$(basename $0) - annoying process detected (${command}), minutes: ${time_minutes}, cpu usage: ${cpu_usage}, at pid: ${pid} "
                         kill_process "$pid" "${status}" "$command"
                     fi
@@ -309,8 +309,9 @@ main(){
 
         # always kill long tumblerd's
         if killall --older-than 1h tumblerd 2>/dev/null ; then
-            logger "$(basename $0) - stalled process detected (tumblerd), minutes: ${time_minutes}, cpu usage: (not required to know), at pid: (unknown) | from killall --older-than 1h"
-            el_warning "stalled process detected (tumblerd) ${time_minutes} minutes, why was not autokilled?"
+            logger "$(basename $0) - stalled process detected (tumblerd), for more than 1 hour, killing it..."
+            #el_warning "stalled process detected (tumblerd) for more than 1 hour, killing it..."
+            killall -9 tumblerd
         fi
 
         # zombies
