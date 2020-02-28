@@ -213,7 +213,7 @@ main(){
                 brother_scanner="$( cat /tmp/.hwinfo 2>/dev/null | grep "Brother Industries" ; lsusb | grep "Brother Industries" )"
 
                 local message_brother_scanner
-                message_brother_scanner="$( printf "$( eval_gettext "Elive detected a Brother scanner. Do you want to install the drivers needed to make it work?" )" "" )"
+                message_brother_scanner="$( printf "$( eval_gettext "Wohoo! Elive can make your Brother printer work directly! Proceed with the magic?" )" "" )"
 
                 # brscan
                 if echo "$brother_scanner" | grep -qsE "(DCP-1000|DCP-1400|DCP-8020|DCP-8025D|DCP-8040|DCP-8045|DFAX-4750e|FAX-5750e|MFC-3220C|MFC-3320CN|MFC-3420C|MFC-3820CN|MFC-4800|MFC-6800|MFC-8220|MFC-8420|MFC-8440|MFC-8500|MFC-8820D|MFC-8840D|MFC-9030|MFC-9070|MFC-9160|MFC-9180|MFC-9660|MFC-9700|MFC-9760|MFC-9800|MFC-9860|MFC-9880)" ; then
