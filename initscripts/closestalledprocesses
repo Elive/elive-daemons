@@ -34,7 +34,7 @@ SCRIPTNAME=/etc/init.d/closestalledprocesses
 
 
 do_start(){
-    log_daemon_msg "Starting $(basename closestalledprocesses)"
+    #log_daemon_msg "Starting $(basename closestalledprocesses)"
 
     # Make sure we have our PIDDIR, even if it's on a tmpfs
     install -o root -g root -m 755 -d $PIDDIR
@@ -42,18 +42,18 @@ do_start(){
 
     if ! start-stop-daemon --start --quiet --background --make-pidfile --pidfile $closestalledprocessesPID --oknodo --exec /usr/sbin/closestalledprocessesd
     then
-        log_end_msg 1
+        #log_end_msg 1
         exit 1
     fi
 
-    log_progress_msg "daemonized"
+    #log_progress_msg "daemonized"
 
     true
-    log_end_msg 0
+    #log_end_msg 0
 }
 
 do_stop(){
-    log_daemon_msg "Stopping closestalledprocesses"
+    #log_daemon_msg "Stopping closestalledprocesses"
     #log_progress_msg "almost"
 
     start-stop-daemon --stop --quiet --pidfile $closestalledprocessesPID
@@ -66,7 +66,7 @@ do_stop(){
     fi
 
 
-    log_end_msg 0
+    #log_end_msg 0
 }
 
 case "$1" in
