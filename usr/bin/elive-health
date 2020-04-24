@@ -49,7 +49,7 @@ main(){
         local message_shutdown_warn
         message_shutdown_warn="$( printf "$( eval_gettext "You previously turned off the computer incorrectly. It is very bad for your data to force the poweroff. You should shutdown the computer from the System option in the menu. You can also try the Hibernation mode if works correctly in your computer." )" "" )"
         # warn the user
-        el_notify_user "$( eval_gettext "Forced shutdown detected" )" "$message_shutdown_warn"
+        el_notify "important" "utilities-system-monitor" "$( eval_gettext "Forced shutdown detected" )" "$message_shutdown_warn"
 
         # remove the verification file
         echo "user notified post" > "/var/tmp/elivehealth/elive-system-shutdown-forced"
@@ -83,7 +83,7 @@ main(){
         percent="${percent%\%}"
         # root almost full, always warning
         if [[ "${percent}" -ge "$percent_max_crit" ]] ; then
-            el_notify_user "$( eval_gettext "Hard disk almost full" )" "$( eval_gettext "Your root partition is almost full, we recommend to remove some unneeded software or to resize your partition to be bigger and reinstall Elive with the special options if is needed. Your computer risks to become unbootable if the disk is full." )"
+            el_notify "normal" "gparted" "$( eval_gettext "Hard disk almost full" )" "$( eval_gettext "Your root partition is almost full, we recommend to remove some unneeded software or to resize your partition to be bigger and reinstall Elive with the special options if is needed. Your computer risks to become unbootable if the disk is full." )"
         fi
     fi
 
@@ -141,7 +141,7 @@ main(){
         # gshock reports
         if [[ "$count_gshock" -gt 0 ]] ; then
             if [[ "$count_gshock" != "$conf_count_gshock" ]] ; then
-                el_notify_user "Elive $( eval_gettext "Shaking alert" )" "$( eval_gettext "Please do not shake the computer while is running, it is very bad for your hard disk. Shocks received so far:" ) $count_gshock"
+                el_notify "normal" "utilities-system-monitor" "Elive $( eval_gettext "Shaking alert" )" "$( eval_gettext "Please do not shake the computer while is running, it is very bad for your hard disk. Shocks received so far:" ) $count_gshock"
 
                 # save to not repeat
                 conf_count_gshock="$count_gshock"
@@ -197,7 +197,7 @@ main(){
     # stability status {{{
     if ((is_buster)) && ((is_alpha)) ; then
         if [[ -n "$E_START" ]] && [[ -f "/usr/share/doc/e17-stable/versions.history.Elive.gz" ]] ; then
-            el_notify_user_important "$( eval_gettext "Remember" )" "$( eval_gettext "E17 desktop is not working correctly yet on the new versions. It's slow, consumes cpu, no systray, no special effects, and menus or windows disappear. We recommend switching to E16 which is more integrated." )"
+            el_notify important bomb "$( eval_gettext "Remember" )" "$( eval_gettext "E17 desktop is not working correctly yet on the new versions. It's slow, consumes cpu, no systray, no special effects, and menus or windows disappear. We recommend switching to E16 which is more integrated." )"
         fi
     fi
 
