@@ -95,6 +95,21 @@ main(){
             find "$HOME/.cache" -not -path "*/.cache/zsh/*" -not -path "*/.cache/elive*" -type f -delete
             find "$HOME/.thumbnails" -type f -delete
 
+            killall rhythmbox
+            killall chromium
+            killall google-chrome
+            killall opera
+            killall palemoon
+            killall efreetd
+            killall firefox-esr
+            killall picard
+            killall netsurf
+            killall opera
+            sync
+            rm -rf "${HOME}/.cache/mesa_shader_cache" "${HOME}/.cache/chromium" "${HOME}/.cache/google-chrome" "${HOME}/.cache/moonchild_productions" "${HOME}/.cache/thumbnails" "${HOME}/.cache/mozilla" "${HOME}/.cache/MuzicBrainz" "${HOME}/.cache/network" "${HOME}/.cache/rhythmbox" "${HOME}/.cache/efreet" "${HOME}/.cache/netsurf" "${HOME}/.cache/el_speak" "${HOME}/.cache/opera"
+
+            killall -9 efreetd
+
             # clean compiling caches
             ccache -c -C 2>/dev/null || true
 

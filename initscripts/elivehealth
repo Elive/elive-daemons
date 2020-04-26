@@ -35,11 +35,18 @@ SCRIPTNAME=/etc/init.d/elivehealth
 
 SOURCE="$0"
 source /usr/lib/elive-tools/functions
+source /etc/adduser.conf
 REPORTS="1"
 #el_make_environment
 #. gettext.sh
 #TEXTDOMAIN=""
 #export TEXTDOMAIN
+
+if [[ -n "$DHOME" ]] ; then
+    homeusers="$DHOME"
+else
+    homeusers="/home"
+fi
 
 
 # CODEs functions get from installer: {{{
@@ -206,6 +213,7 @@ do_start(){
     percent_max="90"
     percent="$( LC_ALL=C df -m | awk '{if ($6 == "/") print $5}' | head -1 )"
     percent="${percent%\%}"
+
     if [[ -n "$percent" ]] ; then
         if [[ "${percent}" -ge "$percent_max" ]] ; then
             # logs
@@ -217,6 +225,11 @@ do_start(){
             find "/var/lib/apt/lists" -type f -delete 1>/dev/null 2>&1 || true
             find "/var/cache/apt/archives" -type f -iname '*'deb -delete 1>/dev/null 2>&1 || true
             find "/var/cache/apt/" -type f -delete 1>/dev/null 2>&1 || true
+
+            # temporal caches by users
+            rm -rf "${homeusers}/"*/.cache/mesa_shader_cache "${homeusers}/"*/.cache/chromium "${homeusers}/"*/.cache/google-chrome "${homeusers}/"*/.cache/moonchild_productions "${homeusers}/"*/.cache/thumbnails "${homeusers}/"*/.cache/mozilla "${homeusers}/"*/.cache/MuzicBrainz "${homeusers}/"*/.cache/network "${homeusers}/"*/.cache/rhythmbox "${homeusers}/"*/.cache/efreet "${homeusers}/"*/.cache/netsurf "${homeusers}/"*/.cache/el_speak "${homeusers}/"*/.cache/opera 2>/dev/null || true
+
+
         fi
     fi
 
