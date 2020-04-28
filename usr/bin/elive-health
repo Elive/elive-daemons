@@ -264,7 +264,22 @@ main(){
         fi
     fi
     # - scanners support }}}
+    # mark a working and healthy status {{{
+    # set a minimal working state, to make sure that elive is not broken by a possible upgrade
+    machine_id="$( grep "^machine-id: " /etc/elive-version 2>/dev/null | sed -e 's|^machine-id: ||g' | tail -1 )"
+    if [[ -z "$machine_id" ]] ; then
+        machine_id="$( cat /etc/machine-id 2>/dev/null | tail -1 )"
+    fi
+    architecture="$( el_architecture "host" )"
+    return_status=0
+    conf_send_debug_reports_email="nowhere@dev.null" # we don't need any users data
+    if [[ -n "$machine_id" ]] ; then
+        if el_verify_internet ; then
+            echo -e "ELIVE_DATA_TYPE: 1.0::${machine_id}::transfer::text::healthy::0::::${conf_send_debug_reports_email}::${return_status}::::${architecture}::${eliveversion}::${SOURCE}::" ; echo -e "${message}${messages_extra}" | timeout 8 nc www.elivecd.org 60001 -w 6 1>/dev/null 2>&1
+        fi
+    fi
 
+    # }}}
 
 }
 
