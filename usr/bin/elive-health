@@ -132,7 +132,7 @@ main(){
         fi
 
         local message_ask_for_scan
-        message_ask_for_scan="$( printf "$( eval_gettext "Your home partition usage was %s and now is %s. Do you want to scan your files to know where the bigger usage waste belongs to?" )" "${percent}%" "${percent_new}%" )"
+        message_ask_for_scan="$( printf "$( eval_gettext "Your hard disk used space was %s and now is %s. Do you want to scan your files to know where the bigger usage waste belongs to?" )" "${percent}%" "${percent_new}%" )"
 
         if $guitool --question --text="$message_ask_for_scan" ; then
             if ! el_dependencies_check "baobab" ; then
