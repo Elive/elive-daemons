@@ -9,6 +9,8 @@ export TEXTDOMAIN
 
 main(){
     # pre {{{
+    local desktop_started architecture return_status machine_id
+
     guitool="zenity --window-icon=/usr/share/icons/Elive/scalable/apps/logo-elive.png"
     el_mark_state
 
@@ -272,9 +274,10 @@ main(){
     fi
     architecture="$( el_architecture "host" )"
     return_status=0
+    custom="desktop_started"
     if [[ -n "$machine_id" ]] ; then
         if el_verify_internet ; then
-            echo -e "ELIVE_DATA_TYPE: 1.0::${machine_id}::transfer::text::healthy::0::::::${return_status}::::${architecture}::${eliveversion}::${SOURCE}::" | timeout 8 nc www.elivecd.org 60008 -w 6 1>/dev/null 2>&1
+            echo -e "ELIVE_DATA_TYPE: 1.0::${machine_id}::transfer::text::healthy::0::::::${return_status}::${desktop_started}::${architecture}::${eliveversion}::${SOURCE}::" | timeout 8 nc www.elivecd.org 60008 -w 6 1>/dev/null 2>&1
         fi
     fi
 
