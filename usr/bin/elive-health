@@ -38,7 +38,7 @@ main(){
     fi
 
     # wait desktop ready
-    if [[ -z "$is_terminal" ]] ; then
+    if ! ((is_interactive)) ; then
         sleep 20
     fi
 
