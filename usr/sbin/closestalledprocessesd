@@ -190,7 +190,7 @@ main(){
     while true
     do
         # scan for annoying processes (sorted by cpu usage)
-        LC_ALL=C top -b -n 1 | head -n 200 | tail -n +8 | while read -r pid user priority nice memvirt memresident memshared status cpu_usage mem_usage_percent time_minutes command
+        LC_ALL=C COLUMNS=200 top -c -b -n 1 | head -n 200 | tail -n +8 | while read -r pid user priority nice memvirt memresident memshared status cpu_usage mem_usage_percent time_minutes command
         do
             cpu_usage="${cpu_usage%.*}"
             mem_usage_percent="${mem_usage_percent%.*}"
@@ -260,7 +260,7 @@ main(){
                 enlightenment)
                     # cpu sucking
                     if [[ "${time_minutes}" -ge 30 ]] && [[ "${cpu_usage}" -gt 80 ]] ; then
-                        el_warning "enlightenment is consuming high cpu for more than 30 min, pidofs: $(pidof enlightenment), ps: $(ps aux | grep "enlightenment" | grep -vE '(grep|enlightenment_s)' | tr '\n' ';' ), top: $(top -b -n 1 | head -n 200 | tail -n +8 | grep "enlightenment" | grep -vE '(grep|enlightenment_s)' | tr '\n' ';' )"
+                        el_warning "enlightenment is consuming high cpu for more than 30 min, pidofs: $(pidof enlightenment), ps: $(ps aux | grep "enlightenment" | grep -vE '(grep|enlightenment_s)' | tr '\n' ';' ), top: $( COLUMNS=200 top -c -b -n 1 | head -n 200 | tail -n +8 | grep "enlightenment" | grep -vE '(grep|enlightenment_s)' | tr '\n' ';' )"
                         kill_process "$pid" "${status}" "$command"
                     fi
                     # huge mem usage
