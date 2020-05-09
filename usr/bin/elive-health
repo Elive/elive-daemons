@@ -268,23 +268,25 @@ main(){
     # - scanners support }}}
     # mark a working and healthy status {{{
     # set a minimal working state, to make sure that elive is not broken by a possible upgrade
-    machine_id="$( grep "^machine-id: " /etc/elive-version 2>/dev/null | sed -e 's|^machine-id: ||g' | tail -1 )"
-    if [[ -z "$machine_id" ]] ; then
-        machine_id="$( cat /etc/machine-id 2>/dev/null | tail -1 )"
-    fi
-    architecture="$( el_architecture "host" )"
-    return_status=0
+    if ! grep -qs "boot=live" /proc/cmdline ; then
+        machine_id="$( grep "^machine-id: " /etc/elive-version 2>/dev/null | sed -e 's|^machine-id: ||g' | tail -1 )"
+        if [[ -z "$machine_id" ]] ; then
+            machine_id="$( cat /etc/machine-id 2>/dev/null | tail -1 )"
+        fi
+        architecture="$( el_architecture "host" )"
+        return_status=0
 
-    source /etc/elive/machine-profile 2>/dev/null || true
-    if [[ -n "$MACHINE_VIRTUAL" ]] ; then
-        custom="machine_virtual"
-    else
-        custom="machine_real"
-    fi
+        source /etc/elive/machine-profile 2>/dev/null || true
+        if [[ -n "$MACHINE_VIRTUAL" ]] ; then
+            custom="machine_virtual"
+        else
+            custom="machine_real"
+        fi
 
-    if [[ -n "$machine_id" ]] ; then
-        if el_verify_internet ; then
-            echo -e "ELIVE_DATA_TYPE: 1.0::${machine_id}::transfer::text::healthy::0::::::${return_status}::${custom}::${architecture}::${eliveversion}::${SOURCE}::" | timeout 8 nc www.elivecd.org 60008 -w 6 1>/dev/null 2>&1
+        if [[ -n "$machine_id" ]] ; then
+            if el_verify_internet ; then
+                echo -e "ELIVE_DATA_TYPE: 1.0::${machine_id}::transfer::text::healthy::0::::::${return_status}::${custom}::${architecture}::${eliveversion}::${SOURCE}::" | timeout 8 nc www.elivecd.org 60008 -w 6 1>/dev/null 2>&1
+            fi
         fi
     fi
 
