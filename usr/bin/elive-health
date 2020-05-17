@@ -49,7 +49,7 @@ main(){
     #
     if [[ -e "/var/tmp/elivehealth/elive-system-shutdown-forced" ]] && grep -qsE "^(yes|user notified pre)$" "/var/tmp/elivehealth/elive-system-shutdown-forced" ; then
         local message_shutdown_warn
-        message_shutdown_warn="$( printf "$( eval_gettext "You previously turned off the computer incorrectly. It is very bad for your data to force the poweroff. You should shutdown the computer from the System option in the menu. You can also try the Hibernation mode if works correctly in your computer." )" "" )"
+        message_shutdown_warn="$( printf "$( eval_gettext "You previously turned off the computer incorrectly. It is very bad for your data to force the poweroff. You should shutdown the computer from the System option in the menu. If your computer blocks without reason, use a different Kernel version." )" "" )"
         # warn the user
         el_notify "important" "utilities-system-monitor" "$( eval_gettext "Forced shutdown detected" )" "$message_shutdown_warn"
 
