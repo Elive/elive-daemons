@@ -124,6 +124,9 @@ kill_process(){
     cmd="$3"
     message="$4"
 
+    # get full name of command
+    cmd="$( ps --no-headers -p $pid -o comm )"
+
     # }}}
     if [[ -n "$pid" ]] && kill -0 "$pid" 2>/dev/null ; then
         # zombies around, kill them
@@ -175,7 +178,7 @@ kill_process(){
 
 main(){
     # pre {{{
-    #local sleeptime pid user priority nice memvirt memresident memshared status cpu_usage mem_usage_percent command arg
+    #local sleeptime pid user priority nice memvirt memresident memshared status cpu_usage mem_usage_percent cmd arg
 
     arg="$1"
 
@@ -190,8 +193,11 @@ main(){
     while true
     do
         # scan for annoying processes (sorted by cpu usage)
-        LC_ALL=C COLUMNS=200 top -c -b -n 1 | head -n 200 | tail -n +8 | while read -r pid user priority nice memvirt memresident memshared status cpu_usage mem_usage_percent time_minutes command
+        LC_ALL=C COLUMNS=200 top -c -b -n 1 | head -n 200 | tail -n +8 | while read -r pid user priority nice memvirt memresident memshared status cpu_usage mem_usage_percent time_minutes cmd
         do
+            # remove arguments included in command
+            cmd="$( echo "$cmd" | awk '{print $1}' )"
+
             cpu_usage="${cpu_usage%.*}"
             mem_usage_percent="${mem_usage_percent%.*}"
 
@@ -208,44 +214,41 @@ main(){
             time_minutes="${time_minutes%.*}"
             time_minutes="$(( $(( $(( ${time_minutes%%:*} * 60 )) + ${time_minutes##*:} )) / 60 ))"
 
-            # remove arguments included in command
-            command="$( echo "$command" | awk '{print $1}' )"
-
             #
             # rules
             #
 
             #echo -e "D: checking command: $command with minutes: $time_minutes" 1>&2
 
-            case "$command" in
+            case "$cmd" in
                 gvfsd-metadata)
                     # gvfsd-daemon sometimes blocks sucking cpu cycles
                     if [[ "${time_minutes}" -ge 3 ]] && [[ "${cpu_usage}" -gt 60 ]] ; then
-                        logger "$(basename $0) - annoying process detected (${command}), minutes: ${time_minutes}, cpu usage: ${cpu_usage}, at pid: ${pid} "
-                        kill_process "$pid" "${status}" "$command"
+                        logger "$(basename $0) - annoying process detected (${cmd}), minutes: ${time_minutes}, cpu usage: ${cpu_usage}, at pid: ${pid} "
+                        kill_process "$pid" "${status}" "$cmd"
                     fi
 
                     ;;
                 tumblerd)
                     # tumblerd sucking around
                     if [[ "${time_minutes}" -ge 10 ]] && [[ "${cpu_usage}" -gt 60 ]] ; then
-                        logger "$(basename $0) - annoying process detected (${command}), minutes: ${time_minutes}, cpu usage: ${cpu_usage}, at pid: ${pid} "
-                        kill_process "$pid" "${status}" "$command"
+                        logger "$(basename $0) - annoying process detected (${cmd}), minutes: ${time_minutes}, cpu usage: ${cpu_usage}, at pid: ${pid} "
+                        kill_process "$pid" "${status}" "$cmd"
                     fi
 
                     ;;
                 mpg123*)
                     # mpg123 sometimes got stucked eating cpu
                     if [[ "${time_minutes}" -ge 15 ]] && [[ "${cpu_usage}" -gt 60 ]] ; then
-                        logger "$(basename $0) - annoying process detected (${command}), minutes: ${time_minutes}, cpu usage: ${cpu_usage}, at pid: ${pid} "
-                        kill_process "$pid" "${status}" "$command"
+                        logger "$(basename $0) - annoying process detected (${cmd}), minutes: ${time_minutes}, cpu usage: ${cpu_usage}, at pid: ${pid} "
+                        kill_process "$pid" "${status}" "$cmd"
                     fi
 
                     ;;
                 vlc|mplayer|gmplayer)
                     if [[ "${time_minutes}" -ge 180 ]] && [[ "${cpu_usage}" -gt 60 ]] ; then
                         # more than 3 hours with a video player consuming cpu == player stuck
-                        kill_process "$pid" "${status}" "$command"
+                        kill_process "$pid" "${status}" "$cmd"
                     fi
 
                     ;;
@@ -253,33 +256,33 @@ main(){
                     # cpu sucking
                     if [[ "${time_minutes}" -ge 20 ]] && [[ "${cpu_usage}" -gt 80 ]] ; then
                         # note: eating cpu' FM's seems like to be in the R status
-                        kill_process "$pid" "${status}" "$command"
+                        kill_process "$pid" "${status}" "$cmd"
                     fi
                     # huge mem usage
                     if [[ "${time_minutes}" -ge 30 ]] && [[ "${memvirt}" -gt 700000 ]] ; then
-                        kill_process "$pid" "${status}" "$command"
+                        kill_process "$pid" "${status}" "$cmd"
                     fi
                     ;;
                 enlightenment)
                     # cpu sucking
                     if [[ "${time_minutes}" -ge 30 ]] && [[ "${cpu_usage}" -gt 80 ]] ; then
                         el_warning "enlightenment is consuming high cpu for more than 30 min, pidofs: $(pidof enlightenment), ps: $(ps aux | grep "enlightenment" | grep -vE '(grep|enlightenment_s)' | tr '\n' ';' ), top: $( COLUMNS=200 top -c -b -n 1 | head -n 200 | tail -n +8 | grep "enlightenment" | grep -vE '(grep|enlightenment_s)' | tr '\n' ';' )"
-                        kill_process "$pid" "${status}" "$command"
+                        kill_process "$pid" "${status}" "$cmd"
                     fi
                     # huge mem usage
                     if [[ "${time_minutes}" -ge 30 ]] && [[ "${memvirt}" -gt 1200000 ]] ; then
-                        kill_process "$pid" "${status}" "$command"
+                        kill_process "$pid" "${status}" "$cmd"
                     fi
                     ;;
                 ecomorph)
                     # huge mem usage
                     if [[ "${time_minutes}" -ge 30 ]] && [[ "${memvirt}" -gt 400000 ]] ; then
                         # it should use 50 mb on a small screen computer
-                        kill_process "$pid" "${status}" "$command"
+                        kill_process "$pid" "${status}" "$cmd"
                     fi
                     ;;
                 # whitelisted ones:  yeah, we know that they sucks, and we love them on this way :/
-                songbird-bin|chromium|iceweasel*|firefox*|Xorg|opera|VirtualBox|AppRun|pcsxr*)
+                songbird-bin|chromium|iceweasel*|*firefox*|Xorg|opera|VirtualBox|AppRun|pcsxr*)
                         # songbird:  its a simply greedy eater of resoureces
                         # chromium:  when we play videos cpu becomes high, and we could have it running since long time
                         # Xorg: sometimes is overloaded, its normal
@@ -288,22 +291,25 @@ main(){
                 rage_thumb)
                     # sometimes block
                     if [[ "${time_minutes}" -ge 30 ]] && [[ "${cpu_usage}" -gt 60 ]] ; then
-                        kill_process "$pid" "${status}" "$command"
+                        kill_process "$pid" "${status}" "$cmd"
                     fi
                     ;;
                 vlc)
                     # vlc like from /usr/lib/i386-linux-gnu/emotion/generic_players/v-1.13/vlc
                     # it should never run for more than 3 hours (long long movies?)
                     if [[ "${time_minutes}" -ge 180 ]] && [[ "${cpu_usage}" -gt 60 ]] ; then
-                        kill_process "$pid" "${status}" "$command"
+                        kill_process "$pid" "${status}" "$cmd"
                     fi
                     ;;
 
                 *)
                     if [[ "${time_minutes}" -gt 200 ]] && [[ "${cpu_usage}" -gt 60 ]] ; then
                         # note: keep this list updated so that we can always know if there's specific processes that should be included
-                        if ! echo "$command" | grep -qsE "^(chrome|google|Web Content|dropbox|FlatCAM.exe|mencoder|ffmpeg|lame)$" ; then
-                            el_warning "Annoying process detected '${command}' sucking cpu for '${time_minutes}' min, cpu usage '${cpu_usage}', pid '$pid' (ignored)"
+                        if ! echo "$cmd" | grep -qsE "^(chrome|google|Web Content|dropbox|FlatCAM.exe|mencoder|ffmpeg|lame)$" ; then
+                            # get full name of command
+                            cmd="$( ps --no-headers -p $pid -o comm )"
+
+                            el_warning "Annoying process detected '${cmd}' sucking cpu for '${time_minutes}' min, cpu usage '${cpu_usage}', pid '$pid' (ignored)"
                         fi
                     fi
                     ;;
@@ -376,7 +382,7 @@ main(){
         sleep "$sleeptime"
 
         # clean vars
-        unset pid user priority nice memvirt memresident memshared status cpu_usage mem_usage_percent time_minutes command
+        unset pid user priority nice memvirt memresident memshared status cpu_usage mem_usage_percent time_minutes cmd
     done
 
 }
