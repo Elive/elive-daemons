@@ -305,7 +305,7 @@ main(){
                 *)
                     if [[ "${time_minutes}" -gt 200 ]] && [[ "${cpu_usage}" -gt 60 ]] ; then
                         # note: keep this list updated so that we can always know if there's specific processes that should be included
-                        if ! echo "$cmd" | grep -qsE "^(chrome|google|Web Content|dropbox|FlatCAM.exe|mencoder|ffmpeg|lame)$" ; then
+                        if ! echo "$cmd" | grep -qsiE "^(chrome|google|Web Content|dropbox|FlatCAM.exe|mencoder|ffmpeg|lame|C:\\Program)$" ; then
                             # get full name of command
                             cmd="$( ps --no-headers -p $pid -o comm )"
 
