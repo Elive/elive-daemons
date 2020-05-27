@@ -36,7 +36,7 @@ SCRIPTNAME=/etc/init.d/elivehealth
 SOURCE="$0"
 source /usr/lib/elive-tools/functions
 source /etc/adduser.conf
-REPORTS="1"
+EL_REPORTS="1"
 #el_make_environment
 #. gettext.sh
 #TEXTDOMAIN=""
