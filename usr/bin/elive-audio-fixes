@@ -6,7 +6,7 @@ EL_REPORTS="1"
 main(){
     # never touch volumes in pulseaudio
     if [[ -n "$(pidof pulseaudio)" ]] && ! [[ -n "$( grep -E "^(7\.|wheezy)" /etc/debian_version 2>/dev/null )" ]] ; then
-        return
+        return 0
     fi
 
     # unmute audio

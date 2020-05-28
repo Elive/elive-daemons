@@ -58,13 +58,13 @@ hd_uuid_decode(){
 
     if [[ -z "$1" ]] || [[ "$1" = "#"* ]] ; then
         el_error "argument passed to $FUNCNAME is not valid: $1"
-        return
+        return 0
     fi
 
     if echo "$uuid_name" | grep -sq "^/dev" ; then
         el_debug "UUID '$uuid_name' is already a device, no need to decode"
         echo "$uuid_name"
-        return
+        return 0
     fi
 
     uuid_name="$(readlink -f "/dev/disk/by-uuid/$uuid_name" 2>/dev/null )"
@@ -88,7 +88,7 @@ get_disk_from_partition_complex(){
 
         if [[ -b "$device" ]] ; then
             echo "$device"
-            return
+            return 0
         fi
     fi
 
@@ -136,7 +136,7 @@ get_disk_from_partition(){
     partition="$1"
 
     if ! [[ -b "$partition" ]] ; then
-        return
+        return 0
     fi
 
     #get from lsblk
@@ -156,7 +156,7 @@ get_disk_from_partition(){
                     # found!
                     echo "$disk"
                     #break
-                    return
+                    return 0
                 fi
             fi
         fi

@@ -152,7 +152,7 @@ kill_process(){
             fi
             sleep 1
             # nothing more here, we don't want to kill it more than a SEGV
-            return
+            return 0
         fi
 
         if kill -0 "$pid" 2>/dev/null ; then
