@@ -283,12 +283,22 @@ main(){
     fi
 
     if [[ -n "$machine_id" ]] ; then
-        if el_verify_internet ; then
-            if grep -qs "boot=live" /proc/cmdline ; then
-                if ! grep -qs "persistence" /proc/cmdline ; then
+        if grep -qs "boot=live" /proc/cmdline ; then
+            if ! grep -qs "persistence" /proc/cmdline ; then
+                # live mode:
+                if ! el_verify_internet ; then
+                    sleep 120
+                    if ! el_verify_internet ; then
+                        sleep 180
+                    fi
+                fi
+                if el_verify_internet ; then
                     echo -e "ELIVE_DATA_TYPE: 1.0::${machine_id}::transfer::text::liveboot::0::::::${return_status}::${custom}::${architecture}::${eliveversion}::${SOURCE}::" | timeout 8 nc www.elivecd.org 60008 -w 6 1>/dev/null 2>&1
                 fi
-            else
+            fi
+        else
+            # installed mode:
+            if el_verify_internet ; then
                 echo -e "ELIVE_DATA_TYPE: 1.0::${machine_id}::transfer::text::healthy::0::::::${return_status}::${custom}::${architecture}::${eliveversion}::${SOURCE}::" | timeout 8 nc www.elivecd.org 60008 -w 6 1>/dev/null 2>&1
             fi
         fi
