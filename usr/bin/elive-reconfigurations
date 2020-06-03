@@ -9,6 +9,11 @@ main(){
 
     # }}}
 
+    # never set blanking screen on e16 by default:
+    if [[ -n "$EROOT" ]] ; then
+        xset -dpms s off s noblank s 0 0 s noexpose
+    fi
+
     # load multiscreens configuration if needed
     elive-multiscreens -l -q
 

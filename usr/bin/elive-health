@@ -221,7 +221,7 @@ main(){
     # - stability status }}}
 
     # delayed actions
-    sleep 60
+    sleep 20
 
     # scanners support {{{
     if ((is_buster)) ; then
