@@ -307,9 +307,9 @@ main(){
                         # note: keep this list updated so that we can always know if there's specific processes that should be included
                         if ! echo "$cmd" | grep -qsiE "^(chrome|google|Web Content|dropbox|FlatCAM.exe|mencoder|ffmpeg|lame|C:\\Program)$" ; then
                             # get full name of command
-                            cmd="$( ps --no-headers -p $pid -o comm )"
+                            _cmd="$( ps --no-headers -p $pid -o comm )"
 
-                            el_warning "Annoying process detected '${cmd}' sucking cpu for '${time_minutes}' min, cpu usage '${cpu_usage}', pid '$pid' (ignored)"
+                            el_warning "Annoying process detected '${_cmd}' (originally called $cmd) sucking cpu for '${time_minutes}' min, cpu usage '${cpu_usage}', pid '$pid' (ignored)"
                         fi
                     fi
                     ;;
