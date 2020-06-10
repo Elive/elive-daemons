@@ -219,6 +219,14 @@ main(){
     fi
 
     # - stability status }}}
+    # repo issues {{{
+    repos="$( grep "^deb " /etc/apt/sources.list /etc/apt/sources.list.d/* )"
+    if ((is_buster)) ; then
+        if echo "$repos" | grep -qsE "(\Wwheezy|\Wbullseye|\Wtesting|\Wsid|ubuntu|\Wrestricted)" ; then
+            el_notify normal computer-fail "$( eval_gettext "Wrong repositories" )" "$( eval_gettext "You have mixed repositories configured in your system, this is strongly discouraged and can make your system break. If you have issues in your system we suggest to reinstall Elive and don't modify the default provided repositories." )"
+        fi
+    fi
+    # - repo issues }}}
 
     # delayed actions
     sleep 20
