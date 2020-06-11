@@ -193,7 +193,7 @@ main(){
     while true
     do
         # scan for annoying processes (sorted by cpu usage)
-        LC_ALL=C COLUMNS=200 top -c -b -n 1 | head -n 200 | tail -n +8 | while read -r pid user priority nice memvirt memresident memshared status cpu_usage mem_usage_percent time_minutes cmd
+        LC_ALL=C COLUMNS=200 top -c -b -n 1 | colors-remove | head -n 200 | tail -n +8 | while read -r pid user priority nice memvirt memresident memshared status cpu_usage mem_usage_percent time_minutes cmd
         do
             # remove arguments included in command
             cmd="$( echo "$cmd" | awk '{print $1}' )"
@@ -221,7 +221,7 @@ main(){
             #echo -e "D: checking command: $command with minutes: $time_minutes" 1>&2
 
             case "$cmd" in
-                "gvfsd-metadata")
+                *"gvfsd-metadata")
                     # gvfsd-daemon sometimes blocks sucking cpu cycles
                     if [[ "${time_minutes}" -ge 3 ]] && [[ "${cpu_usage}" -gt 60 ]] ; then
                         logger "$(basename $0) - annoying process detected (${cmd}), minutes: ${time_minutes}, cpu usage: ${cpu_usage}, at pid: ${pid} "
@@ -229,7 +229,7 @@ main(){
                     fi
 
                     ;;
-                tumblerd)
+                */tumblerd)
                     # tumblerd sucking around
                     if [[ "${time_minutes}" -ge 10 ]] && [[ "${cpu_usage}" -gt 60 ]] ; then
                         logger "$(basename $0) - annoying process detected (${cmd}), minutes: ${time_minutes}, cpu usage: ${cpu_usage}, at pid: ${pid} "
@@ -237,7 +237,7 @@ main(){
                     fi
 
                     ;;
-                mpg123*)
+                */bin/mpg123*)
                     # mpg123 sometimes got stucked eating cpu
                     if [[ "${time_minutes}" -ge 15 ]] && [[ "${cpu_usage}" -gt 60 ]] ; then
                         logger "$(basename $0) - annoying process detected (${cmd}), minutes: ${time_minutes}, cpu usage: ${cpu_usage}, at pid: ${pid} "
@@ -245,14 +245,14 @@ main(){
                     fi
 
                     ;;
-                vlc|mplayer|gmplayer)
+                */bin/vlc|*/bin/mplayer|*/bin/gmplayer|*/bin/smplayer)
                     if [[ "${time_minutes}" -ge 180 ]] && [[ "${cpu_usage}" -gt 60 ]] ; then
-                        # more than 3 hours with a video player consuming cpu == player stuck
+                        # more than 4 hours with a video player consuming cpu == player stuck
                         kill_process "$pid" "${status}" "$cmd"
                     fi
 
                     ;;
-                "enlightenment_fm")
+                *"enlightenment_fm")
                     # cpu sucking
                     if [[ "${time_minutes}" -ge 20 ]] && [[ "${cpu_usage}" -gt 80 ]] ; then
                         # note: eating cpu' FM's seems like to be in the R status
@@ -263,7 +263,7 @@ main(){
                         kill_process "$pid" "${status}" "$cmd"
                     fi
                     ;;
-                enlightenment)
+                */bin/enlightenment)
                     # cpu sucking
                     if [[ "${time_minutes}" -ge 30 ]] && [[ "${cpu_usage}" -gt 80 ]] ; then
                         el_warning "enlightenment is consuming high cpu for more than 30 min, pidofs: $(pidof enlightenment), ps: $(ps aux | grep "enlightenment" | grep -vE '(grep|enlightenment_s)' | tr '\n' ';' ), top: $( COLUMNS=200 top -c -b -n 1 | head -n 200 | tail -n +8 | grep "enlightenment" | grep -vE '(grep|enlightenment_s)' | tr '\n' ';' )"
@@ -274,7 +274,7 @@ main(){
                         kill_process "$pid" "${status}" "$cmd"
                     fi
                     ;;
-                ecomorph)
+                */ecomorph)
                     # huge mem usage
                     if [[ "${time_minutes}" -ge 30 ]] && [[ "${memvirt}" -gt 400000 ]] ; then
                         # it should use 50 mb on a small screen computer
@@ -282,19 +282,19 @@ main(){
                     fi
                     ;;
                 # whitelisted ones:  yeah, we know that they sucks, and we love them on this way :/
-                "songbird-bin"|chromium|iceweasel*|*firefox*|Xorg|opera|VirtualBox|AppRun|pcsxr*)
+                *"songbird-bin"|*/chromium|*/iceweasel*|*firefox*|*/Xorg|*/opera|*/VirtualBox|*/AppRun|*/pcsxr*)
                         # songbird:  its a simply greedy eater of resoureces
                         # chromium:  when we play videos cpu becomes high, and we could have it running since long time
                         # Xorg: sometimes is overloaded, its normal
                         true
                     ;;
-                "rage_thumb")
+                */"rage_thumb")
                     # sometimes block
                     if [[ "${time_minutes}" -ge 30 ]] && [[ "${cpu_usage}" -gt 60 ]] ; then
                         kill_process "$pid" "${status}" "$cmd"
                     fi
                     ;;
-                vlc)
+                */vlc)
                     # vlc like from /usr/lib/i386-linux-gnu/emotion/generic_players/v-1.13/vlc
                     # it should never run for more than 3 hours (long long movies?)
                     if [[ "${time_minutes}" -ge 180 ]] && [[ "${cpu_usage}" -gt 60 ]] ; then
