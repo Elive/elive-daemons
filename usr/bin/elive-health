@@ -63,7 +63,7 @@ main(){
     _notification_max_temperature_reached="$( cat /var/log/syslog /var/log/kern.log /var/log/syslog.1 /var/log/kern.log.1 2>/dev/null | grep "critical temperature reached.*shutting down" | sort -u | tr '\n' ' ' )"
 
     if [[ -n "$_notification_max_temperature_reached" ]] && [[ "$_notification_max_temperature_reached" != "$conf_notification_max_temperature_reached" ]] ; then
-        $guitool --warning --text="$( eval_gettext "Elive detected that your computer reached a critical temperature which forced a shutdown for its security, this is commonly caused in old computers where dust is accumulated in the fans. To solve the issue you should open the computer and clean any dust from them. Optionally you can set your CPU speed gadget to work a little slower, this can make your computer not forcing a shutdown, but it will turn your computer a bit slower." )"
+        $guitool --warning --text="$( eval_gettext "Elive detected that your computer reached a critical temperature which forced a shutdown for its security, this is commonly caused in old computers where dust is accumulated in the fans. To solve the issue you should remove the dust from your computer by trying to open it. Optionally you can set your CPU speed gadget to work a little slower, this can make your computer not forcing a shutdown, but it will turn your computer a bit slower." )"
 
         # make sure to not show again the message if we already did it
         conf_notification_max_temperature_reached="$_notification_max_temperature_reached"
@@ -85,14 +85,14 @@ main(){
         percent="${percent%\%}"
         # root almost full, always warning
         if [[ "${percent}" -ge "$percent_max_crit" ]] ; then
-            el_notify "normal" "gparted" "$( eval_gettext "Hard disk almost full" )" "$( eval_gettext "Your root partition is almost full, we recommend to remove some unneeded software or to resize your partition to be bigger and reinstall Elive with the special options if is needed. Your computer risks to become unbootable if the disk is full." )"
+            el_notify "normal" "gparted" "$( eval_gettext "Hard disk is almost full" )" "$( eval_gettext "Your root partition is almost full, we recommend to remove some unneeded software or to resize your partition to be bigger and reinstall Elive with the special options if is needed. Your computer risks to become unbootable if the disk is full." )"
         fi
     fi
 
     if [[ "${percent}" -ge "$percent_max" ]] ; then
-        $guitool --warning --text="$( eval_gettext "Your partition is almost full. We recommend you to delete old files to free up some space, your computer is in risk to be blocked if there's no more space left." )"
+        $guitool --warning --text="$( eval_gettext "Your partition is almost full. We recommend you to delete old files to free up some space, your computer is in risk to be blocked if has no space left." )"
 
-        if $guitool --question --text="$( eval_gettext "Do you want Elive to clean some unneded and temporal files automatically now?" )" ; then
+        if $guitool --question --text="$( eval_gettext "Do you want Elive to clean automatically some unneeded and temporary files now?" )" ; then
             # delete unneeded things now
             find "$HOME/.cache" -not -path "*/.cache/zsh/*" -not -path "*/.cache/elive*" -type f -delete
             find "$HOME/.thumbnails" -type f -delete
@@ -143,7 +143,7 @@ main(){
             baobab "$HOME" &
 
             sleep 3
-            $guitool --info --text="$( eval_gettext "Wait that the scanning finishes to see the results. In the meantime we recommend to delete every unneeded file from your Downloads which is where most of the wasted space happens." )"
+            $guitool --info --text="$( eval_gettext "Wait that the scanning finishes to see the results. In the meantime we recommend to delete every unneeded file from your Downloads which is probably where most of the wasted space happens." )"
         fi
     fi
 
@@ -158,7 +158,7 @@ main(){
         # gshock reports
         if [[ "$count_gshock" -gt 0 ]] ; then
             if [[ "$count_gshock" != "$conf_count_gshock" ]] ; then
-                el_notify "normal" "utilities-system-monitor" "Elive $( eval_gettext "Shaking alert" )" "$( eval_gettext "Please do not shake the computer while is running, it is very bad for your hard disk. Shocks received so far:" ) $count_gshock"
+                el_notify "normal" "utilities-system-monitor" "Elive $( eval_gettext "Alert of shake off" )" "$( eval_gettext "Please do not shake the computer while is powered on, doing it is is very bad for your hard disk. Shocks received so far:" ) $count_gshock"
 
                 # save to not repeat
                 conf_count_gshock="$count_gshock"
@@ -174,9 +174,9 @@ main(){
                 fi
 
                 local message_badblocks
-                message_badblocks="$( printf "$( eval_gettext "One of your hard disks has some bad blocks. This is not exactly bad but shows a degradation in your hard disk health. The problem appears when data wants to be saved in a future bad block not yet found. This message is basically to remember you that is important to save backups of your important or personal information in order to never lose it, since your hard disk is starting to have a delicated state." )" "" )"
+                message_badblocks="$( printf "$( eval_gettext "One of your hard disks has some bad blocks. This is not exactly bad but shows a degradation in your hard disk health. The problem appears when data wants to be saved in a bad block that has not been found yet. This message is basically to remember you that is important to save backups of your important or personal information in order to never lose it, since your hard disk is starting to have a delicated state." )" "" )"
                 local message_badblocks_counted
-                message_badblocks_counted="$( printf "$( eval_gettext "Bad blocks actually registered:" )" "" )"
+                message_badblocks_counted="$( printf "$( eval_gettext "Bad blocks registered:" )" "" )"
                 local message_badblocks_counted_before
                 message_badblocks_counted_before="$( printf "$( eval_gettext "Previously registered:" )" "" )"
 
@@ -196,7 +196,7 @@ main(){
                 fi
 
                 local message_badblocks_pending
-                message_badblocks_pending="$( printf "$( eval_gettext "Bad blocks pending to reallocate has been found in one of your hard disks. This means that some data are stored on it and cannot be recovered yet, if this data is from your operating system you can experience a crash in a random application, if belongs to any of your personal or important data then you could have lost it. Because of this, we recommend to backup all your important files and after, reinstall Elive entirely. You can also replace your hard disk with a new one, where it is strongly suggested to be an SSD disk." )" "" )"
+                message_badblocks_pending="$( printf "$( eval_gettext "Bad blocks pending to reallocate has been found in one of your hard disks. This means that some data is stored on them and cannot be recovered yet. If that data is from your operating system you can experience a crash in a random application. If they belongs to your personal or important data then you could have lost some. Because of this, we recommend to backup all your important files and after, reinstall Elive entirely. You can also replace your hard disk with a new one, it is also strongly suggested to be an SSD disk." )" "" )"
                 local message_badblocks_pending_counted
                 message_badblocks_pending_counted="$( printf "$( eval_gettext "Pending sectors for reallocation:" )" "" )"
 
@@ -214,7 +214,7 @@ main(){
     # stability status {{{
     if ((is_buster)) && ((is_alpha)) ; then
         if [[ -n "$E_START" ]] && [[ -f "/usr/share/doc/e17-stable/versions.history.Elive.gz" ]] ; then
-            el_notify important bomb "$( eval_gettext "Remember" )" "$( eval_gettext "E17 desktop is not working correctly yet on the new versions. It's slow, consumes cpu, no systray, no special effects, and menus or windows disappear. We recommend switching to E16 which is more integrated." )"
+            el_notify important bomb "$( eval_gettext "Remember" )" "$( eval_gettext "E17 desktop is not working correctly yet on the new versions. It's slow, consumes CPU, has no systray, no special effects, and menus or windows disappear. We recommend you to switch to E16 which is much better integrated now." )"
         fi
     fi
 
@@ -239,7 +239,7 @@ main(){
                 brother_scanner="$( cat /tmp/.hwinfo 2>/dev/null | grep "Brother Industries" ; lsusb | grep "Brother Industries" )"
 
                 local message_brother_scanner
-                message_brother_scanner="$( printf "$( eval_gettext "Wohoo! Elive can make your Brother Scanner work directly! Proceed with the magic?" )" "" )"
+                message_brother_scanner="$( printf "$( eval_gettext "Wohoo! Elive can make your Brother Scanner work directly! Proceed with our magic?" )" "" )"
 
                 # brscan
                 if echo "$brother_scanner" | grep -qsE "(DCP-1000|DCP-1400|DCP-8020|DCP-8025D|DCP-8040|DCP-8045|DFAX-4750e|FAX-5750e|MFC-3220C|MFC-3320CN|MFC-3420C|MFC-3820CN|MFC-4800|MFC-6800|MFC-8220|MFC-8420|MFC-8440|MFC-8500|MFC-8820D|MFC-8840D|MFC-9030|MFC-9070|MFC-9160|MFC-9180|MFC-9660|MFC-9700|MFC-9760|MFC-9800|MFC-9860|MFC-9880)" ; then
