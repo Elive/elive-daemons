@@ -49,7 +49,7 @@ main(){
     # exit if we don't have a touchpad to use
     if ! grep -qsiE 'synap|alps|cyapa|trackpad|etps|elan|touchpad' /proc/bus/input/devices && ! ((is_force)) ; then
         if ((is_configure)) && ! ((is_load)) ; then
-            notify-send -t 30000 -i input-touchpad "$( eval_gettext "Touchpad" )" "$( eval_gettext "There's not a touchpad device found in your machine. So you don't need to configure it." )"
+            notify-send -t 30000 -i input-touchpad "$( eval_gettext "Touchpad" )" "$( eval_gettext "There's not a touchpad device found in your machine. So we don't have anything to configure" )"
         fi
 
         el_debug "no touchpad found, ignoring $SOURCE"
@@ -136,16 +136,16 @@ main(){
         result="$( yad --form --center --image-on-top --image=input-touchpad \
             --title="Touchpad Configurator" \
             --text="$( eval_gettext "The Amazing Touchpad Configurator for Elive" )" \
-            --field="$( eval_gettext "Disable the touchpad tapping while typing in the keyboard" )":CHK $conf_taps_disabled_while_typing \
-            --field="$( eval_gettext "And disable the touchpad mouse movement too" )":CHK $conf_movement_disabled_while_typing \
-            --field="$( eval_gettext "Seconds to wait before to enable back" )":NUM "${conf_taps_disabled_while_typing_seconds}!0.0..4.0!0.1!1" \
-            --field="$( eval_gettext "Emulate the other mouse clicks when tapping the top corners" )":CHK ${conf_emulate_click_corners} \
+            --field="$( eval_gettext "Disable the touchpad taps while typing in the keyboard" )":CHK $conf_taps_disabled_while_typing \
+            --field="$( eval_gettext "And disable the touchpad movements too" )":CHK $conf_movement_disabled_while_typing \
+            --field="$( eval_gettext "Seconds to wait before enabling it back" )":NUM "${conf_taps_disabled_while_typing_seconds}!0.0..4.0!0.1!1" \
+            --field="$( eval_gettext "Emulate the other mouse clicks when tapping in the top corners" )":CHK ${conf_emulate_click_corners} \
             --field="$( eval_gettext "Emulate the other mouse clicks tapping with multiple fingers" )":CHK ${conf_emulate_click_multifinger} \
             --field="$( eval_gettext "Double tap to lock your mouse drag until the next tap" )":CHK ${conf_locked_drags} \
-            --field="$( eval_gettext "Scroll using side edges" )":CHK ${conf_scroll_edges} \
+            --field="$( eval_gettext "Scroll using the side edges" )":CHK ${conf_scroll_edges} \
             --field="$( eval_gettext "Scroll using two fingers" )":CHK ${conf_scroll_fingers} \
-            --field="$( eval_gettext "Natural scrolling mode (inverted)" )":CHK ${conf_scroll_natural} \
-            --field="$( eval_gettext "Continue moving when finger stays in corner" )":CHK ${conf_scroll_staying} \
+            --field="$( eval_gettext "Natural scrolling (inverted mode)" )":CHK ${conf_scroll_natural} \
+            --field="$( eval_gettext "Continue moving while finger stays in corner" )":CHK ${conf_scroll_staying} \
             --field="$( eval_gettext "Minimum speed" )":NUM "${conf_speed_min}!0.0..10!0.02!2" \
             --field="$( eval_gettext "Maximum speed" )":NUM "${conf_speed_max}!0.1..30!0.02!2" \
             --field="$( eval_gettext "Acceleration speed" )":NUM "${conf_speed_accel}!0.001..2.0!0.0002!5" \
