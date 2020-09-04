@@ -49,7 +49,7 @@ main(){
     # exit if we don't have a touchpad to use
     if ! grep -qsiE 'synap|alps|cyapa|trackpad|etps|elan|touchpad' /proc/bus/input/devices && ! ((is_force)) ; then
         if ((is_configure)) && ! ((is_load)) ; then
-            notify-send -t 30000 -i input-touchpad "$( eval_gettext "Touchpad" )" "$( eval_gettext "There's not a touchpad device found in your machine. So we don't have anything to configure" )"
+            notify-send -t 30000 -i input-touchpad "$( eval_gettext "Touchpad" )" "$( eval_gettext "Couldn't detect a touchpad, so there is nothing to configure." )"
         fi
 
         el_debug "no touchpad found, ignoring $SOURCE"
@@ -144,7 +144,7 @@ main(){
             --field="$( eval_gettext "Double tap to lock your mouse drag until the next tap" )":CHK ${conf_locked_drags} \
             --field="$( eval_gettext "Scroll using the side edges" )":CHK ${conf_scroll_edges} \
             --field="$( eval_gettext "Scroll using two fingers" )":CHK ${conf_scroll_fingers} \
-            --field="$( eval_gettext "Natural scrolling (inverted mode)" )":CHK ${conf_scroll_natural} \
+            --field="$( eval_gettext "Natural scrolling (Mac mode)" )":CHK ${conf_scroll_natural} \
             --field="$( eval_gettext "Continue moving while finger stays in corner" )":CHK ${conf_scroll_staying} \
             --field="$( eval_gettext "Minimum speed" )":NUM "${conf_speed_min}!0.0..10!0.02!2" \
             --field="$( eval_gettext "Maximum speed" )":NUM "${conf_speed_max}!0.1..30!0.02!2" \
