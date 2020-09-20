@@ -95,7 +95,7 @@ kill_processes_zombie(){
             sleep 3
 
             if kill -0 "$z_ppid" ; then
-                el_warning "still having not-killed zombie processes? $(ps axo  stat,pid,ppid,comm | grep "^Z" )"
+                el_warning "still having not-killed zombie processes?\n$(ps axo  stat,pid,ppid,comm | grep "^Z" )\npstree z_ppid: $( pstree -A -l -n -s "$z_ppid" )\npstree z_pid: $( pstree -A -l -n -s "$z_pid" )"
             fi
 
             unset z_pid z_ppid z_state z_comm
