@@ -70,6 +70,8 @@ main(){
     conf_emulate_click_corners="TRUE"
     conf_emulate_click_multifinger="TRUE"
     conf_locked_drags="FALSE"
+    #conf_bottom_area_disabled="TRUE"
+    conf_bottom_area_disabled_percent="12" # static for now, should the user be able to configure it?
     conf_scroll_edges="FALSE"
     conf_scroll_fingers="TRUE"
     conf_scroll_natural="FALSE"
@@ -78,7 +80,7 @@ main(){
     conf_speed_max="1.75"
     conf_speed_min="1"
     conf_taps_disabled_while_typing="TRUE"
-    conf_movement_disabled_while_typing="FALSE"
+    #conf_movement_disabled_while_typing="FALSE"
     conf_taps_disabled_while_typing_seconds="0.9"
 
     # }}}
@@ -86,6 +88,10 @@ main(){
     # clickpads should have this disabled by default because is annoying
     if grep -qsi "clickpad" /var/log/Xorg.0.log 2>/dev/null 1>&2 ; then
         conf_movement_disabled_while_typing="TRUE"
+        conf_bottom_area_disabled="TRUE"
+    else
+        conf_movement_disabled_while_typing="FALSE"
+        conf_bottom_area_disabled="FALSE"
     fi
 
     # get hardware default confs {{{
@@ -113,12 +119,17 @@ main(){
         conf_speed_accel="0.03600"
         el_debug "accel speed incorrectly get: $( synclient -l | grep AccelFactor )"
     fi
+    conf_bottom_area_size="$( synclient -l | grep -E "\s+BottomEdge\s+.*=" | sed -e 's|^.*= ||' | tail -1 )"
+    if [[ -z "$conf_bottom_area_size" ]] ; then
+        el_debug "bottom size incorrectly get: $( synclient -l | grep BottomEdge )"
+    fi
 
     # }}}
     # get user confs {{{
     el_config_get "conf_emulate_click_corners"
     el_config_get "conf_emulate_click_multifinger"
     el_config_get "conf_locked_drags"
+    el_config_get "conf_bottom_area_disabled"
     el_config_get "conf_scroll_edges"
     el_config_get "conf_scroll_fingers"
     el_config_get "conf_scroll_natural"
@@ -142,6 +153,7 @@ main(){
             --field="$( eval_gettext "Emulate the other mouse clicks when tapping in the top corners" )":CHK ${conf_emulate_click_corners} \
             --field="$( eval_gettext "Emulate the other mouse clicks tapping with multiple fingers" )":CHK ${conf_emulate_click_multifinger} \
             --field="$( eval_gettext "Double tap to lock your mouse drag until the next tap" )":CHK ${conf_locked_drags} \
+            --field="$( eval_gettext "Disable movements in the bottom edge area" )":CHK ${conf_bottom_area_disabled} \
             --field="$( eval_gettext "Scroll using the side edges" )":CHK ${conf_scroll_edges} \
             --field="$( eval_gettext "Scroll using two fingers" )":CHK ${conf_scroll_fingers} \
             --field="$( eval_gettext "Natural scrolling (Mac mode)" )":CHK ${conf_scroll_natural} \
@@ -165,13 +177,14 @@ main(){
         conf_emulate_click_corners="$( echo "${result}" | awk -v FS="|" '{print $4}' )"
         conf_emulate_click_multifinger="$( echo "${result}" | awk -v FS="|" '{print $5}' )"
         conf_locked_drags="$( echo "${result}" | awk -v FS="|" '{print $6}' )"
-        conf_scroll_edges="$( echo "${result}" | awk -v FS="|" '{print $7}' )"
-        conf_scroll_fingers="$( echo "${result}" | awk -v FS="|" '{print $8}' )"
-        conf_scroll_natural="$( echo "${result}" | awk -v FS="|" '{print $9}' )"
-        conf_scroll_staying="$( echo "${result}" | awk -v FS="|" '{print $10}' )"
-        conf_speed_min="$( echo "${result}" | awk -v FS="|" '{print $11}' )"
-        conf_speed_max="$( echo "${result}" | awk -v FS="|" '{print $12}' )"
-        conf_speed_accel="$( echo "${result}" | awk -v FS="|" '{print $13}' )"
+        conf_bottom_area_disabled="$( echo "${result}" | awk -v FS="|" '{print $7}' )"
+        conf_scroll_edges="$( echo "${result}" | awk -v FS="|" '{print $8}' )"
+        conf_scroll_fingers="$( echo "${result}" | awk -v FS="|" '{print $9}' )"
+        conf_scroll_natural="$( echo "${result}" | awk -v FS="|" '{print $10}' )"
+        conf_scroll_staying="$( echo "${result}" | awk -v FS="|" '{print $11}' )"
+        conf_speed_min="$( echo "${result}" | awk -v FS="|" '{print $12}' )"
+        conf_speed_max="$( echo "${result}" | awk -v FS="|" '{print $13}' )"
+        conf_speed_accel="$( echo "${result}" | awk -v FS="|" '{print $14}' )"
 
         # }}}
         # save new selected configurations {{{
@@ -179,6 +192,7 @@ main(){
         el_config_save "conf_emulate_click_multifinger"
         el_config_save "conf_locked_drags"
         el_config_save "conf_scroll_edges"
+        el_config_save "conf_bottom_area_disabled"
         el_config_save "conf_scroll_fingers"
         el_config_save "conf_scroll_natural"
         el_config_save "conf_scroll_staying"
@@ -251,6 +265,19 @@ main(){
             ;;
         *)
             el_error "touchpad configurator: conf_locked_drags wrongly set: $conf_locked_drags"
+            ;;
+    esac
+
+    # bottom area disabled movements
+    case "$conf_bottom_area_disabled" in
+        TRUE)
+            synclient AreaBottomEdge="$( echo "${conf_bottom_area_size} - ((${conf_bottom_area_size} / 100) * ${conf_bottom_area_disabled_percent})" | LC_ALL=C bc -l | sed -e 's|\..*$||g' )"
+            ;;
+        FALSE)
+            synclient AreaBottomEdge=0
+            ;;
+        *)
+            el_error "touchpad configurator: conf_bottom_area_disabled wrongly set: $conf_bottom_area_disabled"
             ;;
     esac
 
