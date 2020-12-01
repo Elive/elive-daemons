@@ -153,7 +153,7 @@ main(){
             --field="$( eval_gettext "Emulate the other mouse clicks when tapping in the top corners" )":CHK ${conf_emulate_click_corners} \
             --field="$( eval_gettext "Emulate the other mouse clicks tapping with multiple fingers" )":CHK ${conf_emulate_click_multifinger} \
             --field="$( eval_gettext "Double tap to lock your mouse drag until the next tap" )":CHK ${conf_locked_drags} \
-            --field="$( eval_gettext "Disable movements in the bottom edge area" )":CHK ${conf_bottom_area_disabled} \
+            --field="$( eval_gettext "Disable movement in the bottom edge area" )":CHK ${conf_bottom_area_disabled} \
             --field="$( eval_gettext "Scroll using the side edges" )":CHK ${conf_scroll_edges} \
             --field="$( eval_gettext "Scroll using two fingers" )":CHK ${conf_scroll_fingers} \
             --field="$( eval_gettext "Natural scrolling (Mac mode)" )":CHK ${conf_scroll_natural} \
