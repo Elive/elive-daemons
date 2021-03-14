@@ -55,10 +55,10 @@ if laptop-detect ; then
                     # notify
                     if ! ((is_user_notified)) && [[ -n "$DISPLAY" ]] ; then
                         if grep -qs "boot=live" /proc/cmdline ; then
-                            zenity --warning --text="$( eval_gettext "WiFi is disabled. You can activate it from the switch or with its keyboard hotkey." )"
+                            zenity --warning --text="$( eval_gettext "Wi-Fi is disabled by hardware. You can activate it from the switch or with its keyboard hotkey; this can differ between models but is typically labeled." )"
                         else
                             #el_warning "Wifi is disabled. You can activate it from the interruptor, switch or a keyboard hotkey."
-                            el_notify normal wifi "$( eval_gettext "WiFi is disabled" )" "$( eval_gettext "You can activate it from the switch or with its keyboard hotkey." )"
+                            el_notify normal wifi "$( eval_gettext "Wi-Fi is disabled" )" "$( eval_gettext "You can activate it from the switch or with its keyboard hotkey." )"
                         fi
 
                         is_user_notified=1
@@ -116,7 +116,7 @@ if [[ "$( lspci -nn -d "14e4:" | wc -l )" -gt 0 ]] && ! ((conf_is_b43_unworking_
         # show the wifi's to the user
         if ((is_scanning_working)) ; then
             # notify the user
-            notify-send -t 8000 -i desktop-effects "$( eval_gettext "Broadcom B43 Wifi" )" "$( eval_gettext "Your wireless device is difficult to set up on Linux systems, but Elive was able to make it working for you!" )"
+            notify-send -t 8000 -i desktop-effects "$( eval_gettext "Broadcom B43 Wi-Fi" )" "$( eval_gettext "Your wireless device is difficult to set up on Linux systems, but Elive was able to make it working for you!" )"
 
             # show him the wifis
             sleep 3
