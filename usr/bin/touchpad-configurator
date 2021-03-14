@@ -156,8 +156,8 @@ main(){
             --field="$( eval_gettext "Disable movement in the bottom edge area" )":CHK ${conf_bottom_area_disabled} \
             --field="$( eval_gettext "Scroll using the side edges" )":CHK ${conf_scroll_edges} \
             --field="$( eval_gettext "Scroll using two fingers" )":CHK ${conf_scroll_fingers} \
-            --field="$( eval_gettext "Natural scrolling (Mac mode)" )":CHK ${conf_scroll_natural} \
-            --field="$( eval_gettext "Continue moving while finger stays in corner" )":CHK ${conf_scroll_staying} \
+            --field="$( eval_gettext "Natural/inverted scrolling (Mac mode)" )":CHK ${conf_scroll_natural} \
+            --field="$( eval_gettext "Continue moving cursor while finger stays in corner" )":CHK ${conf_scroll_staying} \
             --field="$( eval_gettext "Minimum speed" )":NUM "${conf_speed_min}!0.0..10!0.02!2" \
             --field="$( eval_gettext "Maximum speed" )":NUM "${conf_speed_max}!0.1..30!0.02!2" \
             --field="$( eval_gettext "Acceleration speed" )":NUM "${conf_speed_accel}!0.001..2.0!0.0002!5" \
