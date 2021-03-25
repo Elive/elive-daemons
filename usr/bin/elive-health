@@ -10,6 +10,7 @@ export TEXTDOMAIN
 main(){
     # pre {{{
     local architecture return_status machine_id
+    local message_ask_for_scan
 
     guitool="zenity --window-icon=/usr/share/icons/Elive/scalable/apps/logo-elive.png"
     el_mark_state
@@ -125,16 +126,19 @@ main(){
             #rm -rf ${DHOME}/${result}/.local/share/desktop-directories/wine* 2>/dev/null
             #rm -rf ${DHOME}/${result}/.wine 2>/dev/null
             sync
-        fi
-        percent_new="$( LC_ALL=C df -m | awk '{if ($6 == "/home") print $5}' | head -1 )"
-        percent_new="${percent_new%\%}"
-        if [[ -z "$percent_new" ]] ; then
-            percent_new="$( LC_ALL=C df -m | awk '{if ($6 == "/") print $5}' | head -1 )"
+
+            percent_new="$( LC_ALL=C df -m | awk '{if ($6 == "/home") print $5}' | head -1 )"
             percent_new="${percent_new%\%}"
+            if [[ -z "$percent_new" ]] ; then
+                percent_new="$( LC_ALL=C df -m | awk '{if ($6 == "/") print $5}' | head -1 )"
+                percent_new="${percent_new%\%}"
+            fi
+
+            message_ask_for_scan="$( printf "$( eval_gettext "Your hard disk used space was %s and now is %s. Do you want to scan your files to know where the bigger usage waste belongs to?" )" "${percent}%" "${percent_new}%" )"
+        else
+            message_ask_for_scan="$( printf "$( eval_gettext "Do you want to scan your files to know where the bigger usage waste belongs to?" )" "${percent}%" "${percent_new}%" )"
         fi
 
-        local message_ask_for_scan
-        message_ask_for_scan="$( printf "$( eval_gettext "Your hard disk used space was %s and now is %s. Do you want to scan your files to know where the bigger usage waste belongs to?" )" "${percent}%" "${percent_new}%" )"
 
         if $guitool --question --text="$message_ask_for_scan" ; then
             if ! el_dependencies_check "baobab" ; then
