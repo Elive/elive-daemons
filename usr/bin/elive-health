@@ -136,7 +136,7 @@ main(){
 
             message_ask_for_scan="$( printf "$( eval_gettext "Your hard disk used space was %s and now is %s. Do you want to scan your files to know where the bigger usage waste belongs to?" )" "${percent}%" "${percent_new}%" )"
         else
-            message_ask_for_scan="$( printf "$( eval_gettext "Do you want to scan your files to know where the bigger usage waste belongs to?" )" "${percent}%" "${percent_new}%" )"
+            message_ask_for_scan="$( printf "$( eval_gettext "Do you want to scan your files to find out where the bigger usage waste belongs to?" )" "${percent}%" "${percent_new}%" )"
         fi
 
 
@@ -162,7 +162,7 @@ main(){
         # gshock reports
         if [[ "$count_gshock" -gt 0 ]] ; then
             if [[ "$count_gshock" != "$conf_count_gshock" ]] ; then
-                el_notify "normal" "utilities-system-monitor" "Elive $( eval_gettext "Alert of shake off" )" "$( eval_gettext "Please do not shake the computer while it's powered on, doing so is very bad for your hard disk. Shocks received so far:" ) $count_gshock"
+                el_notify "normal" "utilities-system-monitor" "Elive $( eval_gettext "Alert of shake off" )" "$( eval_gettext "Please do not shake the computer while it's powered on. You could damage it this way, especially if your computer uses a hard drive. Shocks received so far:" ) $count_gshock"
 
                 # save to not repeat
                 conf_count_gshock="$count_gshock"
