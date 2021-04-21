@@ -49,7 +49,7 @@ main(){
     # exit if we don't have a touchpad to use
     if ! grep -qsiE 'synap|alps|cyapa|trackpad|etps|elan|touchpad' /proc/bus/input/devices && ! ((is_force)) ; then
         if ((is_configure)) && ! ((is_load)) ; then
-            notify-send -t 30000 -i input-touchpad "$( eval_gettext "Touchpad" )" "$( eval_gettext "Couldn't detect a touchpad, so there is nothing to configure." )"
+            notify-send -t 30000 -i input-touchpad "$( eval_gettext "Touchpad" )" "$( eval_gettext "Couldn't detect a touchpad, so there is nothing to configure. If this is a fault in the application please report it on our forums!" )"
         fi
 
         el_debug "no touchpad found, ignoring $SOURCE"
