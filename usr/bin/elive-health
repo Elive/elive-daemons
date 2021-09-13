@@ -231,6 +231,19 @@ main(){
         fi
     fi
     # - repo issues }}}
+    # tell about squashfs errors in live mode {{{
+    if grep -qs "boot=live" /proc/cmdline ; then
+        if [[ -x "$(which live-mode-errors-report )" ]] ; then
+            if pidof live-mode-errors-report 1>/dev/null 2>&1 ; then
+                killall live-mode-errors-report
+                sleep 2
+            fi
+            ( live-mode-errors-report & )
+        fi
+    fi
+
+    #}}}
+
 
     # delayed actions
     sleep 20
