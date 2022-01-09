@@ -65,7 +65,7 @@ main(){
         result="${_browsers[0]}"
     else
         local message_select_browsers
-        message_select_browsers="$( printf "$( eval_gettext "Select the web browsers you want to run on RAM, each one will require a little extra of your memory resources so we suggest only selecting the ones that you constantly use." )" "" )"
+        message_select_browsers="$( printf "$( eval_gettext "Select the web browsers you want to run on RAM. We suggest only selecting the ones that you commonly use." )" "" )"
 
         result="$( for i in "${_browsers[@]}"
         do
