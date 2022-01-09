@@ -12,6 +12,10 @@ main(){
     local architecture return_status machine_id
     local message_ask_for_scan
 
+    if grep -qs "boot=live" /proc/cmdline ; then
+        is_live=1
+    fi
+
     guitool="zenity --window-icon=/usr/share/icons/Elive/scalable/apps/logo-elive.png"
     el_mark_state
 
@@ -32,6 +36,8 @@ main(){
         *.0.*)  is_stable=1 ; ;;
     esac
 
+    RAM_TOTAL_SIZE_mb="$( el_ram_usage_show "total" )"
+
     # }}}
     # dump the dbus address to use in other places if we need to
     if [[ -n "$DBUS_SESSION_BUS_ADDRESS" ]] ; then
@@ -40,7 +46,7 @@ main(){
 
     # wait desktop ready
     if ! ((is_interactive)) ; then
-        sleep 20
+        sleep 12
     fi
 
     # get configurations
@@ -119,7 +125,14 @@ main(){
             # free the trash
             find "$HOME/.local/share/Trash" -type f -delete
 
-            : > "$HOME/.xsession-errors"
+            # free psd profiles
+            if which psd 1>/dev/null && LC_ALL=C systemctl --user status psd | colors-remove | grep "Active: active" ; then
+                psd c
+            else
+                rm -rf "$HOME/.config/"*-crashrecovery-*
+            fi
+
+            echo > "$HOME/.xsession-errors"
 
             # wine apps
             #rm -rf ${DHOME}/${result}/.local/share/applications/wine
@@ -243,10 +256,118 @@ main(){
     fi
 
     #}}}
+    # browsers on tmpfs {{{
+    # only if it was never set / configured:
+    if [[ -z "$conf_browsers_on_ram" ]] && which psd 1>/dev/null ; then
+        # default
+        _browsers_on_ram=0
 
+        if ((is_live)) && grep -qs "persistence" /proc/cmdline ; then
+            # persistence mode: always need psd
+            _browsers_on_ram=1
+        else
+            # ssd on home or root: always, if at least 3,2 gb of ram
+            if grep -qs "^ssd_on_home: yes" /etc/elive-version ; then
+                if [[ "$RAM_TOTAL_SIZE_mb" -gt 3200 ]] ; then
+                    _browsers_on_ram=1
+                fi
+            else
+                if ! grep -qs "^ssd_on_home: " /etc/elive-version ; then
+                    if grep -qs "^ssd_on_root: yes" /etc/elive-version ; then
+                        if [[ "$RAM_TOTAL_SIZE_mb" -gt 3200 ]] ; then
+                            _browsers_on_ram=1
+                        fi
+                    else
+                        # this means we have not any "^ssd_on" setting, so we don't know
+                        if ! grep -qs "^ssd_on_root: " /etc/elive-version ; then
+                            _browsers_on_ram_ask=1
+                        fi
+                    fi
+                fi
+            fi
+            # if more than 9gb of ram: always, speeds up
+            if [[ "$RAM_TOTAL_SIZE_mb" -gt 9000 ]] ; then
+                _browsers_on_ram=1
+            else
+                # if enough ram, ask
+                if [[ "$RAM_TOTAL_SIZE_mb" -gt 3200 ]] ; then
+                    _browsers_on_ram_ask=1
+                fi
+            fi
+        fi
 
+        # ask
+        if [[ -n "$_browsers_on_ram_ask" ]] ; then
+            if $guitool --question --text="$( eval_gettext "Do you want to run your browsers over RAM? This will use an extra half gigabyte of memory but will make your browser faster and also improve the health of your hard disk. Select this option especially if you have an SSD disk." )" ; then
+                _browsers_on_ram=1
+            fi
+        fi
+
+        # save
+        conf_browsers_on_ram="$_browsers_on_ram"
+        el_config_save "conf_browsers_on_ram"
+    fi
+
+    # enable it
+    if ((conf_browsers_on_ram)) ; then
+        if ! el_dependencies_check "psd" ; then
+            el_dependencies_install "profile-sync-daemon"
+        fi
+
+        # enable daemon
+        if ! LC_ALL=C systemctl --user status psd | colors-remove | grep "Active: active" ; then
+            killall google-chrome chromium firefox firefox-esr palemoon midori opera vivaldi 1>/dev/null 2>&1 || true
+            sync ; sleep 4
+            killall -9 google-chrome chromium firefox firefox-esr palemoon midori opera vivaldi 1>/dev/null 2>&1 || true
+            sync ; sleep 1
+            if [[ -e "/var/lib/dpkg/info/google-chrome-stable.list" ]] ; then
+                el_array_member_add "google-chrome" "${_browsers[@]}" ; _browsers=("${_out[@]}")
+                el_array_member_add "Google Chrome" "${_browsers[@]}" ; _browsers=("${_out[@]}")
+            fi
+            if [[ -e "/var/lib/dpkg/info/chromium.list" ]] ; then
+                el_array_member_add "chromium" "${_browsers[@]}" ; _browsers=("${_out[@]}")
+                el_array_member_add "Google Chromium (opensource)" "${_browsers[@]}" ; _browsers=("${_out[@]}")
+            fi
+            if [[ -e "/var/lib/dpkg/info/firefox-esr.list" ]] ; then
+                el_array_member_add "firefox" "${_browsers[@]}" ; _browsers=("${_out[@]}")
+                el_array_member_add "Firefox ESR" "${_browsers[@]}" ; _browsers=("${_out[@]}")
+            fi
+            if [[ -e "/var/lib/dpkg/info/midori.list" ]] ; then
+                el_array_member_add "midori" "${_browsers[@]}" ; _browsers=("${_out[@]}")
+                el_array_member_add "Midori" "${_browsers[@]}" ; _browsers=("${_out[@]}")
+            fi
+            if [[ -e "/var/lib/dpkg/info/opera.list" ]] ; then
+                el_array_member_add "opera" "${_browsers[@]}" ; _browsers=("${_out[@]}")
+                el_array_member_add "Opera" "${_browsers[@]}" ; _browsers=("${_out[@]}")
+            fi
+            if [[ -e "/var/lib/dpkg/info/vivaldi.list" ]] ; then
+                el_array_member_add "vivaldi" "${_browsers[@]}" ; _browsers=("${_out[@]}")
+                el_array_member_add "Vivaldi" "${_browsers[@]}" ; _browsers=("${_out[@]}")
+            fi
+            if [[ "${#_browsers[@]}" = 2 ]] ; then
+                result="${_browsers[0]}"
+            else
+                result="$( $guitool --height="200" --list --checklist --separator=" " --column="Enable" --column="Web Browser" "${_browsers[@]}" )"
+            fi
+            systemctl --user enable psd
+            systemctl --user start psd
+            sync
+            systemctl --user stop psd
+            sed -i -e "s|^.*USE_OVERLAYFS=\".*|USE_OVERLAYFS=\"yes\"|g" "$HOME/.config/psd/psd.conf"
+            sed -i -e "s|^.*BROWSERS=\".*|BROWSERS=\"${result}\"|g" "$HOME/.config/psd/psd.conf"
+            sed -i -e "s|^.*USE_BACKUPS=\".*|USE_BACKUPS=\"yes\"|g" "$HOME/.config/psd/psd.conf"
+            sed -i -e "s|^.*BACKUP_LIMIT=\".*|BACKUP_LIMIT=1|g" "$HOME/.config/psd/psd.conf"
+            systemctl --user start psd
+        fi
+    fi
+
+    # - browsers on tmpfs }}}
+
+    #
     # delayed actions
+    #
     sleep 20
+    #
 
     # scanners support {{{
     if ((is_buster)) ; then
