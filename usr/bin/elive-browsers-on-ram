@@ -19,7 +19,19 @@ main(){
 
     # close browsers first
     killall google-chrome chromium firefox firefox-esr palemoon midori opera vivaldi 1>/dev/null 2>&1 || true
-    sync ; sleep 4
+    sync
+    # wait for browsers to terminate first
+    count=0
+    while true ; do
+        if pidof google-chrome chromium firefox firefox-esr palemoon midori opera vivaldi 1>/dev/null 2>&1 ; then
+            sleep 1
+        else
+            break
+        fi
+        count="$(( $count + 1 ))"
+        [[ "$count" -ge 20 ]] && break
+    done
+
     killall -9 google-chrome chromium firefox firefox-esr palemoon midori opera vivaldi 1>/dev/null 2>&1 || true
     sync ; sleep 1
 
