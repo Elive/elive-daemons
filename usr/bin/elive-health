@@ -283,7 +283,9 @@ main(){
                     else
                         # this means we have not any "^ssd_on" setting, so we don't know
                         if ! grep -qs "^ssd_on_root: " /etc/elive-version ; then
-                            _browsers_on_ram_ask=1
+                            if [[ "$RAM_TOTAL_SIZE_mb" -gt 3700 ]] ; then
+                                _browsers_on_ram_ask=1
+                            fi
                         fi
                     fi
                 fi
@@ -293,7 +295,7 @@ main(){
                 _browsers_on_ram=1
             else
                 # if enough ram, ask
-                if [[ "$RAM_TOTAL_SIZE_mb" -gt 3200 ]] ; then
+                if [[ "$RAM_TOTAL_SIZE_mb" -gt 3700 ]] ; then
                     _browsers_on_ram_ask=1
                 fi
             fi
@@ -348,19 +350,21 @@ main(){
                 el_array_member_add "Vivaldi" "${_browsers[@]}" ; _browsers=("${_out[@]}")
             fi
             if [[ "${#_browsers[@]}" = 2 ]] ; then
-                result="${_browsers[@]}"
+                result="${_browsers[0]}"
             else
                 result="$( $guitool --height="200" --list --checklist --separator=" " --column="Enable" --column="Web Browser" "${_browsers[@]}" )"
             fi
-            systemctl --user enable psd
-            systemctl --user start psd
+            systemctl --user enable psd.service psd-resync.service
+            systemctl --user start psd.service psd-resync.service
             sync
-            systemctl --user stop psd
+            # configure
+            systemctl --user stop psd.service psd-resync.service
+            sync
             sed -i -e "s|^.*USE_OVERLAYFS=\".*|USE_OVERLAYFS=\"yes\"|g" "$HOME/.config/psd/psd.conf"
             sed -i -e "s|^.*BROWSERS=\".*|BROWSERS=\"${result}\"|g" "$HOME/.config/psd/psd.conf"
             sed -i -e "s|^.*USE_BACKUPS=\".*|USE_BACKUPS=\"yes\"|g" "$HOME/.config/psd/psd.conf"
-            sed -i -e "s|^.*BACKUP_LIMIT=\".*|BACKUP_LIMIT=1|g" "$HOME/.config/psd/psd.conf"
-            systemctl --user start psd
+            sed -i -e "s|^.*BACKUP_LIMIT=.*|BACKUP_LIMIT=1|g" "$HOME/.config/psd/psd.conf"
+            systemctl --user start psd.service psd-resync.service
         fi
     fi
 
