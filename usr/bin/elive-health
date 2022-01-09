@@ -268,19 +268,19 @@ main(){
         else
             # ssd on home or root: always, if at least 3,2 gb of ram
             if grep -qs "^ssd_on_home: yes" /etc/elive-version ; then
-                if [[ "$RAM_TOTAL_SIZE_mb" -gt 3200 ]] ; then
+                if [[ "$RAM_TOTAL_SIZE_mb" -gt 2700 ]] ; then
                     _browsers_on_ram=1
                 fi
             else
                 if ! grep -qs "^ssd_on_home: " /etc/elive-version ; then
                     if grep -qs "^ssd_on_root: yes" /etc/elive-version ; then
-                        if [[ "$RAM_TOTAL_SIZE_mb" -gt 3200 ]] ; then
+                        if [[ "$RAM_TOTAL_SIZE_mb" -gt 2700 ]] ; then
                             _browsers_on_ram=1
                         fi
                     else
                         # this means we have not any "^ssd_on" setting, so we don't know
                         if ! grep -qs "^ssd_on_root: " /etc/elive-version ; then
-                            if [[ "$RAM_TOTAL_SIZE_mb" -gt 3700 ]] ; then
+                            if [[ "$RAM_TOTAL_SIZE_mb" -gt 2700 ]] ; then
                                 _browsers_on_ram_ask=1
                             fi
                         fi
@@ -288,11 +288,11 @@ main(){
                 fi
             fi
             # if more than 9gb of ram: always, speeds up
-            if [[ "$RAM_TOTAL_SIZE_mb" -gt 9000 ]] ; then
+            if [[ "$RAM_TOTAL_SIZE_mb" -gt 4700 ]] ; then
                 _browsers_on_ram=1
             else
                 # if enough ram, ask
-                if [[ "$RAM_TOTAL_SIZE_mb" -gt 3700 ]] ; then
+                if [[ "$RAM_TOTAL_SIZE_mb" -gt 2700 ]] ; then
                     _browsers_on_ram_ask=1
                 fi
             fi
