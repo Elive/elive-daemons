@@ -257,11 +257,13 @@ main(){
 
     #}}}
     # browsers on tmpfs {{{
-    # only if it was never set / configured:
+    # only if it was never set / configured yet (if is configured, is set to 0 which is defined):
     if [[ -z "$conf_browsers_on_ram" ]] ; then
         if ! el_dependencies_check "psd" ; then
             el_dependencies_install "profile-sync-daemon"
         fi
+        systemctl --user disable psd.service psd-resync.service 1>/dev/null 2>&1 || true
+        systemctl --user stop psd.service psd-resync.service 1>/dev/null 2>&1 || true
         # default
         _browsers_on_ram=0
 
@@ -327,32 +329,63 @@ main(){
             sync ; sleep 1
             if [[ -e "/var/lib/dpkg/info/google-chrome-stable.list" ]] ; then
                 el_array_member_add "google-chrome" "${_browsers[@]}" ; _browsers=("${_out[@]}")
-                el_array_member_add "Google Chrome" "${_browsers[@]}" ; _browsers=("${_out[@]}")
             fi
             if [[ -e "/var/lib/dpkg/info/chromium.list" ]] ; then
                 el_array_member_add "chromium" "${_browsers[@]}" ; _browsers=("${_out[@]}")
-                el_array_member_add "Google Chromium (opensource)" "${_browsers[@]}" ; _browsers=("${_out[@]}")
             fi
             if [[ -e "/var/lib/dpkg/info/firefox-esr.list" ]] ; then
                 el_array_member_add "firefox" "${_browsers[@]}" ; _browsers=("${_out[@]}")
-                el_array_member_add "Firefox ESR" "${_browsers[@]}" ; _browsers=("${_out[@]}")
             fi
             if [[ -e "/var/lib/dpkg/info/midori.list" ]] ; then
                 el_array_member_add "midori" "${_browsers[@]}" ; _browsers=("${_out[@]}")
-                el_array_member_add "Midori" "${_browsers[@]}" ; _browsers=("${_out[@]}")
             fi
             if [[ -e "/var/lib/dpkg/info/opera.list" ]] ; then
                 el_array_member_add "opera" "${_browsers[@]}" ; _browsers=("${_out[@]}")
-                el_array_member_add "Opera" "${_browsers[@]}" ; _browsers=("${_out[@]}")
             fi
             if [[ -e "/var/lib/dpkg/info/vivaldi.list" ]] ; then
                 el_array_member_add "vivaldi" "${_browsers[@]}" ; _browsers=("${_out[@]}")
-                el_array_member_add "Vivaldi" "${_browsers[@]}" ; _browsers=("${_out[@]}")
             fi
-            if [[ "${#_browsers[@]}" = 2 ]] ; then
+            if [[ "${#_browsers[@]}" = 1 ]] ; then
                 result="${_browsers[0]}"
             else
-                result="$( $guitool --height="200" --list --checklist --separator=" " --column="Enable" --column="Web Browser" "${_browsers[@]}" )"
+                local message_select_browsers
+                message_select_browsers="$( printf "$( eval_gettext "Select the web browsers you want to run on RAM, each one will require a little extra of your memory resources so we suggest only selecting the ones that you constantly use." )" "" )"
+
+                result="$( for i in "${_browsers[@]}"
+                do
+                    case "$i" in
+                        "google-chrome")
+                            echo "TRUE"
+                            echo "$i"
+                            echo "Google Chrome"
+                            ;;
+                        "chromium")
+                            echo "FALSE"
+                            echo "$i"
+                            echo "Google Chromium (opensource)"
+                            ;;
+                        "firefox")
+                            echo "FALSE"
+                            echo "$i"
+                            echo "Firefox"
+                            ;;
+                        "midori")
+                            echo "FALSE"
+                            echo "$i"
+                            echo "Midori"
+                            ;;
+                        "opera")
+                            echo "FALSE"
+                            echo "$i"
+                            echo "Opera"
+                            ;;
+                        "vivaldi")
+                            echo "FALSE"
+                            echo "$i"
+                            echo "Vivaldi"
+                            ;;
+                    esac
+                done  | $guitool --height="200" --list --checklist --text="$message_select_browsers" --separator=" " --column="Enable" --column="ID" --column="Web Browser" --print-column=2 --hide-column=2  2>/dev/null )"
             fi
             systemctl --user enable psd.service psd-resync.service
             systemctl --user start psd.service psd-resync.service
