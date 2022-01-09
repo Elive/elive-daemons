@@ -258,7 +258,10 @@ main(){
     #}}}
     # browsers on tmpfs {{{
     # only if it was never set / configured:
-    if [[ -z "$conf_browsers_on_ram" ]] && which psd 1>/dev/null ; then
+    if [[ -z "$conf_browsers_on_ram" ]] ; then
+        if ! el_dependencies_check "psd" ; then
+            el_dependencies_install "profile-sync-daemon"
+        fi
         # default
         _browsers_on_ram=0
 
