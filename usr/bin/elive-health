@@ -345,7 +345,7 @@ main(){
                 el_array_member_add "Vivaldi" "${_browsers[@]}" ; _browsers=("${_out[@]}")
             fi
             if [[ "${#_browsers[@]}" = 2 ]] ; then
-                result="${_browsers[0]}"
+                result="${_browsers[@]}"
             else
                 result="$( $guitool --height="200" --list --checklist --separator=" " --column="Enable" --column="Web Browser" "${_browsers[@]}" )"
             fi
