@@ -262,9 +262,12 @@ main(){
         # default
         _browsers_on_ram=0
 
-        if ((is_live)) && grep -qs "persistence" /proc/cmdline ; then
-            # persistence mode: always need psd
-            _browsers_on_ram=1
+        # Note: live mode doesn't needs it since its already on Live mode, so disable it entirely to ask since this point, unless we are in persistence mode which is needed
+        if ((is_live)) ; then
+            if grep -qs "persistence" /proc/cmdline ; then
+                # persistence mode: always need psd
+                _browsers_on_ram=1
+            fi
         else
             # ssd on home or root: always, if at least 3,2 gb of ram
             if grep -qs "^ssd_on_home: yes" /etc/elive-version ; then
@@ -298,8 +301,9 @@ main(){
             fi
         fi
 
+
         # ask
-        if [[ -n "$_browsers_on_ram_ask" ]] ; then
+        if ((_browsers_on_ram_ask)) ; then
             if $guitool --question --text="$( eval_gettext "Do you want to run your browsers over RAM? This will use an extra half gigabyte of memory but will make your browser faster and also improve the health of your hard disk. Select this option especially if you have an SSD disk." )" ; then
                 _browsers_on_ram=1
             fi
