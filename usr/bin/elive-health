@@ -327,6 +327,26 @@ main(){
     fi
 
     # - browsers on tmpfs }}}
+    # conky transparency fix {{{
+    # sometimes we may change the "composite" settings so make sure conky is always correctly working
+    if [[ -n "$EROOT" ]] ; then
+        if pidof conky 1>/dev/null ; then
+            if eesh "compmgr ?" | grep -qs "on=1" ; then
+                if grep -qs "own_window_argb_visual = false" "$HOME/.conkyrc" ; then
+                    killall conky
+                    sed -i -e "s|^.*own_window_argb_visual.*$|\town_window_argb_visual = true,|gI" "$HOME/.conkyrc"
+                    ( conky 1>/dev/null 2>&1 & disown )
+                fi
+            else
+                if grep -qs "own_window_argb_visual = true" "$HOME/.conkyrc" ; then
+                    killall conky
+                    sed -i -e "s|^.*own_window_argb_visual.*$|\town_window_argb_visual = false,|gI" "$HOME/.conkyrc"
+                    ( conky 1>/dev/null 2>&1 & disown )
+                fi
+            fi
+        fi
+    fi
+    # - conky transparency fix }}}
 
     #
     # delayed actions
