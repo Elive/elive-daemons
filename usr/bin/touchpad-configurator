@@ -74,7 +74,7 @@ main(){
     conf_bottom_area_disabled_percent="12" # static for now, should the user be able to configure it?
     conf_scroll_edges="FALSE"
     conf_scroll_fingers="TRUE"
-    conf_scroll_natural="FALSE"
+    conf_scroll_natural="TRUE"
     conf_scroll_staying="FALSE"
     conf_speed_accel="0.03600"
     conf_speed_max="1.75"
