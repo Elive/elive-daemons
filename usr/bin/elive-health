@@ -52,6 +52,12 @@ main(){
     # get configurations
     el_config_get
 
+    # start things {{{
+    # always reload crontab if we have it
+    if [[ -s "$HOME/.crontab" ]] ; then
+        crontab "$HOME/.crontab"
+    fi
+    # - start things }}}
     # was the shutdown forced? {{{
     #
     if [[ -e "/var/tmp/elivehealth/elive-system-shutdown-forced" ]] && grep -qsE "^(yes|user notified pre)$" "/var/tmp/elivehealth/elive-system-shutdown-forced" ; then
