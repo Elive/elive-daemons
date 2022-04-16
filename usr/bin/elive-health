@@ -53,7 +53,7 @@ main(){
     fi
 
     # wait desktop ready
-    if ! ((is_interactive)) ; then
+    if ! ((is_interactive)) && ! ((is_nodelay)) ; then
         sleep 12
     fi
 
@@ -365,7 +365,7 @@ main(){
     #
     # delayed actions
     #
-    if ! ((is_nodelay)) ; then
+    if ! ((is_interactive)) && ! ((is_nodelay)) ; then
         sleep 20
     fi
     #
