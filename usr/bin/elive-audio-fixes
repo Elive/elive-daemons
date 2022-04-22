@@ -10,9 +10,10 @@ main(){
     #fi
 
     # reconfigure audio when its deconfigured
-    if [[ ! -e ~/.asoundrc ]] ; then
+    if [[ ! -e ~/.asoundrc ]] || [[ -e ~/.asoundrc-reconfigureme ]] ; then
         audio-configurator --quiet --auto --smart
         setvolume defaults
+        rm -f ~/.asoundrc-reconfigureme
     fi
 
     # unmute audio
