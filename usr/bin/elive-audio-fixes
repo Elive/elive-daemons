@@ -5,8 +5,14 @@ EL_REPORTS="1"
 
 main(){
     # never touch volumes in pulseaudio
-    if [[ -n "$(pidof pulseaudio)" ]] && ! [[ -n "$( grep -E "^(7\.|wheezy)" /etc/debian_version 2>/dev/null )" ]] ; then
-        return 0
+    #if [[ -n "$(pidof pulseaudio)" ]] && ! [[ -n "$( grep -E "^(7\.|wheezy)" /etc/debian_version 2>/dev/null )" ]] ; then
+        #return 0
+    #fi
+
+    # reconfigure audio when its deconfigured
+    if [[ ! -e ~/.asoundrc ]] ; then
+        audio-configurator --quiet --auto --smart
+        setvolume defaults
     fi
 
     # unmute audio
@@ -23,9 +29,11 @@ main(){
     fi
 
     # master should be always full
-    amixer -q set Master 100% 2>/dev/null
-    amixer -q set Master,0 100% 2>/dev/null
-    amixer -q set Master,1 100% 2>/dev/null
+    if ! pidof pulseaudio 1>/dev/null 2>&1 ; then
+        amixer -q set Master 100% 2>/dev/null
+        amixer -q set Master,0 100% 2>/dev/null
+        amixer -q set Master,1 100% 2>/dev/null
+    fi
 
     # set a good volume by default
     # update: we dont want to "setvolume defaults" on this unreliable way
