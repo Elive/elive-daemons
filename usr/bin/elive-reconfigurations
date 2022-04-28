@@ -17,7 +17,7 @@ main(){
     # load multiscreens configuration if needed, delayed otherwise it may fail in e16 & VirtualBox
     ( sleep 4 && elive-multiscreens -l -q ) &
 
-    # reconfigure GL in elementary based in E configurations
+    # reconfigure GL in elementary based in E configurations {{{
     if [[ -n "$E_START" ]] && [[ -d "$HOME/.elementary/config/standard" ]] ; then
         cd_previous="$(pwd)"
         if [[ -z "$E_CONF_PROFILE" ]] ; then
@@ -68,9 +68,41 @@ main(){
         rm -f base.cfg.src
 
         cd
-
     fi
+    # }}}
 
+    # conky transparency fix in e16 {{{
+    # sometimes we may change the "composite" settings so make sure conky is always correctly working
+    if [[ -n "$EROOT" ]] ; then
+        if pidof conky 1>/dev/null ; then
+            if eesh "compmgr ?" | grep -qs "on=1" ; then
+                if grep -qs "own_window_argb_visual = false" "$HOME/.conkyrc" ; then
+                    killall conky
+                    sed -i -e "s|^.*own_window_argb_visual.*$|\town_window_argb_visual = true,|gI" "$HOME/.conkyrc"
+                    # always reconfigure other possible things because it may be a new configuration
+                    if [[ -s "/usr/lib/user-manager/hooks.d/e17-wizard/after/50-special-configurations.sh" ]] ; then
+                        /usr/lib/user-manager/hooks.d/e17-wizard/after/50-special-configurations.sh
+                    else
+                        el_warning "tried to run an extra configurator but seems like the file is missing: /usr/lib/user-manager/hooks.d/e17-wizard/after/50-special-configurations.sh"
+                    fi
+                    ( conky 1>/dev/null 2>&1 & disown )
+                fi
+            else
+                if grep -qs "own_window_argb_visual = true" "$HOME/.conkyrc" ; then
+                    killall conky
+                    sed -i -e "s|^.*own_window_argb_visual.*$|\town_window_argb_visual = false,|gI" "$HOME/.conkyrc"
+                    # always reconfigure other possible things because it may be a new configuration
+                    if [[ -s "/usr/lib/user-manager/hooks.d/e17-wizard/after/50-special-configurations.sh" ]] ; then
+                        /usr/lib/user-manager/hooks.d/e17-wizard/after/50-special-configurations.sh
+                    else
+                        el_warning "tried to run an extra configurator but seems like the file is missing: /usr/lib/user-manager/hooks.d/e17-wizard/after/50-special-configurations.sh"
+                    fi
+                    ( conky 1>/dev/null 2>&1 & disown )
+                fi
+            fi
+        fi
+    fi
+    # - conky transparency fix }}}
 
     # if we are debugging give it a little pause to see what is going on
     if grep -qs "debug" /proc/cmdline ; then
