@@ -6,16 +6,32 @@ EL_REPORTS="1"
 main(){
     # pre {{{
     #local file
+    for arg in "$@" ; do
+        case "$arg" in
+            --no-delay)
+                is_nodelay=1
+                ;;
+        esac
+    done
+
+    if ((is_interactive)) ; then
+        is_nodelay=1
+    fi
 
     # }}}
+
+    # wait desktop ready
+    if ! ((is_nodelay)) ; then
+        sleep 6
+    fi
 
     # never set blanking screen on e16 by default:
     if [[ -n "$EROOT" ]] ; then
         xset -dpms s off s noblank s 0 0 s noexpose
     fi
 
-    # load multiscreens configuration if needed, delayed otherwise it may fail in e16 & VirtualBox
-    ( sleep 4 && elive-multiscreens -l -q ) &
+    # load multiscreens configuration if needed
+    ( elive-multiscreens -l -q ) &
 
     # reconfigure GL in elementary based in E configurations {{{
     if [[ -n "$E_START" ]] && [[ -d "$HOME/.elementary/config/standard" ]] ; then

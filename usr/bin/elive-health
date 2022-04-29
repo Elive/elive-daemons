@@ -46,6 +46,11 @@ main(){
         esac
     done
 
+    if ((is_interactive)) ; then
+        is_nodelay=1
+    fi
+
+
     # }}}
     # dump the dbus address to use in other places if we need to
     if [[ -n "$DBUS_SESSION_BUS_ADDRESS" ]] ; then
@@ -53,7 +58,7 @@ main(){
     fi
 
     # wait desktop ready
-    if ! ((is_interactive)) && ! ((is_nodelay)) ; then
+    if ! ((is_nodelay)) ; then
         sleep 12
     fi
 
