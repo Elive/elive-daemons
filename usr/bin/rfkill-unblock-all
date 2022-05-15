@@ -116,7 +116,7 @@ if [[ "$( lspci -nn -d "14e4:" | wc -l )" -gt 0 ]] && ! ((conf_is_b43_unworking_
         # show the wifi's to the user
         if ((is_scanning_working)) ; then
             # notify the user
-            notify-send -t 8000 -i desktop-effects "$( eval_gettext "Broadcom B43 Wi-Fi" )" "$( eval_gettext "Your wireless device is difficult to set up on Linux systems, but Elive was able to make it working for you!" )"
+            notify-send -t 8000 -i desktop-effects "$( eval_gettext "Broadcom B43 Wi-Fi" )" "$( eval_gettext "Your wireless device is difficult to set up on Linux systems, but Elive was able to make it work for you!" )"
 
             # show him the wifis
             sleep 3
