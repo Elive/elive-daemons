@@ -46,10 +46,10 @@ main(){
         # random message generator
         case "$( shuf -i 1-2 -n 1 )" in
             1)
-                message_ask_for_donation="$( printf "$( eval_gettext "This project can only progress thanks to the donations from the users, without them it would not exist. Help us to keep it alive!" )" "" )"
+                message_ask_for_donation="$( printf "$( eval_gettext "This project can only progress thanks to the donations from users, without them it would not exist. Help us to keep it alive!" )" "" )"
                 ;;
             2)
-                message_ask_for_donation="$( printf "$( eval_gettext "This project can only progress thanks to the donations from the users, without them it would not exist. Help us to keep it alive!" )" "" )"
+                message_ask_for_donation="$( printf "$( eval_gettext "This project can only progress thanks to the donations from users, without them it would not exist. Help us to keep it alive!" )" "" )"
                 ;;
         esac
 
