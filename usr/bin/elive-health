@@ -168,7 +168,7 @@ main(){
 
             message_ask_for_scan="$( printf "$( eval_gettext "Your hard disk used space was %s and now is %s. Do you want to scan your files to know where the bigger usage waste occurs?" )" "${percent}%" "${percent_new}%" )"
         else
-            message_ask_for_scan="$( printf "$( eval_gettext "Do you want to scan your files to find out where the bigger waste of space can be found?" )" "${percent}%" "${percent_new}%" )"
+            message_ask_for_scan="$( printf "$( eval_gettext "Do you want to scan your files to find out where the bigger waste of space can be found?" )" ) - ${percent}% used."
         fi
 
 
