@@ -111,12 +111,12 @@ main(){
         percent="${percent%\%}"
         # root almost full, always warning
         if [[ "${percent}" -ge "$percent_max_crit" ]] ; then
-            el_notify "normal" "gparted" "$( eval_gettext "Hard disk is almost full" )" "$( eval_gettext "Your root partition is almost full, we recommend to remove some unneeded software or to resize your partition to be bigger and reinstall Elive with the special options if needed. Your installation could become unbootable if the disk is full." )"
+            el_notify "normal" "gparted" "$( eval_gettext "Hard disk is almost full" )" "$( eval_gettext "Your root partition is almost full, we recommend to remove some unneeded software or to enlarge your partition and to reinstall Elive, with the special options if needed. Your installation could become unbootable if the disk is full." )"
         fi
     fi
 
     if [[ "${percent}" -ge "$percent_max" ]] ; then
-        $guitool --warning --text="$( eval_gettext "Your partition is almost full. We recommend you to delete old files to free up some space, your installation could \"brick\" (be unusable) if it has no space left." )"
+        $guitool --warning --text="$( eval_gettext "Your partition is almost full. We recommend you to delete old files to free up some space, your installation could \"brick\" (become unusable) if it has no space left." )"
 
         if $guitool --question --text="$( eval_gettext "Do you want Elive to automatically clean some unneeded and temporary files now?" )" ; then
             # delete unneeded things now
@@ -168,7 +168,7 @@ main(){
 
             message_ask_for_scan="$( printf "$( eval_gettext "Your hard disk used space was %s and now is %s. Do you want to scan your files to know where the bigger usage waste occurs?" )" "${percent}%" "${percent_new}%" )"
         else
-            message_ask_for_scan="$( printf "$( eval_gettext "Do you want to scan your files to find out where the bigger waste of space belongs to?" )" "${percent}%" "${percent_new}%" )"
+            message_ask_for_scan="$( printf "$( eval_gettext "Do you want to scan your files to find out where the bigger waste of space can be found?" )" "${percent}%" "${percent_new}%" )"
         fi
 
 
@@ -232,7 +232,7 @@ main(){
                 fi
 
                 local message_badblocks_pending
-                message_badblocks_pending="$( printf "$( eval_gettext "One or more bad blocks have been found on your system. A few bad blocks can be handled by the system, but more bad blocks could lead to system crashes and/or serious data loss. We recommend to replace the hard drive as soon as possible (we recommended an SSD for speed and reliability), if this message often occurs." )" "" )"
+                message_badblocks_pending="$( printf "$( eval_gettext "One or more bad blocks have been found on your system. A few bad blocks can be handled by the system, but more bad blocks could lead to system crashes and/or serious data loss. We recommend to replace the hard drive as soon as possible (we recommend an SSD for speed and reliability), if this message often occurs." )" "" )"
                 local message_badblocks_pending_counted
                 message_badblocks_pending_counted="$( printf "$( eval_gettext "Pending sectors for reallocation:" )" "" )"
 
@@ -250,7 +250,7 @@ main(){
     # stability status {{{
     if ((is_buster)) && ((is_alpha)) ; then
         if [[ -n "$E_START" ]] && [[ -f "/usr/share/doc/e17-stable/versions.history.Elive.gz" ]] ; then
-            el_notify important bomb "$( eval_gettext "Remember" )" "$( eval_gettext "The E17 desktop does not work correctly on the newer versions. It's slow, consumes much CPU, has no systray, no special effects, and menus as well as windows disappear. We recommend you to switch to E16 which is well integrated as of now, or install the latest version of Enlightenment by running \"apui enlightenment\" in the terminal." )"
+            el_notify important bomb "$( eval_gettext "Remember" )" "$( eval_gettext "The E17 desktop does not work correctly on the newer versions. It's slow, consumes much CPU, has no systray, no special effects and menus as well as windows that disappear. We recommend you switch to E16 which is well integrated as of now, or install the latest version of Enlightenment by running \"apui enlightenment\" in the terminal." )"
         fi
     fi
 
@@ -259,7 +259,7 @@ main(){
     repos="$( grep -H "^deb " /etc/apt/sources.list /etc/apt/sources.list.d/* )"
     if ((is_buster)) ; then
         if echo "$repos" | grep -qsE "(\Wwheezy|\Wbullseye|\Wtesting|\Wsid|ubuntu|ppa.launchpad|\Wrestricted)" ; then
-            el_notify normal computer-fail "$( eval_gettext "Wrong repositories" )" "$( eval_gettext "You have mixed repositories configured in your system, this is strongly discouraged and can make your system break if you don't know what you're doing. If you have issues with your system we suggest to reinstall Elive and not to modify the default provided repositories." )"
+            el_notify normal computer-fail "$( eval_gettext "Wrong repositories" )" "$( eval_gettext "You have mixed repositories configured in your system, this is strongly discouraged and can make your system break if you don't know what you're doing. If you have issues with your system we advise you to reinstall Elive and do not modify the default provided repositories. Also note that PPAs are often used with Ubuntu, but they are often misconfigured for Debian (which Elive is based on)." )"
         fi
     fi
     # - repo issues }}}
