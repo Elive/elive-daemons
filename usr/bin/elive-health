@@ -75,7 +75,7 @@ main(){
     #
     if [[ -e "/var/tmp/elivehealth/elive-system-shutdown-forced" ]] && grep -qsE "^(yes|user notified pre)$" "/var/tmp/elivehealth/elive-system-shutdown-forced" ; then
         local message_shutdown_warn
-        message_shutdown_warn="$( printf "$( eval_gettext "You previously turned off the computer incorrectly. A forced shutdown is very bad for your data. You should shutdown the computer correctly by clicking on your desktop to bring up the menu and finding it in the last option there. On the other hand, if your computer freezes without reason, try a different Kernel version." )" "" )"
+        message_shutdown_warn="$( printf "$( eval_gettext "You previously turned off the computer incorrectly. A forced shutdown is very bad for your data. You should shut down the computer correctly by clicking on your desktop to bring up the menu and find it in the last option there. On the other hand, if your computer freezes without reason, try a different Kernel version and/or with different graphic drivers." )" "" )"
         # warn the user
         el_notify "important" "utilities-system-monitor" "$( eval_gettext "Forced shutdown detected" )" "$message_shutdown_warn"
 
@@ -89,7 +89,7 @@ main(){
     _notification_max_temperature_reached="$( cat /var/log/syslog /var/log/kern.log /var/log/syslog.1 /var/log/kern.log.1 2>/dev/null | grep "critical temperature reached.*shutting down" | sort -u | tr '\n' ' ' )"
 
     if [[ -n "$_notification_max_temperature_reached" ]] && [[ "$_notification_max_temperature_reached" != "$conf_notification_max_temperature_reached" ]] ; then
-        $guitool --warning --text="$( eval_gettext "Elive detected that your computer reached a critical temperature and forced a shutdown for its safety. This is commonly caused on old computers where dust has accumulated in the fans. To solve the issue you should remove the dust from your computer by opening it (do not blow in it). Optionally you can set your CPU speed gadget to run a little slower. This could make your computer more reliable, albeit a little slower." )"
+        $guitool --warning --text="$( eval_gettext "Elive detected that your computer reached a critical temperature and forced a shutdown for its safety. This is common on old computers where dust has accumulated in the fans. To solve the issue you should remove the dust from your computer by opening it or blowing with caution while running. Optionally you can set your CPU speed to run a little slower. This could make your computer more reliable, albeit slower." )"
 
         # make sure to not show again the message if we already did it
         conf_notification_max_temperature_reached="$_notification_max_temperature_reached"
@@ -111,12 +111,12 @@ main(){
         percent="${percent%\%}"
         # root almost full, always warning
         if [[ "${percent}" -ge "$percent_max_crit" ]] ; then
-            el_notify "normal" "gparted" "$( eval_gettext "Hard disk is almost full" )" "$( eval_gettext "Your root partition is almost full, we recommend to remove some unneeded software or to enlarge your partition and to reinstall Elive, with the special options if needed. Your installation could become unbootable if the disk is full." )"
+            el_notify "normal" "gparted" "$( eval_gettext "Hard disk is almost full" )" "$( eval_gettext "Your root partition is almost full, we recommend removing some unneeded software or enlarging your partition and/or reinstalling Elive, with special options if needed. Your installation could become unbootable if the disk is full." )"
         fi
     fi
 
     if [[ "${percent}" -ge "$percent_max" ]] ; then
-        $guitool --warning --text="$( eval_gettext "Your partition is almost full. We recommend you to delete old files to free up some space, your installation could \"brick\" (become unusable) if it has no space left." )"
+        $guitool --warning --text="$( eval_gettext "Your partition is almost full. We recommend you delete old files to free up some space, your installation could \"brick\" (become unusable) if it has no space left." )"
 
         if $guitool --question --text="$( eval_gettext "Do you want Elive to automatically clean some unneeded and temporary files now?" )" ; then
             # delete unneeded things now
@@ -210,7 +210,7 @@ main(){
                 fi
 
                 local message_badblocks
-                message_badblocks="$( printf "$( eval_gettext "One of your hard disks has some bad blocks. This is not exactly bad but shows a degradation in your hard disk health. The problem appears when data wants to be saved in a bad block that has not been found yet. This message is basically to remind you that it is important to save backups of your important or personal information in order to never lose it, since your hard disk is starting to degrade. If this message appears regularly, we suggest replacing your hard drive." )" "" )"
+                message_badblocks="$( printf "$( eval_gettext "One of your hard disks has some bad blocks. This is not exactly bad but shows a degradation in your hard disk health. The problem appears when data want to be saved in a bad block that has not been found yet. This message is basically to remind you that it is important to save backups of your important or personal information in order to never lose it since your hard disk is starting to degrade. If this message appears regularly, we suggest replacing your hard drive." )" "" )"
                 local message_badblocks_counted
                 message_badblocks_counted="$( printf "$( eval_gettext "Bad blocks registered:" )" "" )"
                 local message_badblocks_counted_before
@@ -232,7 +232,7 @@ main(){
                 fi
 
                 local message_badblocks_pending
-                message_badblocks_pending="$( printf "$( eval_gettext "One or more bad blocks have been found on your system. A few bad blocks can be handled by the system, but more bad blocks could lead to system crashes and/or serious data loss. We recommend to replace the hard drive as soon as possible (we recommend an SSD for speed and reliability), if this message often occurs." )" "" )"
+                message_badblocks_pending="$( printf "$( eval_gettext "One or more bad blocks have been found on your system. They can be handled by the system, but if more appears they could lead to system crashes and/or serious data loss. We recommend replacing the hard drive (we recommend an SSD for speed and reliability) if this message often occurs." )" "" )"
                 local message_badblocks_pending_counted
                 message_badblocks_pending_counted="$( printf "$( eval_gettext "Pending sectors for reallocation:" )" "" )"
 
@@ -259,7 +259,7 @@ main(){
     repos="$( grep -H "^deb " /etc/apt/sources.list /etc/apt/sources.list.d/* )"
     if ((is_buster)) ; then
         if echo "$repos" | grep -qsE "(\Wwheezy|\Wbullseye|\Wtesting|\Wsid|ubuntu|ppa.launchpad|\Wrestricted)" ; then
-            el_notify normal computer-fail "$( eval_gettext "Wrong repositories" )" "$( eval_gettext "You have mixed repositories configured in your system, this is strongly discouraged and can make your system break if you don't know what you're doing. If you have issues with your system we advise you to reinstall Elive and do not modify the default provided repositories. Also note that PPAs are often used with Ubuntu, but they are often misconfigured for Debian (which Elive is based on)." )"
+            el_notify normal computer-fail "$( eval_gettext "Wrong repositories" )" "$( eval_gettext "You have mixed repositories configured in your system, this is strongly discouraged and can make your system break if you don't know what you're doing. If you have issues with your system we advise you to reinstall Elive and do not modify the default provided repositories. Also note that PPAs are commonly used with Ubuntu, but they are often misconfigured for Debian (which Elive is based on)." )"
         fi
     fi
     # - repo issues }}}
