@@ -104,6 +104,11 @@ main(){
         #conf_taps_disabled_while_typing="FALSE"
         #conf_taps_disabled_while_typing_seconds="1.2"
     #fi
+    if ! synclient -l 1>/dev/null 2>&1 ; then
+        $guitool --error --text="$( eval_gettext "No touchpad hardware was detected. If you have it, try using a different kernel to see if includes a better driver." )"
+        exit
+    fi
+
 
     conf_speed_min="$( synclient -l | grep -E "\s+MinSpeed\s+.*=" | sed -e 's|^.*= ||' | tail -1 )"
     if [[ -z "$conf_speed_min" ]] ; then
