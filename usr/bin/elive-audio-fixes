@@ -5,7 +5,7 @@ EL_REPORTS="1"
 
 # note: same code exists in ctrl-alt-del tool
 audio_reconfigure(){
-    if pidof pulseaudio 1>/dev/null 2>&1 ; then
+    if [[ -e /var/lib/dpkg/info/pulseaudio.list ]] ; then
         systemctl --user stop pulseaudio.service pulseaudio.socket
         killall -9 pulseaudio
         rm -rf /home/*/.config/pulse/cookie /home/*/.pulse/* 2>/dev/null || true
@@ -64,7 +64,7 @@ main(){
     fi
 
     # master should be always full
-    if pidof pulseaudio 1>/dev/null 2>&1 ; then
+    if [[ -e /var/lib/dpkg/info/pulseaudio.list ]] ; then
         # fix pulseaudio card
         if ! pulsemixer --list-sinks | grep -qs "^Sink:" ; then
             el_error "audio card not working, reconfiguring..."
