@@ -3,6 +3,40 @@ SOURCE="$0"
 source /usr/lib/elive-tools/functions
 EL_REPORTS="1"
 
+# note: same code exists in ctrl-alt-del tool
+audio_reconfigure(){
+    if pidof pulseaudio 1>/dev/null 2>&1 ; then
+        systemctl --user stop pulseaudio.service pulseaudio.socket
+        killall -9 pulseaudio
+        rm -rf /home/*/.config/pulse/cookie /home/*/.pulse/* 2>/dev/null || true
+        audio-configurator  --quiet --auto --smart
+        systemctl --user start pulseaudio.service pulseaudio.socket
+    else
+        audio-configurator  --quiet --auto --smart
+    fi
+
+    # fix volumes
+    rm -f "$HOME/.config/setvolume" 2>/dev/null 1>&2
+
+    setvolume defaults
+
+    timeout 5 aplay /dev/null 2>/dev/null
+    LC_ALL=C sleep 0.2
+
+    restart_apps
+}
+
+restart_apps(){
+    if pidof cairo-dock 1>/dev/null ; then
+        killall cairo-dock 1>/dev/null 2>&1
+        killall -9 cairo-dock 1>/dev/null 2>&1
+        el_debug "restarting cairo-dock"
+        ( cairo-dock 1>/dev/null 2>&1 & disown )
+    fi
+}
+
+
+
 main(){
     # never touch volumes in pulseaudio
     #if [[ -n "$(pidof pulseaudio)" ]] && ! [[ -n "$( grep -E "^(7\.|wheezy)" /etc/debian_version 2>/dev/null )" ]] ; then
@@ -30,7 +64,13 @@ main(){
     fi
 
     # master should be always full
-    if ! pidof pulseaudio 1>/dev/null 2>&1 ; then
+    if pidof pulseaudio 1>/dev/null 2>&1 ; then
+        # fix pulseaudio card
+        if ! pulsemixer --list-sinks | grep -qs "^Sink:" ; then
+            el_error "audio card not working, reconfiguring..."
+            audio_reconfigure
+        fi
+    else
         amixer -q set Master 100% 2>/dev/null
         amixer -q set Master,0 100% 2>/dev/null
         amixer -q set Master,1 100% 2>/dev/null
