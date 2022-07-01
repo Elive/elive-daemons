@@ -277,7 +277,7 @@ main(){
     #}}}
     # browsers on tmpfs {{{
     # only if it was never set / configured yet (if is configured, is set to 0 which is defined):
-    if [[ -z "$conf_browsers_on_ram" ]] || [[ ! -L "~/.config/systemd/user/default.target.wants/psd.service" ]] ; then
+    if [[ -z "$conf_browsers_on_ram" ]] || [[ ! -L "$HOME/.config/systemd/user/default.target.wants/psd.service" ]] ; then
         # default
         _browsers_on_ram=0
 
