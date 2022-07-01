@@ -64,6 +64,7 @@ main(){
             audio_reconfigure
         fi
     else
+
         # master should be always full, in alsa mode and only in Live mode
         if grep -qs "boot=live" /proc/cmdline ; then
             # note: we never want to restore "normal volumes" in a normal install, or it will be always at max (or less) and we want to have our volumes correctly set among reboots
