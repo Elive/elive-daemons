@@ -65,6 +65,9 @@ main(){
 
     # master should be always full
     if [[ -e /var/lib/dpkg/info/pulseaudio.list ]] ; then
+        if [[ ! -e /var/lib/dpkg/info/pulsemixer.list ]] ; then
+            el_dependencies_install "pulsemixer"
+        fi
         # fix pulseaudio card
         if ! pulsemixer --list-sinks | grep -iv "Dummy Output" | grep -qs "^Sink:" ; then
             el_error "audio card not working, reconfiguring..."
