@@ -8,11 +8,11 @@ audio_reconfigure(){
     if [[ -e /var/lib/dpkg/info/pulseaudio.list ]] ; then
         systemctl --user stop pulseaudio.service pulseaudio.socket
         killall -9 pulseaudio
-        rm -rf /home/*/.config/pulse/cookie /home/*/.pulse/* 2>/dev/null || true
-        audio-configurator  --quiet --auto --smart
+        rm -rf ~/.config/pulse/cookie ~/.pulse/* ~/.asoundrc 2>/dev/null || true
+        audio-configurator  --quiet --auto --smart --no-messages
         systemctl --user start pulseaudio.service pulseaudio.socket
     else
-        audio-configurator  --quiet --auto --smart
+        audio-configurator  --quiet --auto --smart --no-messages
     fi
 
     # fix volumes
