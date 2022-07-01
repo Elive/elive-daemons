@@ -54,16 +54,6 @@ main(){
     setvolume unmute
 
 
-    #
-    # LIVE ONLY
-    #
-
-    # note: we never want to restore "normal volumes" in a normal install, or it will be always at max (or less) and we want to have our volumes correctly set among reboots
-    if ! grep -qs "boot=live" /proc/cmdline ; then
-        exit
-    fi
-
-    # master should be always full
     if [[ -e /var/lib/dpkg/info/pulseaudio.list ]] ; then
         if [[ ! -e /var/lib/dpkg/info/pulsemixer.list ]] ; then
             el_dependencies_install "pulsemixer"
@@ -74,9 +64,13 @@ main(){
             audio_reconfigure
         fi
     else
-        amixer -q set Master 100% 2>/dev/null
-        amixer -q set Master,0 100% 2>/dev/null
-        amixer -q set Master,1 100% 2>/dev/null
+        # master should be always full, in alsa mode and only in Live mode
+        if grep -qs "boot=live" /proc/cmdline ; then
+            # note: we never want to restore "normal volumes" in a normal install, or it will be always at max (or less) and we want to have our volumes correctly set among reboots
+            amixer -q set Master 100% 2>/dev/null
+            amixer -q set Master,0 100% 2>/dev/null
+            amixer -q set Master,1 100% 2>/dev/null
+        fi
     fi
 
     # set a good volume by default
