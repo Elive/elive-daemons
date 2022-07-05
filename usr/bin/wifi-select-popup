@@ -19,16 +19,16 @@ main(){
             # wait that the system has passed enough time to have been connected
             if ! ((is_interactive)) ; then
                 # wait also for rfkill to be run
-                sleep 20
+                sleep 10
             fi
 
             # check for internet at start
-            for i in $(seq 4)
+            for i in $(seq 2)
             do
                 if el_verify_internet fast ; then
                     exit
                 else
-                    sleep 2
+                    sleep 3
                 fi
             done
 
