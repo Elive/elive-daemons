@@ -290,39 +290,39 @@ main(){
         else
             # ssd on home or root: always, if at least 3,2 gb of ram
             if grep -qs "^ssd_on_home: yes" /etc/elive-version ; then
-                if [[ "$RAM_TOTAL_SIZE_mb" -gt 2700 ]] ; then
+                #if [[ "$RAM_TOTAL_SIZE_mb" -gt 2700 ]] ; then
                     _browsers_on_ram=1
-                fi
+                #fi
             else
                 if ! grep -qs "^ssd_on_home: " /etc/elive-version ; then
                     if grep -qs "^ssd_on_root: yes" /etc/elive-version ; then
-                        if [[ "$RAM_TOTAL_SIZE_mb" -gt 2700 ]] ; then
+                        #if [[ "$RAM_TOTAL_SIZE_mb" -gt 2700 ]] ; then
                             _browsers_on_ram=1
-                        fi
+                        #fi
                     else
                         # this means we have not any "^ssd_on" setting, so we don't know
                         if ! grep -qs "^ssd_on_root: " /etc/elive-version ; then
-                            if [[ "$RAM_TOTAL_SIZE_mb" -gt 2700 ]] ; then
+                            #if [[ "$RAM_TOTAL_SIZE_mb" -gt 2700 ]] ; then
                                 _browsers_on_ram_ask=1
-                            fi
+                            #fi
                         fi
                     fi
                 fi
             fi
-            # if more than 9gb of ram: always, speeds up
-            if [[ "$RAM_TOTAL_SIZE_mb" -gt 4700 ]] ; then
+            # if more than X of ram: always, speeds up
+            if [[ "$RAM_TOTAL_SIZE_mb" -gt 2200 ]] ; then
                 _browsers_on_ram=1
             else
                 # if enough ram, ask
-                if [[ "$RAM_TOTAL_SIZE_mb" -gt 2700 ]] ; then
+                #if [[ "$RAM_TOTAL_SIZE_mb" -gt 2700 ]] ; then
                     _browsers_on_ram_ask=1
-                fi
+                #fi
             fi
         fi
 
 
         # ask
-        if ((_browsers_on_ram_ask)) ; then
+        if ! ((_browsers_on_ram)) && ((_browsers_on_ram_ask)) ; then
             if $guitool --question --text="$( eval_gettext "Do you want to run your browsers over RAM? This will use an extra half gigabyte of memory but will make your browser faster and also improve the health of your hard disk. Select this option especially if you have an SSD disk." )" ; then
                 _browsers_on_ram=1
             fi
