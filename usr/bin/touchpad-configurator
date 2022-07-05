@@ -13,9 +13,6 @@ main(){
     local result arg
     export LC_NUMERIC=C
 
-    # always run configure by default
-    is_configure=1
-
     # disable default run in live unless wanted
     if grep -qs "boot=live" /proc/cmdline ; then
         is_live=1
