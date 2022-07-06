@@ -61,6 +61,12 @@ main(){
     if [[ -e "/var/lib/dpkg/info/vivaldi.list" ]] ; then
         el_array_member_add "vivaldi" "${_browsers[@]}" ; _browsers=("${_out[@]}")
     fi
+
+    # no browsers available? just exit
+    if [[ -z "${#_browsers[@]}" ]] ; then
+        exit
+    fi
+
     if [[ "${#_browsers[@]}" = 1 ]] ; then
         result="${_browsers[0]}"
     else
