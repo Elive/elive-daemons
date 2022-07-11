@@ -33,6 +33,11 @@ main(){
     # load multiscreens configuration if needed
     ( elive-multiscreens -l -q ) &
 
+    # restart later conky if needed {{{
+    if pidof conky 1>/dev/null ; then
+        is_restart_conky=1
+    fi
+    # }}}
     # reconfigure GL in elementary based in E configurations {{{
     if [[ -n "$E_START" ]] && [[ -d "$HOME/.elementary/config/standard" ]] ; then
         cd_previous="$(pwd)"
@@ -90,19 +95,15 @@ main(){
     # conky transparency fix in e16 {{{
     # sometimes we may change the "composite" settings so make sure conky is always correctly working
     if [[ -n "$EROOT" ]] ; then
-        if pidof conky 1>/dev/null ; then
-            if eesh "compmgr ?" | grep -qs "on=1" ; then
-                if grep -qs "own_window_argb_visual = false" "$HOME/.conkyrc" ; then
-                    killall conky
-                    is_restart_conky=1
-                    sed -i -e "s|^.*own_window_argb_visual.*$|\town_window_argb_visual = true,|gI" "$HOME/.conkyrc"
-                fi
-            else
-                if grep -qs "own_window_argb_visual = true" "$HOME/.conkyrc" ; then
-                    killall conky
-                    is_restart_conky=1
-                    sed -i -e "s|^.*own_window_argb_visual.*$|\town_window_argb_visual = false,|gI" "$HOME/.conkyrc"
-                fi
+        if eesh "compmgr ?" | grep -qs "on=1" ; then
+            if grep -qs "own_window_argb_visual = false" "$HOME/.conkyrc" ; then
+                killall conky
+                sed -i -e "s|^.*own_window_argb_visual.*$|\town_window_argb_visual = true,|gI" "$HOME/.conkyrc"
+            fi
+        else
+            if grep -qs "own_window_argb_visual = true" "$HOME/.conkyrc" ; then
+                killall conky
+                sed -i -e "s|^.*own_window_argb_visual.*$|\town_window_argb_visual = false,|gI" "$HOME/.conkyrc"
             fi
         fi
     fi
@@ -115,7 +116,6 @@ main(){
             el_warning "tried to run an extra configurator but seems like the file is missing: /usr/lib/user-manager/hooks.d/e17-wizard/after/50-special-configurations.sh"
         fi
         sed -i -e '/#newconfiguration/d' "$HOME/.conkyrc"
-        is_restart_conky=1
     fi
     # - conky new conf }}}
     # applications restarts {{{
