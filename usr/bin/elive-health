@@ -261,12 +261,14 @@ main(){
     # repo issues {{{
     repos="$( grep -H "^deb " /etc/apt/sources.list /etc/apt/sources.list.d/* )"
     if ((is_bullseye)) ; then
-        if echo "$repos" | grep -qsE "(\Wwheezy|\Wbuster|\Wbookworm|\Wtesting|\Wsid|ubuntu|ppa.launchpad|\Wrestricted)" ; then
+        if echo "$repos" | grep -v "dropbox.com" | grep -qsE "(\Wwheezy|\Wbuster|\Wbookworm|\Wtesting|\Wsid|ubuntu|ppa.launchpad|\Wrestricted)" ; then
+            echo "$repos" | grep -v "dropbox.com" | grep -E "(\Wwheezy|\Wbuster|\Wbookworm|\Wtesting|\Wsid|ubuntu|ppa.launchpad|\Wrestricted)"
             el_notify normal computer-fail "$( eval_gettext "Wrong repositories" )" "$( eval_gettext "You have mixed repositories configured in your system, this is strongly discouraged and can make your system break if you don't know what you're doing. If you have issues with your system we advise you to reinstall Elive and do not modify the default provided repositories. Also note that PPAs are commonly used with Ubuntu, but they are often misconfigured for Debian (which Elive is based on)." )"
         fi
     fi
     if ((is_buster)) ; then
-        if echo "$repos" | grep -qsE "(\Wwheezy|\Wbullseye|\Wtesting|\Wsid|ubuntu|ppa.launchpad|\Wrestricted)" ; then
+        if echo "$repos" | grep -v "dropbox.com" | grep -qsE "(\Wwheezy|\Wbullseye|\Wtesting|\Wsid|ubuntu|ppa.launchpad|\Wrestricted)" ; then
+            echo "$repos" | grep -v "dropbox.com" | grep -E "(\Wwheezy|\Wbullseye|\Wtesting|\Wsid|ubuntu|ppa.launchpad|\Wrestricted)"
             el_notify normal computer-fail "$( eval_gettext "Wrong repositories" )" "$( eval_gettext "You have mixed repositories configured in your system, this is strongly discouraged and can make your system break if you don't know what you're doing. If you have issues with your system we advise you to reinstall Elive and do not modify the default provided repositories. Also note that PPAs are commonly used with Ubuntu, but they are often misconfigured for Debian (which Elive is based on)." )"
         fi
     fi
