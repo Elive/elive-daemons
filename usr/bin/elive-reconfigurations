@@ -120,6 +120,7 @@ main(){
     # - conky new conf }}}
     # applications restarts {{{
     if ((is_restart_conky)) ; then
+        killall conky 1>/dev/null 2>&1
         ( conky 1>/dev/null 2>&1 & disown )
     fi
     # - restarts }}}
