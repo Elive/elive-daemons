@@ -95,7 +95,7 @@ main(){
     # conky transparency fix in e16 {{{
     # sometimes we may change the "composite" settings so make sure conky is always correctly working
     if [[ -n "$EROOT" ]] ; then
-        if eesh compmgr ? | grep -qs "on=1" ; then
+        if eesh compmgr '?' | grep -qs "on=1" ; then
             if grep -qs "own_window_argb_visual = false" "$HOME/.conkyrc" ; then
                 killall conky
                 sed -i -e "s|^.*own_window_argb_visual.*$|\town_window_argb_visual = true,|gI" "$HOME/.conkyrc"
