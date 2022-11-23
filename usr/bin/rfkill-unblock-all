@@ -54,7 +54,7 @@ if laptop-detect ; then
 
                     # notify
                     if ! ((is_user_notified)) && [[ -n "$DISPLAY" ]] ; then
-                        if grep -qs "boot=live" /proc/cmdline ; then
+                        if grep -Fqs "boot=live" /proc/cmdline ; then
                             zenity --warning --text="$( eval_gettext "Your Wi-Fi is disabled by hardware. You can activate it from its switch, or with his keyboard hotkey; this can differ between models but is typically labeled." )"
                         else
                             #el_warning "Wifi is disabled. You can activate it from the interruptor, switch or a keyboard hotkey."
@@ -81,7 +81,7 @@ fi
 # b43 checks (plugged new device)
 if [[ "$( lspci -nn -d "14e4:" | wc -l )" -gt 0 ]] && ! ((conf_is_b43_unworking_notified)) ; then
     # scan test
-    for dev in $( LC_ALL=C /sbin/iwconfig 2>&1 | grep IEEE | awk '{print $1}' | grep "[[:alpha:]]" | tr '\n' ' ' )
+    for dev in $( LC_ALL=C /sbin/iwconfig 2>&1 | grep -F IEEE | awk '{print $1}' | grep "[[:alpha:]]" | tr '\n' ' ' )
     do
         [[ -z "$dev" ]] && continue
         if iwlist $dev scan 1>/dev/null 2>&1 ; then
@@ -97,14 +97,14 @@ if [[ "$( lspci -nn -d "14e4:" | wc -l )" -gt 0 ]] && ! ((conf_is_b43_unworking_
 
     if ! ((is_scanning_working)) ; then
 
-        if grep -qs "boot=live" /proc/cmdline ; then
+        if grep -Fqs "boot=live" /proc/cmdline ; then
             sudo -H /usr/sbin/b43-driver-fixes
         else
             gksu /usr/sbin/b43-driver-fixes
         fi
 
         # scan test
-        for dev in $( LC_ALL=C /sbin/iwconfig 2>&1 | grep IEEE | awk '{print $1}' | grep "[[:alpha:]]" | tr '\n' ' ' )
+        for dev in $( LC_ALL=C /sbin/iwconfig 2>&1 | grep -F IEEE | awk '{print $1}' | grep "[[:alpha:]]" | tr '\n' ' ' )
         do
             [[ -z "$dev" ]] && continue
             if iwlist $dev scan 1>/dev/null 2>&1 ; then

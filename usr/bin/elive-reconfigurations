@@ -55,7 +55,7 @@ main(){
         eet -d module.comp.cfg config module.comp.cfg.src
 
         #engine 2 is GL, 1 is software-mode
-        if grep -qs "\"use_composite\" int: 1" "e.cfg.src" && grep -qs "\"engine\" int: 2" "module.comp.cfg.src" ; then
+        if grep -Fqs "\"use_composite\" int: 1" "e.cfg.src" && grep -Fqs "\"engine\" int: 2" "module.comp.cfg.src" ; then
             accel_mode="gl"
             #el_debug "using GL mode"
         else
@@ -95,13 +95,13 @@ main(){
     # conky transparency fix in e16 {{{
     # sometimes we may change the "composite" settings so make sure conky is always correctly working
     if [[ -n "$EROOT" ]] ; then
-        if eesh compmgr '?' | grep -qs "on=1" ; then
-            if grep -qs "own_window_argb_visual = false" "$HOME/.conkyrc" ; then
+        if eesh compmgr '?' | grep -Fqs "on=1" ; then
+            if grep -Fqs "own_window_argb_visual = false" "$HOME/.conkyrc" ; then
                 killall conky
                 sed -i -e "s|^.*own_window_argb_visual.*$|\town_window_argb_visual = true,|gI" "$HOME/.conkyrc"
             fi
         else
-            if grep -qs "own_window_argb_visual = true" "$HOME/.conkyrc" ; then
+            if grep -Fqs "own_window_argb_visual = true" "$HOME/.conkyrc" ; then
                 killall conky
                 sed -i -e "s|^.*own_window_argb_visual.*$|\town_window_argb_visual = false,|gI" "$HOME/.conkyrc"
             fi
@@ -126,7 +126,7 @@ main(){
     # - restarts }}}
 
     # if we are debugging give it a little pause to see what is going on
-    if grep -qs "debug" /proc/cmdline ; then
+    if grep -Fqs "debug" /proc/cmdline ; then
         echo -e "debug: sleep 4" 1>&2
         sleep 4
     fi

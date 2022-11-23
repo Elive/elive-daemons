@@ -12,7 +12,7 @@ main(){
     local architecture return_status machine_id
     local message_ask_for_scan
 
-    if grep -qs "boot=live" /proc/cmdline ; then
+    if grep -Fqs "boot=live" /proc/cmdline ; then
         is_live=1
     fi
 
@@ -148,7 +148,7 @@ main(){
             find "$HOME/.local/share/Trash" -type f -delete
 
             # free psd profiles
-            if which psd 1>/dev/null && LC_ALL=C systemctl --user status psd | colors-remove | grep "Active: active" ; then
+            if which psd 1>/dev/null && LC_ALL=C systemctl --user status psd | colors-remove | grep -F "Active: active" ; then
                 psd c
             else
                 rm -rf "$HOME/.config/"*-crashrecovery-*
@@ -261,20 +261,20 @@ main(){
     # repo issues {{{
     repos="$( grep -H "^deb " /etc/apt/sources.list /etc/apt/sources.list.d/* )"
     if ((is_bullseye)) ; then
-        if echo "$repos" | grep -v "dropbox.com" | grep -qsE "(\Wwheezy|\Wbuster|\Wbookworm|\Wtesting|\Wsid|ubuntu|ppa.launchpad|\Wrestricted)" ; then
-            echo "$repos" | grep -v "dropbox.com" | grep -E "(\Wwheezy|\Wbuster|\Wbookworm|\Wtesting|\Wsid|ubuntu|ppa.launchpad|\Wrestricted)"
+        if echo "$repos" | grep -Fv "dropbox.com" | grep -qsE "(\Wwheezy|\Wbuster|\Wbookworm|\Wtesting|\Wsid|ubuntu|ppa.launchpad|\Wrestricted)" ; then
+            echo "$repos" | grep -Fv "dropbox.com" | grep -E "(\Wwheezy|\Wbuster|\Wbookworm|\Wtesting|\Wsid|ubuntu|ppa.launchpad|\Wrestricted)"
             el_notify normal computer-fail "$( eval_gettext "Wrong repositories" )" "$( eval_gettext "You have mixed repositories configured in your system, this is strongly discouraged and can make your system break if you don't know what you're doing. If you have issues with your system we advise you to reinstall Elive and do not modify the default provided repositories. Also note that PPAs are commonly used with Ubuntu, but they are often misconfigured for Debian (which Elive is based on)." )"
         fi
     fi
     if ((is_buster)) ; then
-        if echo "$repos" | grep -v "dropbox.com" | grep -qsE "(\Wwheezy|\Wbullseye|\Wtesting|\Wsid|ubuntu|ppa.launchpad|\Wrestricted)" ; then
-            echo "$repos" | grep -v "dropbox.com" | grep -E "(\Wwheezy|\Wbullseye|\Wtesting|\Wsid|ubuntu|ppa.launchpad|\Wrestricted)"
+        if echo "$repos" | grep -Fv "dropbox.com" | grep -qsE "(\Wwheezy|\Wbullseye|\Wtesting|\Wsid|ubuntu|ppa.launchpad|\Wrestricted)" ; then
+            echo "$repos" | grep -Fv "dropbox.com" | grep -E "(\Wwheezy|\Wbullseye|\Wtesting|\Wsid|ubuntu|ppa.launchpad|\Wrestricted)"
             el_notify normal computer-fail "$( eval_gettext "Wrong repositories" )" "$( eval_gettext "You have mixed repositories configured in your system, this is strongly discouraged and can make your system break if you don't know what you're doing. If you have issues with your system we advise you to reinstall Elive and do not modify the default provided repositories. Also note that PPAs are commonly used with Ubuntu, but they are often misconfigured for Debian (which Elive is based on)." )"
         fi
     fi
     # - repo issues }}}
     # tell about squashfs errors in live mode {{{
-    if grep -qs "boot=live" /proc/cmdline ; then
+    if grep -Fqs "boot=live" /proc/cmdline ; then
         if [[ -x "$(which live-mode-errors-report )" ]] ; then
             if pidof live-mode-errors-report 1>/dev/null 2>&1 ; then
                 killall live-mode-errors-report
@@ -293,7 +293,7 @@ main(){
 
         # Note: live mode doesn't needs it since its already on Live mode, so disable it entirely to ask since this point, unless we are in persistence mode which is needed
         if ((is_live)) ; then
-            if grep -qs "persistence" /proc/cmdline ; then
+            if grep -Fqs "persistence" /proc/cmdline ; then
                 # persistence mode: always need psd
                 _browsers_on_ram=1
             fi
@@ -346,7 +346,7 @@ main(){
     # enable it
     if ((conf_browsers_on_ram)) ; then
         # enable daemon
-        if ! LC_ALL=C systemctl --user status psd | colors-remove | grep -qs "Active: active" ; then
+        if ! LC_ALL=C systemctl --user status psd | colors-remove | grep -Fqs "Active: active" ; then
             if ! elive-browsers-on-ram ; then
                 # disable it for the next times:
                 conf_browsers_on_ram="0"
@@ -367,10 +367,10 @@ main(){
 
     # scanners support {{{
     if ! ((is_wheezy)) ; then
-        if lsusb | grep -qs "Brother Industries" || grep -qs "Brother Industries" /tmp/.hwinfo.txt 2>/dev/null ; then
+        if lsusb | grep -Fqs "Brother Industries" || grep -Fqs "Brother Industries" /tmp/.hwinfo.txt 2>/dev/null ; then
             if dpkg -l | grep -qsE "^ii\s+" && ! dpkg -l | grep -qsE "^ii\s+brscan" ; then
                 # get models
-                brother_scanner="$( cat /tmp/.hwinfo 2>/dev/null | grep "Brother Industries" ; lsusb | grep "Brother Industries" )"
+                brother_scanner="$( cat /tmp/.hwinfo 2>/dev/null | grep -F "Brother Industries" ; lsusb | grep -F "Brother Industries" )"
 
                 local message_brother_scanner
                 message_brother_scanner="$( printf "$( eval_gettext "Woohoo! Elive can make your Brother Scanner work directly! Proceed with our magic?" )" "" )"
@@ -426,8 +426,8 @@ main(){
         fi
 
         if [[ -n "$machine_id" ]] ; then
-            if grep -qs "boot=live" /proc/cmdline ; then
-                if ! grep -qs "persistence" /proc/cmdline ; then
+            if grep -Fqs "boot=live" /proc/cmdline ; then
+                if ! grep -Fqs "persistence" /proc/cmdline ; then
                     # live mode:
                     if ! el_verify_internet ; then
                         sleep 120

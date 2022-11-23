@@ -114,7 +114,7 @@ get_disk_from_partition_complex(){
         if [[ -n "$device" ]] ; then
             # it may be an encrypted one in any case, so lets translate it
             if LC_ALL="$EL_LC_EN" cryptsetup status "$device" 2>/dev/null | grep -qs "type:.*LUKS" ; then
-                device="$( LC_ALL="$EL_LC_EN" cryptsetup status "$device" | grep "device:" | sed -e 's|^.*device:||g' )"
+                device="$( LC_ALL="$EL_LC_EN" cryptsetup status "$device" | grep -F "device:" | sed -e 's|^.*device:||g' )"
                 # remove extra leading blank chars
                 read -r device <<< "$device"
             fi
@@ -144,7 +144,7 @@ get_disk_from_partition(){
     do
         unset is_part_found
 
-        if echo "$line" | grep -qs "${partition##*/}" ; then
+        if echo "$line" | grep -Fqs "${partition##*/}" ; then
             is_part_found=1
         fi
 
@@ -187,10 +187,10 @@ do_start(){
     # pre {{{
     local _CMDLINE
     _CMDLINE="$(cat /proc/cmdline)"
-    if echo "${_CMDLINE}" | grep -qsE "(boot=live)" ; then
+    if echo "${_CMDLINE}" | grep -Fqs "boot=live" ; then
         exit 0
     fi
-    if echo "${_CMDLINE}" | grep -qs "debug" ; then
+    if echo "${_CMDLINE}" | grep -Fqs "debug" ; then
         set -x
     fi
 
@@ -199,7 +199,7 @@ do_start(){
     # loopback network {{{
     if ! timeout 5 ping -c 1 localhost 1>/dev/null 2>&1 ; then
         #el_error "localhost not reachable from elivehealth daemon step"
-        if ! grep -qs "auto lo" /etc/network/interfaces && ! grep -qs "iface lo inet loopback" /etc/network/interfaces ; then
+        if ! grep -Fqs "auto lo" /etc/network/interfaces && ! grep -Fqs "iface lo inet loopback" /etc/network/interfaces ; then
             echo -e "auto lo\niface lo inet loopback" >> /etc/network/interfaces
         fi
         if ! grep -qs "^127.0.0.1.*localhost" /etc/hosts ; then
@@ -348,7 +348,7 @@ do_start(){
     #fi
 
     # turn off debugging if we have finished
-    if echo "${_CMDLINE}" | grep -q debug ; then
+    if echo "${_CMDLINE}" | grep -Fq debug ; then
         set +x
     fi
 
@@ -376,7 +376,7 @@ do_stop(){
     if [[ "$( lsmod | grep -E "^b43\s+" | awk '{print $3}' | head -1 )" -gt 0 ]] ; then
         # b43: Problem with bcm43xx: there is a common problem with some cards managed with the b43 driver, it gets disconnected randomly, - source: https://wiki.archlinux.org/index.php/Talk:Broadcom_wireless
         if dmesg | grep -qs "No probe response from AP .* after .* disconnecting" ; then
-            if ! grep -qs "options b43 pio=1 qos=0" "/etc/modprobe.d/b43.conf" 2>/dev/null ; then
+            if ! grep -Fqs "options b43 pio=1 qos=0" "/etc/modprobe.d/b43.conf" 2>/dev/null ; then
                 echo "options b43 pio=1 qos=0" >> "/etc/modprobe.d/b43.conf"
                 log_progress_msg "Added a fix for your B43 wifi that fixes disconnections"
                 sleep 5
