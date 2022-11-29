@@ -35,6 +35,26 @@ verify_and_fix_shm(){
     unset result
     return 0
 }
+
+free_memory(){
+    local before after
+
+    if /sbin/swapon -s | grep -qs "^/dev" ; then
+        swapoff -a 2>/dev/null || true
+        swapon -a
+    fi
+
+    before="$( el_ram_usage_show used_percent )"
+    sync
+    echo 3 > /proc/sys/vm/drop_caches
+
+    sleep 3 ; sync ; sleep 2
+    after="$( el_ram_usage_show used_percent )"
+
+    logger "$(basename $0) - RAM has been freed after a long use to keep the system fresh, before was ${before}% used and now ${after}% "
+}
+
+
 #===  FUNCTION  ================================================================
 #          NAME:  kill_processes_zombie
 #   DESCRIPTION:  search and kill for zombie proceses
@@ -183,8 +203,12 @@ main(){
     arg="$1"
 
     # }}}
-    # sleep times: 120 = 2 minutes, 300 = 5 minutes
+    # sleep times: 120 = 2 minutes, 300 = 5 minutes, 14400 = 4 hours
     sleeptime=300
+    sleeptime_freeram=14400
+    # since we use the main loop and it has already a time, on which we need to count from it, calculate the real amount:
+    iterator_freeram="$(( $sleeptime_freeram / $sleeptime ))"
+    iterator_freeram_count=0
 
     if [[ "$arg" = "onetime" ]] ; then
         is_onetime=1
@@ -372,6 +396,12 @@ main(){
         verify_and_fix_shm
 
         # }}}
+        # free ram after long use {{{
+        if ((iterator_freeram_count >= $iterator_freeram)) ; then
+            free_memory
+            iterator_freeram_count=0
+        fi
+        # - free ram }}}
 
         # we only want to run it one time
         if ((is_onetime)) ; then
@@ -380,6 +410,7 @@ main(){
 
         # pause until the next loop
         sleep "$sleeptime"
+        ((iterator_freeram_count++))
 
         # clean vars
         unset pid user priority nice memvirt memresident memshared status cpu_usage mem_usage_percent time_minutes cmd
