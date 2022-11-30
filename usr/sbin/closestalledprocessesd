@@ -49,6 +49,8 @@ free_memory(){
     echo 3 > /proc/sys/vm/drop_caches
 
     sleep 3 ; sync ; sleep 2
+
+    echo 1 > /proc/sys/vm/drop_caches
     after="$( el_ram_usage_show used_percent )"
 
     logger "$(basename $0) - RAM has been freed after a long use to keep the system fresh, before was ${before}% used and now ${after}% "
