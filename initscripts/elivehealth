@@ -331,6 +331,16 @@ do_start(){
     fi
 
     # - disk health data }}}
+    # BUG FIX: wifi powersaving mode {{{
+    if lsmod | grep -qs "ath10k_core.*1 " || grep -qsiE "(failed to wake target for|firmware crashed|failed to read device register, device is gone|failed to reset chip|failed to receive scan abortion completion|wmi command.*timeout, restarting hardware)" ; then
+        while read -ru 3 dev
+        do
+            [[ -z "$dev" ]] && continue
+            # do not put wifi in suspension to avoid a firmware crash bug
+            iw dev "$dev" set power_save off
+        done 3<<< "$( LC_ALL=C iw dev | grep Interface | awk '{print $2}' )"
+    fi
+    # - BUG FIX: wifi powersaving mode }}}
 
 
 
