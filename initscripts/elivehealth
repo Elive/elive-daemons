@@ -332,7 +332,8 @@ do_start(){
 
     # - disk health data }}}
     # BUG FIX: wifi powersaving mode {{{
-    if lsmod | grep -qs "ath10k_core.*1 " || grep -qsiE "(failed to wake target for|firmware crashed|failed to read device register, device is gone|failed to reset chip|failed to receive scan abortion completion|wmi command.*timeout, restarting hardware)" ; then
+    if lsmod | grep -qs "ath10k_core.*1 " \
+        || grep -qsiE "(failed to wake target for|firmware crashed|failed to read device register, device is gone|failed to reset chip|failed to receive scan abortion completion|wmi command.*timeout, restarting hardware)" /var/log/syslog ; then
         while read -ru 3 dev
         do
             [[ -z "$dev" ]] && continue
