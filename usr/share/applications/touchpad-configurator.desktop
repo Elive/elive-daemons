@@ -2,6 +2,7 @@
 Type=Application
 Encoding=UTF-8
 Name=Touchpad configurator
+Name[zh]=触摸板配置器
 Name[az]=Touchpad konfiquratoru
 Name[bg]=Конфигуратор на тъчпад
 Name[bn]=টাচপ্যাড কনফিগারর
@@ -41,6 +42,7 @@ Name[tr]=Touchpad yapılandırıcı
 Name[uk]=Тачпад конфігуратор
 Name[vi]=Trình cấu hình bàn di chuột
 GenericName=Configure your touchpad mouse
+GenericName[zh]=配置触摸板鼠标
 GenericName[az]=Touchpad siçanınızı konfiqurasiya edin
 GenericName[bg]=Конфигурирайте мишката на тъчпада
 GenericName[bn]=আপনার টাচপ্যাড মাউস কনফিগার করুন
