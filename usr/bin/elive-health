@@ -17,7 +17,6 @@ main(){
     fi
 
     guitool="zenity --window-icon=/usr/share/icons/Elive/scalable/apps/logo-elive.png"
-    el_mark_state
 
     case "$( cat /etc/debian_version )" in
         11.*|"bullseye"*)
@@ -45,6 +44,9 @@ main(){
         case "$arg" in
             --no-delay)
                 is_nodelay=1
+                ;;
+            --soft)
+                is_soft=1
                 ;;
         esac
     done
@@ -76,27 +78,31 @@ main(){
     # - start things }}}
     # was the shutdown forced? {{{
     #
-    if [[ -e "/var/tmp/elivehealth/elive-system-shutdown-forced" ]] && grep -qsE "^(yes|user notified pre)$" "/var/tmp/elivehealth/elive-system-shutdown-forced" ; then
-        local message_shutdown_warn
-        message_shutdown_warn="$( printf "$( eval_gettext "You previously turned off the computer incorrectly. A forced shutdown is very bad for your data. You should shut down the computer correctly by clicking on your desktop to bring up the menu and find it in the last option there. On the other hand, if your computer freezes without reason, try a different Kernel version and/or with different graphic drivers." )" "" )"
-        # warn the user
-        el_notify "important" "utilities-system-monitor" "$( eval_gettext "Forced shutdown detected" )" "$message_shutdown_warn"
+    if ! ((is_soft)) ; then
+        if [[ -e "/var/tmp/elivehealth/elive-system-shutdown-forced" ]] && grep -qsE "^(yes|user notified pre)$" "/var/tmp/elivehealth/elive-system-shutdown-forced" ; then
+            local message_shutdown_warn
+            message_shutdown_warn="$( printf "$( eval_gettext "You previously turned off the computer incorrectly. A forced shutdown is very bad for your data. You should shut down the computer correctly by clicking on your desktop to bring up the menu and find it in the last option there. On the other hand, if your computer freezes without reason, try a different Kernel version and/or with different graphic drivers." )" "" )"
+            # warn the user
+            el_notify "important" "utilities-system-monitor" "$( eval_gettext "Forced shutdown detected" )" "$message_shutdown_warn"
 
-        # remove the verification file
-        echo "user notified post" > "/var/tmp/elivehealth/elive-system-shutdown-forced"
+                # remove the verification file
+                echo "user notified post" > "/var/tmp/elivehealth/elive-system-shutdown-forced"
+        fi
     fi
 
     # }}}
     # max temperature reached? {{{
     #
-    _notification_max_temperature_reached="$( cat /var/log/syslog /var/log/kern.log /var/log/syslog.1 /var/log/kern.log.1 2>/dev/null | grep "critical temperature reached.*shutting down" | sort -u | tr '\n' ' ' )"
+    if ! ((is_soft)) ; then
+        _notification_max_temperature_reached="$( cat /var/log/syslog /var/log/kern.log /var/log/syslog.1 /var/log/kern.log.1 2>/dev/null | grep "critical temperature reached.*shutting down" | sort -u | tr '\n' ' ' )"
 
-    if [[ -n "$_notification_max_temperature_reached" ]] && [[ "$_notification_max_temperature_reached" != "$conf_notification_max_temperature_reached" ]] ; then
-        $guitool --warning --text="$( eval_gettext "Elive detected that your computer reached a critical temperature and forced a shutdown for its safety. This is common on old computers where dust has accumulated in the fans. To solve the issue you should remove the dust from your computer by opening it or blowing with caution while running. Optionally you can set your CPU speed to run a little slower. This could make your computer more reliable, albeit slower." )"
+        if [[ -n "$_notification_max_temperature_reached" ]] && [[ "$_notification_max_temperature_reached" != "$conf_notification_max_temperature_reached" ]] ; then
+            $guitool --warning --text="$( eval_gettext "Elive detected that your computer reached a critical temperature and forced a shutdown for its safety. This is common on old computers where dust has accumulated in the fans. To solve the issue you should remove the dust from your computer by opening it or blowing with caution while running. Optionally you can set your CPU speed to run a little slower. This could make your computer more reliable, albeit slower." )"
 
-        # make sure to not show again the message if we already did it
-        conf_notification_max_temperature_reached="$_notification_max_temperature_reached"
-        el_config_save "conf_notification_max_temperature_reached"
+                # make sure to not show again the message if we already did it
+                conf_notification_max_temperature_reached="$_notification_max_temperature_reached"
+                el_config_save "conf_notification_max_temperature_reached"
+        fi
     fi
 
     # }}}
@@ -251,9 +257,11 @@ main(){
 
     # }}}
     # stability status {{{
-    if ((is_buster)) && ((is_alpha)) ; then
-        if [[ -n "$E_START" ]] && [[ -f "/usr/share/doc/e17-stable/versions.history.Elive.gz" ]] ; then
-            el_notify important bomb "$( eval_gettext "Remember" )" "$( eval_gettext "The E17 desktop does not work correctly on the newer versions. It's slow, consumes much CPU, has no systray, no special effects and menus as well as windows that disappear. We recommend you switch to E16 which is well integrated as of now, or install the latest version of Enlightenment by running \"apui enlightenment\" in the terminal." )"
+    if ! ((is_soft)) ; then
+        if ((is_buster)) && ((is_alpha)) ; then
+            if [[ -n "$E_START" ]] && [[ -f "/usr/share/doc/e17-stable/versions.history.Elive.gz" ]] ; then
+                el_notify important bomb "$( eval_gettext "Remember" )" "$( eval_gettext "The E17 desktop does not work correctly on the newer versions. It's slow, consumes much CPU, has no systray, no special effects and menus as well as windows that disappear. We recommend you switch to E16 which is well integrated as of now, or install the latest version of Enlightenment by running \"apui enlightenment\" in the terminal." )"
+            fi
         fi
     fi
 
@@ -274,83 +282,87 @@ main(){
     fi
     # - repo issues }}}
     # tell about squashfs errors in live mode {{{
-    if grep -Fqs "boot=live" /proc/cmdline ; then
-        if [[ -x "$(which live-mode-errors-report )" ]] ; then
-            if pidof live-mode-errors-report 1>/dev/null 2>&1 ; then
-                killall live-mode-errors-report
-                sleep 2
+    if ! ((is_soft)) ; then
+        if grep -Fqs "boot=live" /proc/cmdline ; then
+            if [[ -x "$(which live-mode-errors-report )" ]] ; then
+                if pidof live-mode-errors-report 1>/dev/null 2>&1 ; then
+                    killall live-mode-errors-report
+                    sleep 2
+                fi
+                ( live-mode-errors-report & )
             fi
-            ( live-mode-errors-report & )
         fi
     fi
 
     #}}}
     # browsers on tmpfs {{{
     # only if it was never set / configured yet (if is configured, is set to 0 which is defined):
-    if [[ -z "$conf_browsers_on_ram" ]] || [[ ! -L "$HOME/.config/systemd/user/default.target.wants/psd.service" ]] ; then
-        # default
-        _browsers_on_ram=0
+    if ! ((is_soft)) ; then
+        if [[ -z "$conf_browsers_on_ram" ]] || [[ ! -L "$HOME/.config/systemd/user/default.target.wants/psd.service" ]] ; then
+            # default
+            _browsers_on_ram=0
 
-        # Note: live mode doesn't needs it since its already on Live mode, so disable it entirely to ask since this point, unless we are in persistence mode which is needed
-        if ((is_live)) ; then
-            if grep -Fqs "persistence" /proc/cmdline ; then
-                # persistence mode: always need psd
-                _browsers_on_ram=1
-            fi
-        else
-            # ssd on home or root: always, if at least 3,2 gb of ram
-            if grep -qs "^ssd_on_home: yes" /etc/elive-version ; then
-                #if [[ "$RAM_TOTAL_SIZE_mb" -gt 2700 ]] ; then
+            # Note: live mode doesn't needs it since its already on Live mode, so disable it entirely to ask since this point, unless we are in persistence mode which is needed
+            if ((is_live)) ; then
+                if grep -Fqs "persistence" /proc/cmdline ; then
+                    # persistence mode: always need psd
                     _browsers_on_ram=1
-                #fi
+                fi
             else
-                if ! grep -qs "^ssd_on_home: " /etc/elive-version ; then
-                    if grep -qs "^ssd_on_root: yes" /etc/elive-version ; then
-                        #if [[ "$RAM_TOTAL_SIZE_mb" -gt 2700 ]] ; then
-                            _browsers_on_ram=1
-                        #fi
-                    else
-                        # this means we have not any "^ssd_on" setting, so we don't know
-                        if ! grep -qs "^ssd_on_root: " /etc/elive-version ; then
+                # ssd on home or root: always, if at least 3,2 gb of ram
+                if grep -qs "^ssd_on_home: yes" /etc/elive-version ; then
+                    #if [[ "$RAM_TOTAL_SIZE_mb" -gt 2700 ]] ; then
+                        _browsers_on_ram=1
+                    #fi
+                else
+                    if ! grep -qs "^ssd_on_home: " /etc/elive-version ; then
+                        if grep -qs "^ssd_on_root: yes" /etc/elive-version ; then
                             #if [[ "$RAM_TOTAL_SIZE_mb" -gt 2700 ]] ; then
-                                _browsers_on_ram_ask=1
+                                _browsers_on_ram=1
                             #fi
+                        else
+                            # this means we have not any "^ssd_on" setting, so we don't know
+                            if ! grep -qs "^ssd_on_root: " /etc/elive-version ; then
+                                #if [[ "$RAM_TOTAL_SIZE_mb" -gt 2700 ]] ; then
+                                    _browsers_on_ram_ask=1
+                                #fi
+                            fi
                         fi
                     fi
                 fi
+                # if more than X of ram: always, speeds up
+                if [[ "$RAM_TOTAL_SIZE_mb" -gt 2200 ]] ; then
+                    _browsers_on_ram=1
+                else
+                    # if enough ram, ask
+                    #if [[ "$RAM_TOTAL_SIZE_mb" -gt 2700 ]] ; then
+                        _browsers_on_ram_ask=1
+                    #fi
+                fi
             fi
-            # if more than X of ram: always, speeds up
-            if [[ "$RAM_TOTAL_SIZE_mb" -gt 2200 ]] ; then
-                _browsers_on_ram=1
-            else
-                # if enough ram, ask
-                #if [[ "$RAM_TOTAL_SIZE_mb" -gt 2700 ]] ; then
-                    _browsers_on_ram_ask=1
-                #fi
+
+
+            # ask
+            if ! ((_browsers_on_ram)) && ((_browsers_on_ram_ask)) ; then
+                if $guitool --question --text="$( eval_gettext "Do you want to run your browsers over RAM? This will use an extra half gigabyte of memory but will make your browser faster and also improve the health of your hard disk. Select this option especially if you have an SSD disk." )" ; then
+                    _browsers_on_ram=1
+                fi
             fi
+
+            # save
+            conf_browsers_on_ram="$_browsers_on_ram"
+            el_config_save "conf_browsers_on_ram"
         fi
 
-
-        # ask
-        if ! ((_browsers_on_ram)) && ((_browsers_on_ram_ask)) ; then
-            if $guitool --question --text="$( eval_gettext "Do you want to run your browsers over RAM? This will use an extra half gigabyte of memory but will make your browser faster and also improve the health of your hard disk. Select this option especially if you have an SSD disk." )" ; then
-                _browsers_on_ram=1
-            fi
-        fi
-
-        # save
-        conf_browsers_on_ram="$_browsers_on_ram"
-        el_config_save "conf_browsers_on_ram"
-    fi
-
-    # enable it
-    if ((conf_browsers_on_ram)) ; then
-        # enable daemon
-        if ! LC_ALL=C systemctl --user status psd | colors-remove | grep -Fqs "Active: active" ; then
-            if ! elive-browsers-on-ram ; then
-                # disable it for the next times:
-                conf_browsers_on_ram="0"
-                el_config_save "conf_browsers_on_ram"
+        # enable it
+        if ((conf_browsers_on_ram)) ; then
+            # enable daemon
+            if ! LC_ALL=C systemctl --user status psd | colors-remove | grep -Fqs "Active: active" ; then
+                if ! elive-browsers-on-ram ; then
+                    # disable it for the next times:
+                    conf_browsers_on_ram="0"
+                    el_config_save "conf_browsers_on_ram"
+                fi
             fi
         fi
     fi
@@ -411,6 +423,7 @@ main(){
     # mark a working and healthy status {{{
     # set a minimal working state, to make sure that elive is not broken by a possible upgrade
     if ! ((is_nodelay)) ; then
+        el_mark_state
         machine_id="$( grep "^machine-id: " /etc/elive-version 2>/dev/null | sed -e 's|^machine-id: ||g' | tail -1 )"
         if [[ -z "$machine_id" ]] ; then
             machine_id="$( cat /etc/machine-id 2>/dev/null | tail -1 )"
