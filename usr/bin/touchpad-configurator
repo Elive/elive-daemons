@@ -102,7 +102,9 @@ main(){
         #conf_taps_disabled_while_typing_seconds="1.2"
     #fi
     if ! synclient -l 1>/dev/null 2>&1 ; then
-        $guitool --error --text="$( eval_gettext "No touchpad hardware was detected. If you have it, try using a different kernel to see if it includes a better driver." )"
+        if laptop-detect ; then
+            $guitool --error --text="$( eval_gettext "No touchpad hardware was detected. If you have it, try using a different kernel to see if it includes a better driver." )"
+        fi
         exit
     fi
 
