@@ -3,14 +3,28 @@ SOURCE="$0"
 source /usr/lib/elive-tools/functions
 EL_REPORTS="1"
 
+if [[ -e "/var/lib/dpkg/info/sysvinit-core.list" ]] ; then
+    is_sysvinit=1
+else
+    is_systemd=1
+fi
+
 # note: same code exists in ctrl-alt-del tool
 audio_reconfigure(){
     if [[ -e /var/lib/dpkg/info/pulseaudio.list ]] ; then
-        systemctl --user stop pulseaudio.service pulseaudio.socket
-        killall -9 pulseaudio
+        if ((is_systemd)) ; then
+            systemctl --user stop pulseaudio.service pulseaudio.socket 2>/dev/null || true
+        fi
+        killall -9 pulseaudio 2>/dev/null || true
+
         rm -rf ~/.config/pulse/cookie ~/.pulse/* ~/.asoundrc 2>/dev/null || true
         audio-configurator  --quiet --auto --smart --no-messages
-        systemctl --user start pulseaudio.service pulseaudio.socket
+
+        if ((is_systemd)) ; then
+            systemctl --user start pulseaudio.service pulseaudio.socket
+        else
+            ( pulseaudio --start & )
+        fi
     else
         audio-configurator  --quiet --auto --smart --no-messages
     fi
