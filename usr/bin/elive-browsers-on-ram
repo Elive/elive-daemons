@@ -151,7 +151,7 @@ do_configure(){
         do_disable
     fi
     if [[ -z "$result" ]] ; then
-        $guitool --error --text="$( eval_gettext "No browsers are selected to be used in RAM mode. Ignoring..." )"
+        $guitool --error --text="$( eval_gettext "No browsers are selected to be used in RAM mode. Aborting..." )"
         do_disable
         exit 1
     fi
