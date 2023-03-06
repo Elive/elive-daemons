@@ -305,8 +305,12 @@ main(){
             # Note: live mode doesn't needs it since its already on Live mode, so disable it entirely to ask since this point, unless we are in persistence mode which is needed
             if ((is_live)) ; then
                 if grep -Fqs "persistence" /proc/cmdline ; then
-                    # persistence mode: always need psd
-                    _browsers_on_ram=1
+                    if [[ "$RAM_TOTAL_SIZE_mb" -gt 5000 ]] ; then
+                        # persistence mode: always need psd
+                        _browsers_on_ram=1
+                    else
+                        elive-browsers-on-ram "disable"
+                    fi
                 fi
             else
                 # ssd on home or root: always, if at least 3,2 gb of ram
@@ -331,7 +335,7 @@ main(){
                     fi
                 fi
                 # if more than X of ram: always, speeds up
-                if [[ "$RAM_TOTAL_SIZE_mb" -gt 2200 ]] ; then
+                if [[ "$RAM_TOTAL_SIZE_mb" -gt 5000 ]] ; then
                     _browsers_on_ram=1
                 else
                     # if enough ram, ask
