@@ -298,6 +298,14 @@ main(){
     # browsers on tmpfs {{{
     # only if it was never set / configured yet (if is configured, is set to 0 which is defined):
     if ! ((is_soft)) && [[ -x "$(which systemctl)" ]] ; then
+
+        # always reconfigure it on persistence
+        if ((is_live)) && grep -Fqs "persistence" /proc/cmdline ; then
+            if [[ "$RAM_TOTAL_SIZE_mb" -lt 5000 ]] ; then
+                elive-browsers-on-ram --quiet "disable"
+            fi
+        fi
+
         if [[ -z "$conf_browsers_on_ram" ]] || [[ ! -L "$HOME/.config/systemd/user/default.target.wants/psd.service" ]] ; then
             # default
             _browsers_on_ram=0
@@ -305,11 +313,9 @@ main(){
             # Note: live mode doesn't needs it since its already on Live mode, so disable it entirely to ask since this point, unless we are in persistence mode which is needed
             if ((is_live)) ; then
                 if grep -Fqs "persistence" /proc/cmdline ; then
-                    if [[ "$RAM_TOTAL_SIZE_mb" -gt 5000 ]] ; then
+                    if [[ "$RAM_TOTAL_SIZE_mb" -ge 5000 ]] ; then
                         # persistence mode: always need psd
                         _browsers_on_ram=1
-                    else
-                        elive-browsers-on-ram --quiet "disable"
                     fi
                 fi
             else
