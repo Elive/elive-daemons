@@ -56,14 +56,18 @@ do_enable(){
 
     if [[ -s "$HOME/.config/psd/psd.conf" ]] ; then
         do_start
-        el_notify normal web-browser "Browsers on RAM" "$( eval_gettext "Browsers on RAM feature is now enabled. This feature also increases the lifespan of your SSD hard disk" )"
+        if ! ((is_quiet)) ; then
+            el_notify normal web-browser "Browsers on RAM" "$( eval_gettext "Browsers on RAM feature is now enabled. This feature also increases the lifespan of your SSD hard disk" )"
+        fi
     fi
 }
 
 do_disable(){
     do_stop
 
-    el_notify normal web-browser "Browsers on RAM" "$( eval_gettext "Browsers on RAM feature has been disabled. Remember that this feature increases the lifespan of your SSD hard disk" )"
+    if ! ((is_quiet)) ; then
+        el_notify normal web-browser "Browsers on RAM" "$( eval_gettext "Browsers on RAM feature has been disabled. Remember that this feature increases the lifespan of your SSD hard disk" )"
+    fi
 
     LC_ALL=C sleep 0.5
     rm -f "$HOME/.config/psd/psd.conf" 1>/dev/null 2>&1 || true
@@ -96,7 +100,9 @@ do_configure(){
 
     # no browsers available? just exit
     if [[ -z "${#_browsers[@]}" ]] ; then
-        $guitool --error --text="$( eval_gettext "No browsers are found. Install a desired Web browser first, like Google Chrome, Chromium, or Firefox, from the packages manager software in your Elive." )"
+        if ! ((is_quiet)) ; then
+            $guitool --error --text="$( eval_gettext "No browsers are found. Install a desired Web browser first, like Google Chrome, Chromium, or Firefox, from the packages manager software in your Elive." )"
+        fi
         exit
     fi
 
@@ -151,7 +157,7 @@ do_configure(){
         do_disable
     fi
     if [[ -z "$result" ]] ; then
-        $guitool --error --text="$( eval_gettext "No browsers are selected to be used in RAM mode. Aborting..." )"
+        $guitool --error --text="$( eval_gettext "No browsers are selected to be used in RAM mode. Ignoring..." )"
         do_disable
         exit 1
     fi
@@ -187,22 +193,42 @@ main(){
 
     # }}}
 
-    case "$1" in
-        enable)
-            do_enable
-            ;;
-        disable)
-            do_disable
-            ;;
-        configure)
+    if [[ -z "$@" ]] ; then
+        is_quiet=1
+
+        if $guitool --question --text="$( eval_gettext "Do you want to enable the feature of Browsers under RAM? This feature will make your browser's slightly faster and especially it will protect your hard disks increasing their lifespan." )" ; then
             do_configure
-            ;;
-        *)
-            # Usage
-            echo -e "Usage: $(basename $BASH_SOURCE) enable|disable|configure"
-            exit 1
-            ;;
-    esac
+        else
+            do_disable
+        fi
+    fi
+
+    for arg in "$@"
+    do
+        case "$arg" in
+            "-q"|"--quiet")
+                is_quiet=1
+                shift
+                ;;
+            enable)
+                do_enable
+                shift
+                ;;
+            disable)
+                do_disable
+                shift
+                ;;
+            configure)
+                do_configure
+                shift
+                ;;
+            *)
+                # Usage
+                echo -e "Usage: $(basename $BASH_SOURCE) [--quiet] enable|disable|configure"
+                exit 1
+                ;;
+        esac
+    done
 
 }
 

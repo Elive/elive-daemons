@@ -309,7 +309,7 @@ main(){
                         # persistence mode: always need psd
                         _browsers_on_ram=1
                     else
-                        elive-browsers-on-ram "disable"
+                        elive-browsers-on-ram --quiet "disable"
                     fi
                 fi
             else
@@ -362,7 +362,7 @@ main(){
         if ((conf_browsers_on_ram)) ; then
             # enable daemon
             if ! LC_ALL=C systemctl --user status psd | colors-remove | grep -Fqs "Active: active" ; then
-                if ! elive-browsers-on-ram "configure" ; then
+                if ! elive-browsers-on-ram --quiet "configure" ; then
                     # disable it for the next times:
                     conf_browsers_on_ram="0"
                     el_config_save "conf_browsers_on_ram"
