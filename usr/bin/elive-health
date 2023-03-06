@@ -358,7 +358,7 @@ main(){
         if ((conf_browsers_on_ram)) ; then
             # enable daemon
             if ! LC_ALL=C systemctl --user status psd | colors-remove | grep -Fqs "Active: active" ; then
-                if ! elive-browsers-on-ram ; then
+                if ! elive-browsers-on-ram "configure" ; then
                     # disable it for the next times:
                     conf_browsers_on_ram="0"
                     el_config_save "conf_browsers_on_ram"

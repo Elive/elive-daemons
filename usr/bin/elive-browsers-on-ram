@@ -8,15 +8,7 @@ TEXTDOMAIN="elive-daemons"
 export TEXTDOMAIN
 
 
-main(){
-    # pre {{{
-    if [[ "$UID" = 0 ]] ; then
-        el_error "This is not meant to be run as root, use it from your user instead"
-        exit 1
-    fi
-
-    # }}}
-
+close_browsers(){
     # close browsers first
     killall google-chrome chromium firefox firefox-esr palemoon midori opera vivaldi 1>/dev/null 2>&1 || true
     sync
@@ -34,13 +26,53 @@ main(){
 
     killall -9 google-chrome chromium firefox firefox-esr palemoon midori opera vivaldi 1>/dev/null 2>&1 || true
     sync ; sleep 1
+}
 
+do_stop(){
+    systemctl --user stop psd.service psd-resync.service 1>/dev/null 2>&1 || true
+    systemctl --user disable psd.service psd-resync.service 1>/dev/null 2>&1 || true
+    sync
+}
+do_start(){
+    systemctl --user enable psd.service psd-resync.service 1>/dev/null 2>&1 || true
+    systemctl --user start psd.service psd-resync.service 1>/dev/null 2>&1 || true
+    sync
+}
+
+
+install_deps(){
     # prepare
     if ! el_dependencies_check "psd" 1>/dev/null 2>&1 ; then
         el_dependencies_install "profile-sync-daemon"
     fi
-    systemctl --user disable psd.service psd-resync.service 1>/dev/null 2>&1 || true
-    systemctl --user stop psd.service psd-resync.service 1>/dev/null 2>&1 || true
+}
+
+do_enable(){
+    # configure if needed first
+    source "$HOME/.config/psd/psd.conf" 2>/dev/null || true
+    if [[ -z "$BROWSERS" ]] ; then
+        do_configure
+    fi
+
+    if [[ -s "$HOME/.config/psd/psd.conf" ]] ; then
+        do_start
+        el_notify normal web-browser "Browsers on RAM" "$( eval_gettext "Browsers on RAM feature is now enabled. This feature also increases the lifespan of your SSD hard disk" )"
+    fi
+}
+
+do_disable(){
+    do_stop
+
+    el_notify normal web-browser "Browsers on RAM" "$( eval_gettext "Browsers on RAM feature has been disabled. Remember that this feature increases the lifespan of your SSD hard disk" )"
+
+    LC_ALL=C sleep 0.5
+    rm -f "$HOME/.config/psd/psd.conf" 1>/dev/null 2>&1 || true
+}
+
+do_configure(){
+    close_browsers
+    install_deps
+    do_stop
 
     # configure
     if [[ -e "/var/lib/dpkg/info/google-chrome-stable.list" ]] ; then
@@ -64,6 +96,7 @@ main(){
 
     # no browsers available? just exit
     if [[ -z "${#_browsers[@]}" ]] ; then
+        $guitool --error --text="$( eval_gettext "No browsers are found. Install a desired Web browser first, like Google Chrome, Chromium, or Firefox, from the packages manager software in your Elive." )"
         exit
     fi
 
@@ -71,7 +104,8 @@ main(){
         result="${_browsers[0]}"
     else
         local message_select_browsers
-        message_select_browsers="$( printf "$( eval_gettext "Select the web browser you want to run on RAM. We advise only selecting the one that you commonly use." )" "" )"
+        message_select_browsers="$( printf "$( eval_gettext "Select the web browser you want to run on RAM. We advise only selecting the one that you commonly use. Or just Cancel if you don't want to use this feature" )" "" )"
+
 
         result="$( for i in "${_browsers[@]}"
         do
@@ -107,28 +141,69 @@ main(){
                     echo "Vivaldi"
                     ;;
             esac
-        done  | $guitool --height="200" --list --checklist --text="$message_select_browsers" --separator=" " --column="Enable" --column="ID" --column="Web Browser" --print-column=2 --hide-column=2  2>/dev/null )"
+        done  | $guitool --height="200" --list --checklist --text="$message_select_browsers" --separator=" " --column="Enable" --column="ID" --column="Web Browser" --print-column=2 --hide-column=2  2>/dev/null || echo cancel )"
     fi
     # create a dummy conf
     rm -f "$HOME/.config/psd/psd.conf" 1>/dev/null 2>&1 || true
 
     # User didn't selected any browser, so do not enable anything and exit with error to be known by elive-health
+    if [[ "$result" = "cancel" ]] ; then
+        do_disable
+    fi
     if [[ -z "$result" ]] ; then
+        $guitool --error --text="$( eval_gettext "No browsers are selected to be used in RAM mode. Ignoring..." )"
+        do_disable
         exit 1
     fi
-    systemctl --user enable psd.service psd-resync.service
-    systemctl --user start psd.service psd-resync.service
-    sync
+
+    # create first a default conf
+    do_start
+    do_stop
+    LC_ALL=C sleep 0.5
+
     # configure
-    systemctl --user stop psd.service psd-resync.service
-    sync
     sed -i -e "s|^.*USE_OVERLAYFS=\".*|USE_OVERLAYFS=\"yes\"|g" "$HOME/.config/psd/psd.conf"
     sed -i -e "s|^.*BROWSERS=\".*|BROWSERS=\"${result}\"|g" "$HOME/.config/psd/psd.conf"
-    sed -i -e "s|^.*USE_BACKUPS=\".*|USE_BACKUPS=\"yes\"|g" "$HOME/.config/psd/psd.conf"
-    sed -i -e "s|^.*BACKUP_LIMIT=.*|BACKUP_LIMIT=1|g" "$HOME/.config/psd/psd.conf"
+
+    if grep -qs "boot=live" /proc/cmdline ; then
+        sed -i -e "s|^.*USE_BACKUPS=\".*|USE_BACKUPS=\"no\"|g" "$HOME/.config/psd/psd.conf"
+        sed -i -e "s|^.*BACKUP_LIMIT=.*|#BACKUP_LIMIT=1|g" "$HOME/.config/psd/psd.conf"
+    else
+        sed -i -e "s|^.*USE_BACKUPS=\".*|USE_BACKUPS=\"yes\"|g" "$HOME/.config/psd/psd.conf"
+        sed -i -e "s|^.*BACKUP_LIMIT=.*|BACKUP_LIMIT=1|g" "$HOME/.config/psd/psd.conf"
+    fi
 
     # enable daemon for user
-    systemctl --user start psd.service psd-resync.service
+    do_enable
+}
+
+
+main(){
+    # pre {{{
+    if [[ "$UID" = 0 ]] ; then
+        el_error "This is not meant to be run as root, use it from your user instead"
+        exit 1
+    fi
+
+    # }}}
+
+    case "$1" in
+        enable)
+            do_enable
+            ;;
+        disable)
+            do_disable
+            ;;
+        configure)
+            do_configure
+            ;;
+        *)
+            # Usage
+            echo -e "Usage: $(basename $BASH_SOURCE) enable|disable|configure"
+            exit 1
+            ;;
+    esac
+
 }
 
 #
