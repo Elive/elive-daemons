@@ -76,7 +76,7 @@ main(){
         fi
         # fix pulseaudio card
         if ! pulsemixer --list-sinks | grep -iv "Dummy Output" | grep -qs "^Sink:" ; then
-            el_error "audio card not working, reconfiguring..."
+            NOREPORTS=1 el_error "audio card not working, reconfiguring..."
             audio_reconfigure
         fi
     else
