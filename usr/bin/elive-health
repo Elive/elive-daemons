@@ -366,8 +366,12 @@ main(){
 
         # enable it
         if ((conf_browsers_on_ram)) ; then
+            # first disable any possible daemon if not working
+            if [[ ! -L "$HOME/.config/systemd/user/default.target.wants/psd.service" ]] ; then
+                elive-browsers-on-ram --quiet "disable"
+            fi
             # enable daemon
-            if ! LC_ALL=C systemctl --user status psd | colors-remove | grep -Fqs "Active: active" ; then
+            if ! LC_ALL=C systemctl --user status psd.service | colors-remove | grep -Fqs "Active: active" ; then
                 if ! elive-browsers-on-ram --quiet "configure" ; then
                     # disable it for the next times:
                     conf_browsers_on_ram="0"
