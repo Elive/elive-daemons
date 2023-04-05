@@ -126,6 +126,19 @@ main(){
         ( conky 1>/dev/null 2>&1 & disown )
     fi
     # - restarts }}}
+    # elive-assistant configurations {{{
+    if [[ -s "/usr/share/elive-assistant/ulauncher-shortcuts/shortcuts-extra-assistant.json" ]] ; then
+        if ! grep -qs "assistant-" "$HOME/.config/ulauncher/shortcuts.json" ; then
+            killall ulauncher 1>/dev/null 2>&1 || true
+            el_json_append_file "$HOME/.config/ulauncher/shortcuts.json" "/usr/share/elive-assistant/ulauncher-shortcuts/shortcuts-extra-assistant.json"
+        fi
+    else
+        if grep -qs "assistant-" "$HOME/.config/ulauncher/shortcuts.json" ; then
+            killall ulauncher 1>/dev/null 2>&1 || true
+            el_json_delete_ids_regex "$HOME/.config/ulauncher/shortcuts.json" "assistant-"
+        fi
+    fi
+    # - elive-assistant configurations }}}
 
     # if we are debugging give it a little pause to see what is going on
     if grep -Fqs "debug" /proc/cmdline ; then
