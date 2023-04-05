@@ -35,7 +35,7 @@ main(){
 
     # restart later conky if needed {{{
     if pidof conky 1>/dev/null ; then
-        is_restart_conky=1
+        is_conky_running=1
     fi
     # }}}
     # reconfigure GL in elementary based in E configurations {{{
@@ -98,10 +98,12 @@ main(){
         if eesh compmgr '?' | grep -Fqs "on=1" ; then
             if grep -Fqs "own_window_argb_visual = false" "$HOME/.conkyrc" ; then
                 killall conky
+                ((is_conky_running)) && is_restart_conky=1
                 sed -i -e "s|^.*own_window_argb_visual.*$|\town_window_argb_visual = true,|gI" "$HOME/.conkyrc"
             fi
         else
             if grep -Fqs "own_window_argb_visual = true" "$HOME/.conkyrc" ; then
+                ((is_conky_running)) && is_restart_conky=1
                 killall conky
                 sed -i -e "s|^.*own_window_argb_visual.*$|\town_window_argb_visual = false,|gI" "$HOME/.conkyrc"
             fi
