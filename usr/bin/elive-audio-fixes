@@ -61,8 +61,27 @@ main(){
 
     # reconfigure audio when its deconfigured
     if [[ ! -e ~/.asoundrc ]] || [[ -e ~/.asoundrc-reconfigureme ]] ; then
+        if ((is_systemd)) ; then
+            systemctl --user stop pulseaudio.service pulseaudio.socket
+        fi
+        killall -9 pulseaudio
+        rm -rf ~/.config/pulse/cookie ~/.pulse/* ~/.asoundrc 2>/dev/null || true
+
         audio-configurator --quiet --auto --smart
+
+        # fix volumes
+        rm -f "$HOME/.config/setvolume" 2>/dev/null 1>&2
         setvolume defaults
+
+        if ((is_systemd)) ; then
+            systemctl --user start pulseaudio.service pulseaudio.socket
+        else
+            ( pulseaudio --start & )
+        fi
+
+        timeout 5 aplay /dev/null 2>/dev/null
+        LC_ALL=C sleep 0.2
+
         rm -f ~/.asoundrc-reconfigureme
     fi
 
