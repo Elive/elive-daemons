@@ -109,8 +109,8 @@ main(){
     # filesystem almost full {{{
     #
     # default values to check
-    percent_max="92"
-    percent_max_crit="95"
+    percent_max="90"
+    percent_max_crit="94"
 
     percent="$( LC_ALL=C df -m | awk '{if ($6 == "/home") print $5}' | head -1 )"
     percent="${percent%\%}"
@@ -118,15 +118,19 @@ main(){
     if [[ -z "$percent" ]] ; then
         percent="$( LC_ALL=C df -m | awk '{if ($6 == "/") print $5}' | head -1 )"
         percent="${percent%\%}"
-        # root almost full, always warning
-        if [[ "${percent}" -ge "$percent_max_crit" ]] ; then
-            el_notify "normal" "gparted" "$( eval_gettext "Hard disk is almost full" )" "$( eval_gettext "Your root partition is almost full, we recommend removing some unneeded software or enlarging your partition and/or reinstalling Elive, with special options if needed. Your installation could become unbootable if the disk is full." )"
+    fi
+    # root almost full, always warning
+    if [[ "${percent}" -ge "$percent_max_crit" ]] ; then
+        el_notify "normal" "gparted" "$( eval_gettext "Hard disk is full" )" "$( eval_gettext "Your root partition is full. We recommend removing some unneeded software or enlarging your partition and/or reinstalling Elive, with special options if needed. Your installation could become unbootable if the disk is full." )"
+        is_disk_full=1
+    else
+        if [[ "${percent}" -ge "$percent_max" ]] ; then
+            $guitool --warning --text="$( eval_gettext "Your partition is almost full. We recommend you delete old files to free up some space, your installation could \"brick\" (become unusable) if it has no space left." )"
+            is_disk_full=1
         fi
     fi
 
-    if [[ "${percent}" -ge "$percent_max" ]] ; then
-        $guitool --warning --text="$( eval_gettext "Your partition is almost full. We recommend you delete old files to free up some space, your installation could \"brick\" (become unusable) if it has no space left." )"
-
+    if ((is_disk_full)) ; then
         if $guitool --question --text="$( eval_gettext "Do you want Elive to automatically clean some unneeded and temporary files now?" )" ; then
             # delete unneeded things now
             find "$HOME/.cache" -not -path "*/.cache/zsh/*" -not -path "*/.cache/elive*" -type f -delete
