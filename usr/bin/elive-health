@@ -120,18 +120,23 @@ main(){
         percent="${percent%\%}"
     fi
     # root almost full, always warning
-    if [[ "${percent}" -ge "$percent_max_crit" ]] ; then
-        el_notify "normal" "gparted" "$( eval_gettext "Hard disk is full" )" "$( eval_gettext "Your root partition is full. We recommend removing some unneeded software or enlarging your partition and/or reinstalling Elive, with special options if needed. Your installation could become unbootable if the disk is full." )"
+    if [[ "${percent}" -ge "$percent_max_crit" ]] && ! el_flag check "disk-full-crit" ; then
+        el_notify "crit" "gparted" "$( eval_gettext "Hard disk is full" )" "$( eval_gettext "Your root partition is full. We recommend removing some unneeded software or enlarging your partition and/or reinstalling Elive, with special options if needed. Your installation could become unbootable if the disk is full." )"
         is_disk_full=1
-    else
-        if [[ "${percent}" -ge "$percent_max" ]] ; then
-            $guitool --warning --text="$( eval_gettext "Your partition is almost full. We recommend you delete old files to free up some space, your installation could \"brick\" (become unusable) if it has no space left." )"
-            is_disk_full=1
-        fi
+        el_flag add "disk-full-crit"
+    fi
+    if [[ "${percent}" -ge "$percent_max" ]] && ! el_flag check "disk-full-warn" ; then
+        $guitool --warning --text="$( eval_gettext "Your partition is almost full. We recommend you delete old files to free up some space, your installation could \"brick\" (become unusable) if it has no space left." )"
+        is_disk_full=1
+        el_flag add "disk-full-warn"
     fi
 
     if ((is_disk_full)) ; then
         if $guitool --question --text="$( eval_gettext "Do you want Elive to automatically clean some unneeded and temporary files now?" )" ; then
+            # delete flags if users frees space, in order to show again the message if the user don't reboot the machine
+            el_flag del "disk-full-crit"
+            el_flag del "disk-full-warn"
+
             # delete unneeded things now
             find "$HOME/.cache" -not -path "*/.cache/zsh/*" -not -path "*/.cache/elive*" -type f -delete
             find "$HOME/.thumbnails" -type f -delete
@@ -182,6 +187,10 @@ main(){
             message_ask_for_scan="$( printf "$( eval_gettext "Your hard disk used space was %s and now is %s. Do you want to scan your files to know where the bigger usage waste occurs?" )" "${percent}%" "${percent_new}%" )"
         else
             message_ask_for_scan="$( printf "$( eval_gettext "Do you want to scan your files to find out where the bigger waste of space can be found?" )" ) - ${percent}% used."
+
+            # delete flags if users says "no" in order to show again the message if the user don't reboot the machine
+            el_flag del "disk-full-crit"
+            el_flag del "disk-full-warn"
         fi
 
 
