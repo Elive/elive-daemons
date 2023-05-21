@@ -366,15 +366,18 @@ main(){
 
 
             # ask
-            if ! ((_browsers_on_ram)) && ((_browsers_on_ram_ask)) ; then
+            if ! ((_browsers_on_ram)) && [[ -z "$conf_browsers_on_ram" ]] && ((_browsers_on_ram_ask)) ; then
                 if $guitool --question --text="$( eval_gettext "Do you want to run your browsers over RAM? This will use an extra half gigabyte of memory but will make your browser faster and also improve the health of your hard disk. Select this option especially if you have an SSD disk." )" ; then
                     _browsers_on_ram=1
+                else
+                    _browsers_on_ram=0
                 fi
+
+                # save
+                conf_browsers_on_ram="$_browsers_on_ram"
+                el_config_save "conf_browsers_on_ram"
             fi
 
-            # save
-            conf_browsers_on_ram="$_browsers_on_ram"
-            el_config_save "conf_browsers_on_ram"
         fi
 
         # enable it
