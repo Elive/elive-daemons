@@ -60,6 +60,8 @@ do_enable(){
             el_notify normal web-browser "Browsers on RAM" "$( eval_gettext "Browsers on RAM feature is now enabled. This feature also increases the lifespan of your SSD hard disk" )"
         fi
     fi
+
+    sed -i -e 's|^.*conf_browsers_on_ram=.*$|declare -g -- conf_browsers_on_ram="1"|g' "$HOME/.config/elive/elive-tools/el_config/*elive-health*sh" 2>/dev/null || true
 }
 
 do_disable(){
@@ -71,6 +73,8 @@ do_disable(){
 
     LC_ALL=C sleep 0.5
     rm -f "$HOME/.config/psd/psd.conf" 1>/dev/null 2>&1 || true
+
+    sed -i -e 's|^.*conf_browsers_on_ram=.*$|declare -g -- conf_browsers_on_ram="0"|g' "$HOME/.config/elive/elive-tools/el_config/*elive-health*sh" 2>/dev/null || true
 }
 
 do_configure(){
