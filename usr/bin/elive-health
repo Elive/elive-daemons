@@ -126,6 +126,7 @@ main(){
         el_flag add "disk-full-crit"
     fi
     if [[ "${percent}" -ge "$percent_max" ]] && ! el_flag check "disk-full-warn" ; then
+        # TODO: <AlsoTheTechRobo> Also, I'd condense the popups. "Your disk is almost full, your partition could brick" can be merged with "Do you want Elive to remove temporary files?"
         $guitool --warning --text="$( eval_gettext "Your partition is almost full. We recommend you delete old files to free up some space, your installation could \"brick\" (become unusable) if it has no space left." )"
         is_disk_full=1
         el_flag add "disk-full-warn"
