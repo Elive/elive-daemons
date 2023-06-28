@@ -198,8 +198,6 @@ main(){
     # }}}
 
     if [[ -z "$@" ]] ; then
-        is_quiet=1
-
         if $guitool --question --text="$( eval_gettext "Do you want to enable the feature of Browsers under RAM? This feature will make your browser's slightly faster and especially it will protect your hard disks increasing their lifespan." )" ; then
             do_configure
         else
