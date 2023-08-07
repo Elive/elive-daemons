@@ -382,7 +382,7 @@ main(){
                     fi
                     ;;
                 # whitelisted ones:  yeah, we know that they sucks, and we love them on this way :/
-                *"songbird-bin"|*/chromium|*/iceweasel*|*firefox*|*/Xorg|*/opera|*/VirtualBox|*/AppRun|*/pcsxr*|*palemoon*|java|obabel)
+                *"songbird-bin"|*/chromium|*/iceweasel*|*firefox*|*/Xorg|*/opera|*/VirtualBox|*/AppRun|*/pcsxr*|*palemoon*|java|obabel|zoom)
                         # songbird:  its a simply greedy eater of resoureces
                         # chromium:  when we play videos cpu becomes high, and we could have it running since long time
                         # Xorg: sometimes is overloaded, its normal
@@ -402,8 +402,16 @@ main(){
                     fi
                     ;;
 
+                "yad")
+                    # yad can be stuck and consume cpu, if this happens for enough time, just kill the dialog
+                    if [[ "${time_minutes}" -gt 30 ]] && [[ "${cpu_usage}" -gt 60 ]] ; then
+                        kill_process "$pid" "${status}" "$cmd"
+                    fi
+                    ;;
+
+
                 "cairo-dock")
-                    if [[ "${time_minutes}" -gt 200 ]] && [[ "${cpu_usage}" -gt 60 ]] ; then
+                    if [[ "${time_minutes}" -gt 40 ]] && [[ "${cpu_usage}" -gt 60 ]] ; then
                         kill_process_restart "$pid" "${status}" "$cmd"
                     fi
                     ;;
