@@ -10,67 +10,76 @@ if [[ "$PATH" != *"/usr/sbin"* ]] ; then
 fi
 
 main(){
-    # pre {{{
+    # decide if show the menu or not
+    if grep -qs "boot=live" /proc/cmdline ; then
+        is_popup_wanted=1
+    fi
+    if laptop-detect ; then
+        is_laptop=1
+        is_popup_wanted=1
+    fi
+    
+    # if cat /sys/class/net/{eth,enp}*/{carrier,operstate} 2>/dev/null | grep -qsE "^(1|up)$" ; then
+    #     is_ethernet=1
+    #     is_popup_wanted=0
+    # fi
 
-    # }}}
+    if ((is_popup_wanted)) ; then
+        # wait that the system has passed enough time to have been connected
+        if ! ((is_interactive)) ; then
+            # wait also for rfkill to be run
+            sleep 10
+        fi
 
-    #if grep -qs "boot=live" /proc/cmdline ; then
-        if laptop-detect ; then
-            # wait that the system has passed enough time to have been connected
-            if ! ((is_interactive)) ; then
-                # wait also for rfkill to be run
+        # check for internet at start
+        for i in $(seq 2)
+        do
+            if el_verify_internet fast ; then
+                exit
+            else
+                sleep 3
+            fi
+        done
+
+        # get device name
+        wifi_dev="$( LC_ALL=C /sbin/iwconfig 2>&1 | grep -F IEEE | awk '{print $1}' | grep "[[:alpha:]]" | head -1 )"
+
+        if [[ -n "$wifi_dev" ]] ; then
+            # activate wifi if was not
+            if LC_ALL=C /sbin/iwlist $wifi_dev scan 2>&1 | grep -Fqs "Network is down" ; then
+                # not needed to activate here since we already activate it as a desktop start
+                #wifi-activate
                 sleep 10
             fi
 
-            # check for internet at start
-            for i in $(seq 2)
+            # check if we have ESSID's available to connet
+            for count in $(seq 10)
             do
-                if el_verify_internet fast ; then
-                    exit
-                else
-                    sleep 3
+                if LC_ALL=C /sbin/iwlist $wifi_dev scan 2>&1 | grep -Fqs "ESSID:" ; then
+                    break
                 fi
+                sleep 8
             done
 
-            # get device name
-            wifi_dev="$( LC_ALL=C /sbin/iwconfig 2>&1 | grep -F IEEE | awk '{print $1}' | grep "[[:alpha:]]" | head -1 )"
+            sleep 1
+            # check if we have ESSID's available to connet
+            if LC_ALL=C /sbin/iwlist $wifi_dev scan 2>&1 | grep -Fqs "ESSID:" ; then
 
-            if [[ -n "$wifi_dev" ]] ; then
-                # activate wifi if was not
-                if LC_ALL=C /sbin/iwlist $wifi_dev scan 2>&1 | grep -Fqs "Network is down" ; then
-                    # not needed to activate here since we already activate it as a desktop start
-                    #wifi-activate
-                    sleep 10
-                fi
+                # appear after a bit of time
+                sleep 2
 
-                # check if we have ESSID's available to connet
-                if ! LC_ALL=C /sbin/iwlist $wifi_dev scan 2>&1 | grep -Fqs "ESSID:" ; then
-                    sleep 10
-                    if ! LC_ALL=C /sbin/iwlist $wifi_dev scan 2>&1 | grep -Fqs "ESSID:" ; then
-                        sleep 10
-                    fi
-                fi
+                # if still not internet, popup it
+                if ! el_verify_internet fast ; then
 
-                sleep 1
-                # check if we have ESSID's available to connet
-                if LC_ALL=C /sbin/iwlist $wifi_dev scan 2>&1 | grep -Fqs "ESSID:" ; then
+                    nm-applet --popup &
 
-                    # appear after a bit of time
-                    sleep 2
-
-                    # if still not internet, popup it
-                    if ! el_verify_internet fast ; then
-
-                        nm-applet --popup &
-
-                        # wait 4 minutes before to close the gadget
-                        sleep 190
-                        killall nm-applet 1>/dev/null 2>&1
-                    fi
+                    # wait 4 minutes before to close the gadget
+                    sleep 190
+                    killall nm-applet 1>/dev/null 2>&1
                 fi
             fi
         fi
-    #fi
+    fi
 
 }
 
