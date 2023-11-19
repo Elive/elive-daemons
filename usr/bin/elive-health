@@ -112,100 +112,104 @@ main(){
     # filesystem almost full {{{
     #
     # default values to check
-    percent_max="90"
+    percent_max="88"
     percent_max_crit="94"
 
-    percent="$( LC_ALL=C df -m | awk '{if ($6 == "/home") print $5}' | head -1 )"
-    percent="${percent%\%}"
-    # no extra /home? use /
-    if [[ -z "$percent" ]] ; then
-        percent="$( LC_ALL=C df -m | awk '{if ($6 == "/") print $5}' | head -1 )"
+    if ! el_flag check "disk-full-notified" ; then
+        percent="$( LC_ALL=C df -m | awk '{if ($6 == "/home") print $5}' | head -1 )"
         percent="${percent%\%}"
-    fi
-    # root almost full, always warning
-    if [[ "${percent}" -ge "$percent_max_crit" ]] && ! el_flag check "disk-full-crit" ; then
-        el_notify "crit" "gparted" "$( eval_gettext "Hard disk is full" )" "$( eval_gettext "Your root partition is full. We recommend removing some unneeded software or enlarging your partition and/or reinstalling Elive, with special options if needed. Your installation could become unbootable if the disk is full." )"
-        is_disk_full=1
-        el_flag add "disk-full-crit"
-    fi
-    if [[ "${percent}" -ge "$percent_max" ]] && ! el_flag check "disk-full-warn" ; then
-        # TODO: <AlsoTheTechRobo> Also, I'd condense the popups. "Your disk is almost full, your partition could brick" can be merged with "Do you want Elive to remove temporary files?"
-        $guitool --warning --text="$( eval_gettext "Your partition is almost full. We recommend you delete old files to free up some space, your installation could \"brick\" (become unusable) if it has no space left." )"
-        is_disk_full=1
-        el_flag add "disk-full-warn"
-    fi
-
-    if ((is_disk_full)) ; then
-        if $guitool --question --text="$( eval_gettext "Do you want Elive to automatically clean some unneeded and temporary files now?" )" ; then
-            # delete flags if users frees space, in order to show again the message if the user don't reboot the machine
-            el_flag del "disk-full-crit"
-            el_flag del "disk-full-warn"
-
-            # delete unneeded things now
-            find "$HOME/.cache" -not -path "*/.cache/zsh/*" -not -path "*/.cache/elive*" -type f -delete
-            find "$HOME/.thumbnails" -type f -delete
-
-            killall rhythmbox
-            killall chromium
-            killall google-chrome
-            killall opera
-            killall palemoon
-            killall efreetd
-            killall firefox-esr
-            killall picard
-            killall netsurf
-            killall opera
-            sync
-            rm -rf "${HOME}/.cache/mesa_shader_cache" "${HOME}/.cache/chromium" "${HOME}/.cache/google-chrome" "${HOME}/.cache/moonchild_productions" "${HOME}/.cache/thumbnails" "${HOME}/.cache/mozilla" "${HOME}/.cache/MuzicBrainz" "${HOME}/.cache/network" "${HOME}/.cache/rhythmbox" "${HOME}/.cache/efreet" "${HOME}/.cache/netsurf" "${HOME}/.cache/el_speak" "${HOME}/.cache/opera"
-
-            killall -9 efreetd
-
-            # clean compiling caches
-            ccache -c -C 2>/dev/null || true
-
-            # free the trash
-            find "$HOME/.local/share/Trash" -type f -delete
-
-            # free psd profiles
-            if which psd 1>/dev/null && LC_ALL=C systemctl --user status psd 2>/dev/null | colors-remove | grep -F "Active: active" ; then
-                psd c
-            else
-                rm -rf "$HOME/.config/"*-crashrecovery-*
-            fi
-
-            echo > "$HOME/.xsession-errors"
-
-            # wine apps
-            #rm -rf ${DHOME}/${result}/.local/share/applications/wine
-            #rm -rf ${DHOME}/${result}/.local/share/desktop-directories/wine* 2>/dev/null
-            #rm -rf ${DHOME}/${result}/.wine 2>/dev/null
-            sync
-
-            percent_new="$( LC_ALL=C df -m | awk '{if ($6 == "/home") print $5}' | head -1 )"
-            percent_new="${percent_new%\%}"
-            if [[ -z "$percent_new" ]] ; then
-                percent_new="$( LC_ALL=C df -m | awk '{if ($6 == "/") print $5}' | head -1 )"
-                percent_new="${percent_new%\%}"
-            fi
-
-            message_ask_for_scan="$( printf "$( eval_gettext "Your hard disk used space was %s and now is %s. Do you want to scan your files to know where the bigger usage waste occurs?" )" "${percent}%" "${percent_new}%" )"
-        else
-            message_ask_for_scan="$( printf "$( eval_gettext "Do you want to scan your files to find out where the bigger waste of space can be found?" )" ) - ${percent}% used."
-
-            # delete flags if users says "no" in order to show again the message if the user don't reboot the machine
-            el_flag del "disk-full-crit"
-            el_flag del "disk-full-warn"
+        # no extra /home? use /
+        if [[ -z "$percent" ]] ; then
+            percent="$( LC_ALL=C df -m | awk '{if ($6 == "/") print $5}' | head -1 )"
+            percent="${percent%\%}"
         fi
 
+        # root almost full, always warning
+        if [[ "${percent}" -ge "$percent_max_crit" ]] ; then
+            el_notify "crit" "gparted" "$( eval_gettext "Hard disk is full" )" "$( eval_gettext "Your root partition is full. We recommend removing some unneeded software or enlarging your partition and/or reinstalling Elive, with special options if needed. Your installation could become unbootable if the disk is full." )"
+            is_disk_full=1
+            # do NOT mark that the user is already notified, because we are in critical mode
+            # el_flag add "disk-full-notified"
+        fi
 
-        if $guitool --question --text="$message_ask_for_scan" ; then
-            if ! el_dependencies_check "baobab" ; then
-                el_dependencies_install "baobab"
+        if [[ "${percent}" -ge "$percent_max" ]] && ! el_flag check "disk-full-warn" ; then
+            # TODO: <AlsoTheTechRobo> Also, I'd condense the popups. "Your disk is almost full, your partition could brick" can be merged with "Do you want Elive to remove temporary files?"
+            $guitool --warning --text="$( eval_gettext "Your partition is almost full. We recommend you delete old files to free up some space, your installation could \"brick\" (become unusable) if it has no space left." )"
+            is_disk_full=1
+            # mark that the user is already notified
+            el_flag add "disk-full-notified"
+        fi
+
+        if ((is_disk_full)) ; then
+            if $guitool --question --text="$( eval_gettext "Do you want Elive to automatically clean some unneeded and temporary files now?" )" ; then
+                # delete flags if users frees space, in order to show again the message if the user don't reboot the machine
+                el_flag del "disk-full-notified"
+
+                # delete unneeded things now
+                find "$HOME/.cache" -not -path "*/.cache/zsh/*" -not -path "*/.cache/elive*" -type f -delete
+                find "$HOME/.thumbnails" -type f -delete
+
+                killall rhythmbox
+                killall chromium
+                killall google-chrome
+                killall opera
+                killall palemoon
+                killall efreetd
+                killall firefox-esr
+                killall picard
+                killall netsurf
+                killall opera
+                sync
+                rm -rf "${HOME}/.cache/mesa_shader_cache" "${HOME}/.cache/chromium" "${HOME}/.cache/google-chrome" "${HOME}/.cache/moonchild_productions" "${HOME}/.cache/thumbnails" "${HOME}/.cache/mozilla" "${HOME}/.cache/MuzicBrainz" "${HOME}/.cache/network" "${HOME}/.cache/rhythmbox" "${HOME}/.cache/efreet" "${HOME}/.cache/netsurf" "${HOME}/.cache/el_speak" "${HOME}/.cache/opera"
+
+                killall -9 efreetd
+
+                # clean compiling caches
+                ccache -c -C 2>/dev/null || true
+
+                # free the trash
+                find "$HOME/.local/share/Trash" -type f -delete
+
+                # free psd profiles
+                if which psd 1>/dev/null && LC_ALL=C systemctl --user status psd 2>/dev/null | colors-remove | grep -F "Active: active" ; then
+                    psd c
+                else
+                    rm -rf "$HOME/.config/"*-crashrecovery-*
+                fi
+
+                echo > "$HOME/.xsession-errors"
+
+                # wine apps
+                #rm -rf ${DHOME}/${result}/.local/share/applications/wine
+                #rm -rf ${DHOME}/${result}/.local/share/desktop-directories/wine* 2>/dev/null
+                #rm -rf ${DHOME}/${result}/.wine 2>/dev/null
+                sync
+
+                percent_new="$( LC_ALL=C df -m | awk '{if ($6 == "/home") print $5}' | head -1 )"
+                percent_new="${percent_new%\%}"
+                if [[ -z "$percent_new" ]] ; then
+                    percent_new="$( LC_ALL=C df -m | awk '{if ($6 == "/") print $5}' | head -1 )"
+                    percent_new="${percent_new%\%}"
+                fi
+
+                message_ask_for_scan="$( printf "$( eval_gettext "Your hard disk used space was %s and now is %s. Do you want to scan your files to know where the bigger usage waste occurs?" )" "${percent}%" "${percent_new}%" )"
+            else
+                message_ask_for_scan="$( printf "$( eval_gettext "Do you want to scan your files to find out where the bigger waste of space can be found?" )" ) - ${percent}% used."
+
+                # delete flags if users says "no" in order to show again the message if the user don't reboot the machine
+                # el_flag del "disk-full-notified"
             fi
-            baobab "$HOME" &
 
-            sleep 3
-            $guitool --info --text="$( eval_gettext "Wait for the scanning to finish to see the results. In the meantime we recommend deleting every unneeded file in your Downloads folder which is probably where most of the wasted space occurs." )"
+
+            if $guitool --question --text="$message_ask_for_scan" ; then
+                if ! el_dependencies_check "baobab" ; then
+                    el_dependencies_install "baobab"
+                fi
+                baobab "$HOME" &
+
+                sleep 3
+                $guitool --info --text="$( eval_gettext "Wait for the scanning to finish to see the results. In the meantime we recommend deleting every unneeded file in your Downloads folder which is probably where most of the wasted space occurs." )"
+            fi
         fi
     fi
 
