@@ -126,7 +126,7 @@ main(){
 
         # root almost full, always warning
         if [[ "${percent}" -ge "$percent_max_crit" ]] ; then
-            el_notify "crit" "gparted" "$( eval_gettext "Hard disk is full" )" "$( eval_gettext "Your root partition is full. We recommend removing some unneeded software or enlarging your partition and/or reinstalling Elive, with special options if needed. Your installation could become unbootable if the disk is full." )"
+            el_notify "crit" "gparted" "$( eval_gettext "Hard disk is full" )" "$( eval_gettext "Your root partition is full. We recommend removing unneeded software, enlarging your partition, and/or reinstalling Elive using the compressed BTRFS if needed. By having your disk full is likely that your system will not be able to boot." )"
             is_disk_full=1
             # do NOT mark that the user is already notified, because we are in critical mode
             # el_flag add "disk-full-notified"
