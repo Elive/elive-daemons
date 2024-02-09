@@ -145,7 +145,7 @@ do_configure(){
         result="${_browsers[0]}"
     else
         local message_select_browsers
-        message_select_browsers="$( printf "$( eval_gettext "Select the web browser you want to run over RAM. We advise only selecting the one that you commonly use. Or just Cancel if you don't want to use this feature" )" "" )"
+        message_select_browsers="$( printf "$( eval_gettext "Select the web browser you want to run over RAM. We advise only selecting the one that you commonly use. Or press Cancel if you don't want to use this feature" )" "" )"
 
 
         result="$( for i in "${_browsers[@]}"
