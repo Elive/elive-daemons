@@ -19,7 +19,7 @@ main(){
         exit
     fi
 
-    if ((premium_user)) ; then
+    if ((is_premium_user)) ; then
         exit
     fi
 
