@@ -7,6 +7,7 @@ EL_REPORTS="1"
 TEXTDOMAIN="elive-daemons"
 export TEXTDOMAIN
 
+[[ -s /etc/elive/settings ]] && source /etc/elive/settings
 
 
 main(){
@@ -15,6 +16,10 @@ main(){
 
     # don't run it in live mode
     if grep -qs "boot=live" /proc/cmdline ; then
+        exit
+    fi
+
+    if ((premium_user)) ; then
         exit
     fi
 
