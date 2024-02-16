@@ -170,6 +170,9 @@ main(){
                 # free the trash
                 find "$HOME/.local/share/Trash" -type f -delete
 
+                # free amule incoming
+                find "$HOME/.aMule/Temp" -type f -delete
+
                 # free psd profiles
                 if which psd 1>/dev/null && LC_ALL=C systemctl --user status psd 2>/dev/null | colors-remove | grep -F "Active: active" ; then
                     psd c
