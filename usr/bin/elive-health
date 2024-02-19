@@ -73,6 +73,12 @@ main(){
     # get configurations
     el_config_get
 
+    # check systemctl connection {{{
+    if ! systemctl --user list-dependencies 1>/dev/null 2>&1 ; then
+        $guitool --error --text="$( eval_gettext "Unable to connect to Systemctl for your user, some features will not work. Please reboot your computer." )"
+        exit
+    fi
+    # - check systemctl connection }}}
     # start things {{{
     # always reload crontab if we have it
     if [[ -s "$HOME/.crontab" ]] ; then
