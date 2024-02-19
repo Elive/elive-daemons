@@ -145,7 +145,7 @@ do_configure(){
         result="${_browsers[0]}"
     else
         local message_select_browsers
-        message_select_browsers="$( printf "$( eval_gettext "Select the web browser you want to run over RAM. We advise only selecting the one that you commonly use. Or press Cancel if you don't want to use this feature" )" "" )"
+        message_select_browsers="$( printf "$( eval_gettext "Select the web browser you want to run over RAM. We advise only selecting the one that you commonly use." )" "" )"
 
 
         result="$( for i in "${_browsers[@]}"
@@ -189,12 +189,13 @@ do_configure(){
 
     # User didn't selected any browser, so do not enable anything and exit with error to be known by elive-health
     if [[ "$result" = "cancel" ]] ; then
-        do_disable
+        #do_disable
+        exit
     fi
     if [[ -z "$result" ]] ; then
         $guitool --error --text="$( eval_gettext "No browsers has been selected to be used in RAM mode. Aborting..." )"
         do_disable
-        exit 1
+        exit
     fi
 
     # create first a default conf
@@ -224,6 +225,11 @@ main(){
     if [[ "$UID" = 0 ]] ; then
         el_error "This is not meant to be run as root, use it from your user instead"
         exit 1
+    fi
+
+    if ! systemctl --user list-dependencies 1>/dev/null 2>&1 ; then
+        $guitool --error --text="$( eval_gettext "Unable to connect to Systemctl for your user. Please reboot your computer." )"
+        exit
     fi
 
     # }}}

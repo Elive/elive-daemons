@@ -75,7 +75,7 @@ main(){
 
     # check systemctl connection {{{
     if ! systemctl --user list-dependencies 1>/dev/null 2>&1 ; then
-        $guitool --error --text="$( eval_gettext "Unable to connect to Systemctl for your user, some features will not work. Please reboot your computer." )"
+        $guitool --error --text="$( eval_gettext "Unable to connect to Systemctl for your user. Please reboot your computer." )"
         exit
     fi
     # - check systemctl connection }}}
