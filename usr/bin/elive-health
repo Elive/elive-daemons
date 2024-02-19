@@ -404,7 +404,7 @@ main(){
                 elive-browsers-on-ram --quiet "disable"
             fi
             # enable daemon
-            if ! LC_ALL=C systemctl --user status psd.service | colors-remove | grep -Fqs "Active: active" ; then
+            if ! LC_ALL=C systemctl --user status psd.service | colors-remove | grep -Fqs "Active: active" && ! LC_ALL=C systemctl --user status psd.service 2>&1 | colors-remove | grep -Fqs "Connection refused" ; then
                 if ! elive-browsers-on-ram --quiet "configure" ; then
                     # disable it for the next times:
                     conf_browsers_on_ram="0"
