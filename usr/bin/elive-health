@@ -76,7 +76,7 @@ main(){
     # TODO: systemctl verification not fully working yet, more tests required
     # check systemctl connection {{{
     # if ! systemctl --user list-dependencies 1>/dev/null 2>&1 ; then
-    #     $guitool --error --text="$( eval_gettext "Unable to connect to Systemctl for your user. Please re-login in your desktop or reboot the machine." )"
+    #     $guitool --error --text="$( eval_gettext "Unable to connect to your user session of Systemctl. Please re-login in your desktop or reboot the machine." )"
     #     exit
     # fi
     # - check systemctl connection }}}
