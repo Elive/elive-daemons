@@ -423,7 +423,7 @@ main(){
                             # get full name of command
                             _cmd="$( ps --no-headers -p $pid -o comm )"
 
-                            el_warning "Annoying process detected '${_cmd}' (originally called $cmd) sucking cpu for '${time_minutes}' min, cpu usage '${cpu_usage}', pid '$pid' (ignored)"
+                            el_warning "Annoying process detected '${_cmd}' (originally called $cmd) sucking cpu for '${time_minutes}' min, cpu usage '${cpu_usage}', pid '$pid' (ignored)\n$(ps ux | grep -F "$_cmd" | grep -vE '(grep|enlightenment_s)' )"
                         fi
                     fi
                     ;;
