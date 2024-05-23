@@ -139,6 +139,15 @@ main(){
         fi
     fi
     # - elive-assistant configurations }}}
+    # # update wallpaper when required {{{
+    if [[ -e ~/.wallpaper-reconfigureme ]] ; then
+        wallpaper="$( find /etc/elive/wallpaper/ -type f | tail -1 )"
+        if [[ -s "$wallpaper" ]] ; then
+            elive-wallpaper-set "$wallpaper"
+        fi
+        rm -f ~/.wallpaper-reconfigureme
+    fi
+    # - update wallpaper when required }}}
 
     # if we are debugging give it a little pause to see what is going on
     if grep -Fqs "debug" /proc/cmdline ; then
