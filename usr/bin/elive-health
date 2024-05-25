@@ -517,7 +517,7 @@ main(){
                         fi
                     fi
                     if el_verify_internet ; then
-                        echo -e "ELIVE_DATA_TYPE: 1.0::${machine_id}::transfer::text::liveboot::0::::::${return_status}::${custom}::${architecture}::${eliveversion}::${SOURCE}::" | timeout 8 nc www.elivecd.org 60008 -w 6 1>/dev/null 2>&1
+                        echo -e "ELIVE_DATA_TYPE: 1.0::${machine_id}::transfer::text::livedesktop::0::::::${return_status}::${custom}::${architecture}::${eliveversion}::${SOURCE}::" | timeout 8 nc www.elivecd.org 60008 -w 6 1>/dev/null 2>&1
                     fi
                 fi
             else
