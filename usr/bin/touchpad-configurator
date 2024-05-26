@@ -248,10 +248,12 @@ main(){
     # run new settings {{{
     case "$conf_touchpad_activated" in
         TRUE)
-            synclient TouchpadOff=0
+            # synclient TouchpadOff=0
+            input-toggle touchpad-on
             ;;
         FALSE)
-            synclient TouchpadOff=1
+            # synclient TouchpadOff=1
+            input-toggle touchpad-off
             ;;
         *)
             el_error "touchpad configurator: conf_touchpad_activated wrongly set: $conf_touchpad_activated"
