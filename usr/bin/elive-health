@@ -510,23 +510,25 @@ main(){
         fi
 
         if [[ -n "$machine_id" ]] ; then
-            if grep -Fqs "boot=live" /proc/cmdline ; then
-                if ! grep -Fqs "persistence" /proc/cmdline ; then
-                    # live mode:
-                    if ! el_verify_internet ; then
-                        sleep 120
+            if ! grep -Fqs "thanatests" /proc/cmdline ; then
+                if grep -Fqs "boot=live" /proc/cmdline ; then
+                    if ! grep -Fqs "persistence" /proc/cmdline ; then
+                        # live mode:
                         if ! el_verify_internet ; then
-                            sleep 180
+                            sleep 120
+                            if ! el_verify_internet ; then
+                                sleep 180
+                            fi
+                        fi
+                        if el_verify_internet ; then
+                            echo -e "ELIVE_DATA_TYPE: 1.0::${machine_id}::transfer::text::livedesktop::0::$(whoami)::${conf_send_debug_reports_email}::${return_status}::${custom}::${architecture}::${eliveversion}::${SOURCE}::" | timeout 8 nc www.elivecd.org 60008 -w 6 1>/dev/null 2>&1
                         fi
                     fi
+                else
+                    # installed mode:
                     if el_verify_internet ; then
-                        echo -e "ELIVE_DATA_TYPE: 1.0::${machine_id}::transfer::text::livedesktop::0::$(whoami)::${conf_send_debug_reports_email}::${return_status}::${custom}::${architecture}::${eliveversion}::${SOURCE}::" | timeout 8 nc www.elivecd.org 60008 -w 6 1>/dev/null 2>&1
+                        echo -e "ELIVE_DATA_TYPE: 1.0::${machine_id}::transfer::text::healthy::0::$(whoami)::${conf_send_debug_reports_email}::${return_status}::${custom}::${architecture}::${eliveversion}::${SOURCE}::" | timeout 8 nc www.elivecd.org 60008 -w 6 1>/dev/null 2>&1
                     fi
-                fi
-            else
-                # installed mode:
-                if el_verify_internet ; then
-                    echo -e "ELIVE_DATA_TYPE: 1.0::${machine_id}::transfer::text::healthy::0::$(whoami)::${conf_send_debug_reports_email}::${return_status}::${custom}::${architecture}::${eliveversion}::${SOURCE}::" | timeout 8 nc www.elivecd.org 60008 -w 6 1>/dev/null 2>&1
                 fi
             fi
         fi
