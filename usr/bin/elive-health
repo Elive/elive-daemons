@@ -66,6 +66,7 @@ main(){
     fi
 
     source /etc/elive/machine-profile 2>/dev/null || true
+    source /etc/elive/settings 2>/dev/null || true
 
 
     # wait desktop ready
@@ -499,7 +500,7 @@ main(){
         if [[ -z "$machine_id" ]] ; then
             machine_id="$( cat /etc/machine-id 2>/dev/null | tail -1 )"
         fi
-        architecture="$( el_architecture "host" )"
+        architecture="$( source /usr/lib/elive-tools/functions ; el_architecture "host" )"
         return_status=0
 
         if [[ -n "$MACHINE_VIRTUAL" ]] ; then
@@ -519,13 +520,13 @@ main(){
                         fi
                     fi
                     if el_verify_internet ; then
-                        echo -e "ELIVE_DATA_TYPE: 1.0::${machine_id}::transfer::text::livedesktop::0::::::${return_status}::${custom}::${architecture}::${eliveversion}::${SOURCE}::" | timeout 8 nc www.elivecd.org 60008 -w 6 1>/dev/null 2>&1
+                        echo -e "ELIVE_DATA_TYPE: 1.0::${machine_id}::transfer::text::livedesktop::0::$(whoami)::${conf_send_debug_reports_email}::${return_status}::${custom}::${architecture}::${eliveversion}::${SOURCE}::" | timeout 8 nc www.elivecd.org 60008 -w 6 1>/dev/null 2>&1
                     fi
                 fi
             else
                 # installed mode:
                 if el_verify_internet ; then
-                    echo -e "ELIVE_DATA_TYPE: 1.0::${machine_id}::transfer::text::healthy::0::::::${return_status}::${custom}::${architecture}::${eliveversion}::${SOURCE}::" | timeout 8 nc www.elivecd.org 60008 -w 6 1>/dev/null 2>&1
+                    echo -e "ELIVE_DATA_TYPE: 1.0::${machine_id}::transfer::text::healthy::0::$(whoami)::${conf_send_debug_reports_email}::${return_status}::${custom}::${architecture}::${eliveversion}::${SOURCE}::" | timeout 8 nc www.elivecd.org 60008 -w 6 1>/dev/null 2>&1
                 fi
             fi
         fi
