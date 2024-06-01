@@ -65,6 +65,9 @@ main(){
         echo "$DBUS_SESSION_BUS_ADDRESS" > "$HOME/.cache/dbus-session-address-last.txt"
     fi
 
+    source /etc/elive/machine-profile 2>/dev/null || true
+
+
     # wait desktop ready
     if ! ((is_nodelay)) ; then
         sleep 12
@@ -335,7 +338,7 @@ main(){
     #}}}
     # browsers on tmpfs {{{
     # only if it was never set / configured yet (if is configured, is set to 0 which is defined):
-    if ! ((is_soft)) && [[ -x "$(which systemctl)" ]] ; then
+    if ! ((is_soft)) && [[ -x "$(which systemctl)" ]] && [[ -z "$MACHINE_VIRTUAL" ]] ; then
 
         # always reconfigure it on persistence
         if ((is_live)) && grep -Fqs "persistence" /proc/cmdline ; then
@@ -499,7 +502,6 @@ main(){
         architecture="$( el_architecture "host" )"
         return_status=0
 
-        source /etc/elive/machine-profile 2>/dev/null || true
         if [[ -n "$MACHINE_VIRTUAL" ]] ; then
             custom="machine_virtual"
         else
