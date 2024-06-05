@@ -498,7 +498,13 @@ main(){
         el_mark_state
         machine_id="$( grep "^machine-id: " /etc/elive-version 2>/dev/null | sed -e 's|^machine-id: ||g' | tail -1 )"
         if [[ -z "$machine_id" ]] ; then
-            machine_id="$( cat /etc/machine-id 2>/dev/null | tail -1 )"
+            if el_check_sudo_automated ; then
+                sudo -H bash -c 'source /usr/lib/elive-tools/functions ; id="$( el_get_machine_id )" ; sed -i "/^machine-id:.*$/d" /etc/elive-version ; echo "machine-id: $id" >> /etc/elive-version'
+                machine_id="$( grep "^machine-id: " /etc/elive-version 2>/dev/null | sed -e 's|^machine-id: ||g' | tail -1 )"
+            fi
+        fi
+        if [[ -z "$machine_id" ]] ; then
+            el_error "unable to get machine-id from /etc/elive-version"
         fi
         architecture="$( source /usr/lib/elive-tools/functions ; el_architecture "host" )"
         return_status=0
