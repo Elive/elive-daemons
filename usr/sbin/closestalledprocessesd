@@ -382,7 +382,7 @@ main(){
                     fi
                     ;;
                 # whitelisted ones:  yeah, we know that they sucks, and we love them on this way :/
-                *"songbird-bin"|*/chromium|*/chrome|*/iceweasel*|*firefox*|*/Xorg|*/opera|*/VirtualBox|*/AppRun|*/pcsxr*|*palemoon*|java|obabel|zoom)
+                *"songbird-bin"|*/chromium|*/chrome|*/iceweasel*|*firefox*|*/Xorg|*/opera|*/VirtualBox|*/AppRun|*/pcsxr*|*palemoon*|java|obabel|zoom|xeoma_free.app)
                         # songbird:  its a simply greedy eater of resoureces
                         # chromium:  when we play videos cpu becomes high, and we could have it running since long time
                         # Xorg: sometimes is overloaded, its normal
