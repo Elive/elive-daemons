@@ -83,7 +83,7 @@ get_disk_from_partition_complex(){
 
     # }}}
     # valid disk values
-    if echo "$part" | grep -v "^/dev/mapper/" | grep -qsE "((xvd|sd|hd|vd)[a-z]|nvme[[:digit:]]+n[[:digit:]]+|mmcblk[[:digit:]]+)" ; then
+    if echo "$part" | grep -v "^/dev/mapper/" | grep -qsE "((xvd|sd|hd|vd)[a-z]|nvme[[:digit:]]+n[[:digit:]]+|mmcblk[[:digit:]]+|md[[:digit:]]+p[[:digit:]]+)" ; then
         device="$( get_disk_from_partition "$part" )"
 
         if [[ -b "$device" ]] ; then
@@ -163,7 +163,7 @@ get_disk_from_partition(){
     done 3<<< "$( lsblk -rino NAME,TYPE | tac )"
 
     # try fast mode
-    if [[ "$partition" = /dev/nvme* ]] || [[ "$partition" = /dev/mmcblk* ]] ; then
+    if [[ "$partition" = /dev/nvme*p* ]] || [[ "$partition" = /dev/mmcblk*p* ]] || [[ "$partition" = /dev/md*p* ]] ; then
         disk="${partition%%p[0-9]*}"
     else
         disk="${partition%%[0-9]*}"
