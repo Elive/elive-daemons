@@ -47,14 +47,14 @@ main(){
     if [[ "$added_date" -le "$seconds_stamp_needed" ]] && ! ((is_first_run)) ; then
         local message_ask_for_donation
 
-        message_ask_for_donation="$( printf "$( eval_gettext "This project can only progress thanks to the donations from the users, without them it would not exist. Help us to keep it alive!" )" "" )"
+        message_ask_for_donation="$( printf "$( eval_gettext "This project advances solely due to user donations; without them, it would not survive. Please help us sustain it!" )" "" )"
         # random message generator
         case "$( shuf -i 1-2 -n 1 )" in
             1)
-                message_ask_for_donation="$( printf "$( eval_gettext "This project can only progress thanks to the donations from the users, without them it would not exist. Help us to keep it alive!" )" "" )"
+                message_ask_for_donation="$( printf "$( eval_gettext "This project advances solely due to user donations; without them, it would not survive. Please help us sustain it!" )" "" )"
                 ;;
             2)
-                message_ask_for_donation="$( printf "$( eval_gettext "This project can only progress thanks to the donations from the users, without them it would not exist. Help us to keep it alive!" )" "" )"
+                message_ask_for_donation="$( printf "$( eval_gettext "This project advances solely due to user donations; without them, it would not survive. Please help us sustain it!" )" "" )"
                 ;;
         esac
 
@@ -63,7 +63,7 @@ main(){
 
         web-launcher "https://www.elivecd.org/donate/?id=system-xdg-$(basename $0)" &
 
-        notify-send -t 30000 -i star "$( eval_gettext "Elive Donations Reminder" )" "$( eval_gettext "If you want to disable this notification that helps to keep this project alive, you can edit your Startup Applications by running in the terminal \"scite ~/.e16/startup-applications.list\" to deactivate it." )"
+        notify-send -t 30000 -i star "$( eval_gettext "Elive Donations Reminder" )" "$( eval_gettext "To disable this notification that helps keep the project alive, edit your Startup Applications by running \"scite ~/.e16/startup-applications.list\" in the terminal." )"
 
         # add a new stamp
         echo "$seconds_stamp_now" > "$stamp_last"
