@@ -136,7 +136,7 @@ do_configure(){
     # no browsers available? just exit
     if [[ -z "${#_browsers[@]}" ]] ; then
         if ! ((is_quiet)) ; then
-            $guitool --error --text="$( eval_gettext "No browsers are found. Install a desired Web browser first, like Google Chrome, Chromium, or Firefox, from the packages manager software in your Elive." )"
+            $guitool --error --text="$( eval_gettext "No browsers found. Install your preferred Web browser, such as Google Chrome, Chromium, or Firefox, from the package manager in Elive." )"
         fi
         exit
     fi
@@ -145,7 +145,7 @@ do_configure(){
         result="${_browsers[0]}"
     else
         local message_select_browsers
-        message_select_browsers="$( printf "$( eval_gettext "Select the web browser you want to run over RAM. We advise only selecting the one that you commonly use." )" "" )"
+        message_select_browsers="$( printf "$( eval_gettext "Choose the web browser to run in RAM. We recommend selecting only your primary browser." )" "" )"
 
 
         result="$( for i in "${_browsers[@]}"
@@ -193,7 +193,7 @@ do_configure(){
         exit
     fi
     if [[ -z "$result" ]] ; then
-        $guitool --error --text="$( eval_gettext "No browsers has been selected to be used in RAM mode. Aborting..." )"
+        $guitool --error --text="$( eval_gettext "No browsers selected for RAM mode. Aborting..." )"
         do_disable
         exit
     fi
@@ -228,7 +228,7 @@ main(){
     fi
 
     if ! systemctl --user list-dependencies 1>/dev/null 2>&1 ; then
-        $guitool --error --text="$( eval_gettext "Unable to connect to your user session of Systemctl. Please re-login in your desktop or reboot the machine." )"
+        $guitool --error --text="$( eval_gettext "Failed to connect to your Systemctl user session. Please log back into your desktop or restart the computer." )"
         exit
     fi
 
