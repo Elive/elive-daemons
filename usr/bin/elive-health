@@ -80,7 +80,7 @@ main(){
     # TODO: systemctl verification not fully working yet, more tests required
     # check systemctl connection {{{
     # if ! systemctl --user list-dependencies 1>/dev/null 2>&1 ; then
-    #     $guitool --error --text="$( eval_gettext "Unable to connect to your user session of Systemctl. Please re-login in your desktop or reboot the machine." )"
+    #     $guitool --error --text="$( eval_gettext "Failed to connect to your Systemctl user session. Please log back into your desktop or restart the computer." )"
     #     exit
     # fi
     # - check systemctl connection }}}
@@ -96,7 +96,7 @@ main(){
     if ! ((is_soft)) ; then
         if [[ -e "/var/tmp/elivehealth/elive-system-shutdown-forced" ]] && grep -qsE "^(yes|user notified pre)$" "/var/tmp/elivehealth/elive-system-shutdown-forced" ; then
             local message_shutdown_warn
-            message_shutdown_warn="$( printf "$( eval_gettext "You previously turned off the computer incorrectly. A forced shutdown is very bad for your data. You should shut down the computer correctly by clicking on your desktop to bring up the menu and find it in the last option there. On the other hand, if your computer freezes without reason, try a different Kernel version and/or with different graphic drivers." )" "" )"
+            message_shutdown_warn="$( printf "$( eval_gettext "You previously turned off the computer incorrectly. A forced shutdown can be very damaging to your data. You should shut down the computer properly by clicking on your desktop to bring up the menu and selecting the shutdown option. If your computer freezes unexpectedly, consider trying a different kernel version or graphics drivers." )" "" )"
             # warn the user
             el_notify "important" "utilities-system-monitor" "$( eval_gettext "Forced shutdown detected" )" "$message_shutdown_warn"
 
@@ -138,7 +138,7 @@ main(){
 
         # root almost full, always warning
         if [[ "${percent}" -ge "$percent_max_crit" ]] ; then
-            el_notify "crit" "gparted" "$( eval_gettext "Hard disk is full" )" "$( eval_gettext "Your root partition is full. We recommend removing unneeded software, enlarging your partition, and/or reinstalling Elive using the compressed BTRFS. By having your disk full is likely that your system will not be able to boot." )"
+            el_notify "crit" "gparted" "$( eval_gettext "Hard disk is full" )" "$( eval_gettext "Your root partition is full. We recommend removing unneeded software, enlarging your partition, or reinstalling Elive using compressed BTRFS. A full disk may prevent your system from booting." )"
             is_disk_full=1
             # do NOT mark that the user is already notified, because we are in critical mode
             # el_flag add "disk-full-notified"
@@ -146,7 +146,7 @@ main(){
 
         if [[ "${percent}" -ge "$percent_max" ]] && ! el_flag check "disk-full-warn" ; then
             # TODO: <AlsoTheTechRobo> Also, I'd condense the popups. "Your disk is almost full, your partition could brick" can be merged with "Do you want Elive to remove temporary files?"
-            $guitool --warning --text="$( eval_gettext "Your partition is almost full. We recommend you delete old files to free up some space, your installation could \"brick\" (become unusable) if it has no space left." )"
+            $guitool --warning --text="$( eval_gettext "Your partition is nearly full. We recommend deleting old files to free up space; otherwise, your installation could become unusable if it runs out of space." )"
             is_disk_full=1
             # mark that the user is already notified
             el_flag add "disk-full-notified"
@@ -207,7 +207,7 @@ main(){
                     percent_new="${percent_new%\%}"
                 fi
 
-                message_ask_for_scan="$( printf "$( eval_gettext "Your hard disk used space was %s and now is %s. Do you want to scan your files to know where the bigger usage waste occurs?" )" "${percent}%" "${percent_new}%" )"
+                message_ask_for_scan="$( printf "$( eval_gettext "Your hard disk used space has changed from %s to %s. Would you like to scan your files to identify where the increased usage is occurring?" )" "${percent}%" "${percent_new}%" )"
             else
                 message_ask_for_scan="$( printf "$( eval_gettext "Do you want to scan your files to find out where the bigger waste of space can be found?" )" ) - ${percent}% used."
 
@@ -223,7 +223,7 @@ main(){
                 baobab "$HOME" &
 
                 sleep 3
-                $guitool --info --text="$( eval_gettext "Wait for the scanning to finish to see the results. In the meantime we recommend deleting every unneeded file in your Downloads folder which is probably where most of the wasted space occurs." )"
+                $guitool --info --text="$( eval_gettext "Please wait for the scan to complete to view the results. Meanwhile, consider removing unnecessary files from your Downloads folder, where most of the unused space is likely located." )"
             fi
         fi
     fi
@@ -239,7 +239,7 @@ main(){
         # gshock reports
         if [[ "$count_gshock" -gt 0 ]] ; then
             if [[ "$count_gshock" != "$conf_count_gshock" ]] ; then
-                el_notify "normal" "utilities-system-monitor" "Elive $( eval_gettext "Alert of shake off" )" "$( eval_gettext "Please do not shake the computer when it's powered up. You could damage your hard disk this way. Shocks received so far:" ) $count_gshock"
+                el_notify "normal" "utilities-system-monitor" "Elive $( eval_gettext "Alert of strong movement" )" "$( eval_gettext "Do not shake the computer while it's on; it could damage your hard disk. Shocks received so far:" ) $count_gshock"
 
                 # save to not repeat
                 conf_count_gshock="$count_gshock"
@@ -255,7 +255,7 @@ main(){
                 fi
 
                 local message_badblocks
-                message_badblocks="$( printf "$( eval_gettext "One of your hard disks has some bad blocks. This is not exactly bad but shows a degradation in your hard disk health. The problem appears when data want to be saved in a bad block that has not been found yet. This message is basically to remind you that it is important to save backups of your important or personal information in order to never lose it since your hard disk is starting to degrade. If this message appears regularly, we suggest replacing your hard drive." )" "" )"
+                message_badblocks="$( printf "$( eval_gettext "One of your hard disks has bad blocks, indicating degradation. Data may be lost if saved to undetected bad blocks. Backup important information, and consider replacing the hard drive if this message appears frequently." )" "" )"
                 local message_badblocks_counted
                 message_badblocks_counted="$( printf "$( eval_gettext "Bad blocks registered:" )" "" )"
                 local message_badblocks_counted_before
@@ -277,7 +277,7 @@ main(){
                 fi
 
                 local message_badblocks_pending
-                message_badblocks_pending="$( printf "$( eval_gettext "One or more bad blocks have been found on your system. They can be handled by the system, but if more appears they could lead to system crashes and/or serious data loss. We recommend replacing the hard drive (we recommend an SSD for speed and reliability) if this message often occurs." )" "" )"
+                message_badblocks_pending="$( printf "$( eval_gettext "One or more bad blocks found on your system. While the system can manage them, more could cause crashes or data loss. Replace the hard drive, preferably with an SSD for speed and reliability, if this message frequently appears." )" "" )"
                 local message_badblocks_pending_counted
                 message_badblocks_pending_counted="$( printf "$( eval_gettext "Pending sectors for reallocation:" )" "" )"
 
@@ -296,7 +296,7 @@ main(){
     if ! ((is_soft)) ; then
         if ((is_buster)) && ((is_alpha)) ; then
             if [[ -n "$E_START" ]] && [[ -f "/usr/share/doc/e17-stable/versions.history.Elive.gz" ]] ; then
-                el_notify important bomb "$( eval_gettext "Remember" )" "$( eval_gettext "The E17 desktop does not work correctly on the newer versions. It's slow, consumes much CPU, has no systray, no special effects and menus as well as windows that disappear. We recommend you switch to E16 which is well integrated as of now, or install the latest version of Enlightenment by running \"apui enlightenment\" in the terminal." )"
+                el_notify important bomb "$( eval_gettext "Remember me" )" "$( eval_gettext "The E17 desktop is not functioning properly on newer versions. It is slow, CPU-intensive, lacks a system tray, special effects, menus, and has disappearing windows. We suggest switching to E16, which is better integrated currently, or install the latest Enlightenment version by executing \"apui enlightenment\" in the terminal." )"
             fi
         fi
     fi
@@ -307,19 +307,19 @@ main(){
     if ((is_bookworm)) ; then
         if echo "$repos" | grep -Fv "dropbox.com" | grep -qsE "(\Wwheezy|\Wbuster|\Wbullseye|\Wtesting|\Wsid|ubuntu|ppa.launchpad|\Wrestricted)" ; then
             echo "$repos" | grep -Fv "dropbox.com" | grep -E "(\Wwheezy|\Wbuster|\Wbullseye|\Wtesting|\Wsid|ubuntu|ppa.launchpad|\Wrestricted)"
-            el_notify normal computer-fail "$( eval_gettext "Wrong repositories" )" "$( eval_gettext "You have mixed repositories configured in your system, this is strongly discouraged and can make your system break if you don't know what you're doing. If you have issues with your system we advise you to reinstall Elive and do not modify the default provided repositories. Also note that PPAs are commonly used with Ubuntu, but they are often misconfigured for Debian (which Elive is based on)." )"
+            el_notify normal computer-fail "$( eval_gettext "Wrong repositories" )" "$( eval_gettext "You have mixed repositories configured in your system. This is strongly discouraged and can cause your system to malfunction if you don't know what you're doing. If you encounter issues with your system, we advise you to reinstall Elive without modifying the default provided repositories. Note that PPAs, commonly used with Ubuntu, are often misconfigured for Debian (on which Elive is based)." )"
         fi
     fi
     if ((is_bullseye)) ; then
         if echo "$repos" | grep -Fv "dropbox.com" | grep -qsE "(\Wwheezy|\Wbuster|\Wbookworm|\Wtesting|\Wsid|ubuntu|ppa.launchpad|\Wrestricted)" ; then
             echo "$repos" | grep -Fv "dropbox.com" | grep -E "(\Wwheezy|\Wbuster|\Wbookworm|\Wtesting|\Wsid|ubuntu|ppa.launchpad|\Wrestricted)"
-            el_notify normal computer-fail "$( eval_gettext "Wrong repositories" )" "$( eval_gettext "You have mixed repositories configured in your system, this is strongly discouraged and can make your system break if you don't know what you're doing. If you have issues with your system we advise you to reinstall Elive and do not modify the default provided repositories. Also note that PPAs are commonly used with Ubuntu, but they are often misconfigured for Debian (which Elive is based on)." )"
+            el_notify normal computer-fail "$( eval_gettext "Wrong repositories" )" "$( eval_gettext "You have mixed repositories configured in your system. This is strongly discouraged and can cause your system to malfunction if you don't know what you're doing. If you encounter issues with your system, we advise you to reinstall Elive without modifying the default provided repositories. Note that PPAs, commonly used with Ubuntu, are often misconfigured for Debian (on which Elive is based)." )"
         fi
     fi
     if ((is_buster)) ; then
         if echo "$repos" | grep -Fv "dropbox.com" | grep -qsE "(\Wwheezy|\Wbullseye|\Wtesting|\Wsid|ubuntu|ppa.launchpad|\Wrestricted)" ; then
             echo "$repos" | grep -Fv "dropbox.com" | grep -E "(\Wwheezy|\Wbullseye|\Wtesting|\Wsid|ubuntu|ppa.launchpad|\Wrestricted)"
-            el_notify normal computer-fail "$( eval_gettext "Wrong repositories" )" "$( eval_gettext "You have mixed repositories configured in your system, this is strongly discouraged and can make your system break if you don't know what you're doing. If you have issues with your system we advise you to reinstall Elive and do not modify the default provided repositories. Also note that PPAs are commonly used with Ubuntu, but they are often misconfigured for Debian (which Elive is based on)." )"
+            el_notify normal computer-fail "$( eval_gettext "Wrong repositories" )" "$( eval_gettext "You have mixed repositories configured in your system. This is strongly discouraged and can cause your system to malfunction if you don't know what you're doing. If you encounter issues with your system, we advise you to reinstall Elive without modifying the default provided repositories. Note that PPAs, commonly used with Ubuntu, are often misconfigured for Debian (on which Elive is based)." )"
         fi
     fi
     # - repo issues }}}
