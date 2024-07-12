@@ -296,7 +296,7 @@ main(){
     if ! ((is_soft)) ; then
         if ((is_buster)) && ((is_alpha)) ; then
             if [[ -n "$E_START" ]] && [[ -f "/usr/share/doc/e17-stable/versions.history.Elive.gz" ]] ; then
-                el_notify important bomb "$( eval_gettext "Remember me" )" "$( eval_gettext "The E17 desktop is not functioning properly on newer versions. It is slow, CPU-intensive, lacks a system tray, special effects, menus, and has disappearing windows. We suggest switching to E16, which is better integrated currently, or install the latest Enlightenment version by executing \"apui enlightenment\" in the terminal." )"
+                el_notify important bomb "$( eval_gettext "Remember" )" "$( eval_gettext "The E17 desktop is not functioning properly on newer versions. It is slow, CPU-intensive, lacks a system tray, special effects, menus, and has disappearing windows. We suggest switching to E16, which is better integrated currently, or install the latest Enlightenment version by executing \"apui enlightenment\" in the terminal." )"
             fi
         fi
     fi
