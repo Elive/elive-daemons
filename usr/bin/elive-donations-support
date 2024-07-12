@@ -62,8 +62,9 @@ main(){
         zenity --info --text="$message_ask_for_donation"
 
         web-launcher "https://www.elivecd.org/donate/?id=system-xdg-$(basename $0)" &
+        cmd_edit_startup_applications="scite ~/.e16/startup-applications.list"
 
-        notify-send -t 30000 -i star "$( eval_gettext "Elive Donations Reminder" )" "$( eval_gettext "To disable this notification that helps keep the project alive, edit your Startup Applications by running \"scite ~/.e16/startup-applications.list\" in the terminal." )"
+        notify-send -t 30000 -i star "$( eval_gettext "Elive Donations Reminder" )" "$( eval_gettext "To disable this notification that helps keep the project alive, edit your Startup Applications by running in the terminal:" ) ${cmd_edit_startup_applications}"
 
         # add a new stamp
         echo "$seconds_stamp_now" > "$stamp_last"
