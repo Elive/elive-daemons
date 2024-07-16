@@ -299,7 +299,7 @@ main(){
                 message_btrfs_knowmore="$( printf "$( eval_gettext "Know more" )" "" )"
                 message_btrfs_1="$( eval_gettext "Your filesystem has detected errors that it was unable to fix. This could lead to data loss. Use the BTRFS check and scrub tools to know more" )"
                 message_btrfs_2="$( eval_gettext "BTRFS detected errors in your system. This filesystem is self-healing, but it is recommended to back up your data and run a filesystem check to prevent data loss." )"
-                message_btrfs_repair="$( eval_gettext "Run a full check trying to repair every error?" )"
+                message_btrfs_repair="$( eval_gettext "Run a full check repairing error?" )"
 
                 if dmesg | grep -qs "BTRFS error.* unable to fixup)" ; then
                     # import to show the unrecoverable errors
