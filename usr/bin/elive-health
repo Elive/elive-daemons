@@ -290,13 +290,16 @@ main(){
         fi
 
         # btrfs reports
-        if dmesg | LC_ALL=C grep -E "BTRFS error.*(fixed up error at logical|unable to fixup)" ; then
+        if dmesg | LC_ALL=C grep -qsE "BTRFS error.*(fixed up error at logical|unable to fixup)" ; then
             btrfs_dmesg_errors="$( dmesg | LC_ALL=C grep -E "BTRFS error.*(fixed up error at logical|unable to fixup)" | sed -e 's|^.*] BTRFS |BTRFS |g' )"
             if [[ "$btrfs_dmesg_errors" != "$conf_btrfs_dmesg_errors" ]] ; then
-                local message_btrfs_title message_btrfs_1 message_btrfs_knowmore
+
+                local message_btrfs_title message_btrfs_1 message_btrfs_2 message_btrfs_knowmore message_btrfs_repair
                 message_btrfs_title="$( printf "$( eval_gettext "Data integrity errors" )" "" )"
                 message_btrfs_knowmore="$( printf "$( eval_gettext "Know more" )" "" )"
                 message_btrfs_1="$( eval_gettext "Your filesystem has detected errors that it was unable to fix. This could lead to data loss. Use the BTRFS check and scrub tools to know more" )"
+                message_btrfs_2="$( eval_gettext "BTRFS detected errors in your system. This filesystem is self-healing, but it is recommended to back up your data and run a filesystem check to prevent data loss." )"
+                message_btrfs_repair="$( eval_gettext "Run a full check trying to repair every error?" )"
 
                 if dmesg | grep -qs "BTRFS error.* unable to fixup)" ; then
                     # import to show the unrecoverable errors
@@ -306,23 +309,30 @@ main(){
                     fi
 
                 else
-                    if ! $guitool --warning --title="$message_btrfs_title" --cancel-label="$( eval_gettext "Know More" )" \
-                        --text="$( eval_gettext "BTRFS detected errors in your system. This filesystem is self-healing, but it is recommended to back up your data and run a filesystem check to prevent data loss." )\n\n$btrfs_dmesg_errors" ; then
+                    if ! $guitool --question --title="$message_btrfs_title" --cancel-label="$message_btrfs_knowmore" --text="${message_btrfs_2}\n\n$btrfs_dmesg_errors" ; then
                         is_know_more=1
                     fi
                 fi
 
                 if ((is_know_more)) ; then
                     gksu -- urxvt -e bash -c '
-                        while read -ru 3 dir
+                        while read -ru 3 line
                         do
-                            echo "$dir" | awk "{if ($2 == "btrfs") print $2}" | while read -r mountpoint
-                            do
-                                echo "Status for ${mountpoint}:"
-                                btrfs scrub status "$mountpoint" | tail -n 3
-                                # btrfs check --force --repair "$mountpoint"
-                            done
-                        done 3<<< "$( cat "/proc/mounts" )"
+                            mountpoint="$(echo "$line" | awk '"'"'{if ($3 == "btrfs") print $2}'"'"')"
+                            if [[ -e "$mountpoint" ]]; then
+                                if ! btrfs scrub status "$mountpoint" | grep -qs "no errors found" ; then
+                                    echo "Status for ${mountpoint}:"
+                                    btrfs scrub status "$mountpoint" | tail -n 3
+                                    if el_confirm "'"$message_btrfs_repair"'" ; then
+                                        btrfs check --force --repair "$mountpoint"
+                                    fi
+                                    echo
+                                    is_shown=1
+                                fi
+                            fi
+                        done 3<<< "$(cat "/proc/mounts")"
+                        echo -e "Press Enter to continue..."
+                        ((is_shown)) && read nothing
                         '
                 fi
 
