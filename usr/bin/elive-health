@@ -291,7 +291,7 @@ main(){
 
         # btrfs reports
         if dmesg | LC_ALL=C grep -qsE "BTRFS error.*(fixed up error at logical|unable to fixup)" ; then
-            btrfs_dmesg_errors="$( dmesg | LC_ALL=C grep -E "BTRFS error.*(fixed up error at logical|unable to fixup)" | sed -e 's|^.*] BTRFS |BTRFS |g' )"
+            btrfs_dmesg_errors="$( dmesg | LC_ALL=C grep -E "BTRFS error.*(fixed up error at logical|unable to fixup)" | sed -e 's|^.*] BTRFS |BTRFS |g' | sort -u )"
             if [[ "$btrfs_dmesg_errors" != "$conf_btrfs_dmesg_errors" ]] ; then
 
                 local message_btrfs_title message_btrfs_1 message_btrfs_2 message_btrfs_knowmore message_btrfs_repair
@@ -303,7 +303,7 @@ main(){
 
                 if dmesg | grep -qs "BTRFS error.* unable to fixup)" ; then
                     # import to show the unrecoverable errors
-                    result="$( el_notify wait bomb "$message_btrfs_title" "${message_btrfs_1}\n\n$( echo "${btrfs_dmesg_errors}" | sort -u )" --action=open="$message_btrfs_knowmore" )"
+                    result="$( el_notify wait bomb "$message_btrfs_title" "${message_btrfs_1}\n\n$( echo "${btrfs_dmesg_errors}" )" --action=open="$message_btrfs_knowmore" )"
                     if [[ "$result" == "open" ]] ; then
                         is_know_more=1
                     fi
@@ -316,6 +316,7 @@ main(){
 
                 if ((is_know_more)) ; then
                     gksu -- urxvt -e bash -c '
+                        source /usr/lib/elive-tools/functions
                         while read -ru 3 line
                         do
                             mountpoint="$(echo "$line" | awk '"'"'{if ($3 == "btrfs") print $2}'"'"')"
