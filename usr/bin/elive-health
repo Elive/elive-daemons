@@ -368,7 +368,6 @@ main(){
                         ((is_shown)) && read nothing
                         '
 
-                    $guitool --info --text="To know which files are affected you may try to run the command: sudo find '$mountpoint' -inum INODE-NUMBER"
                 fi
 
             fi
