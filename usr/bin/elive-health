@@ -289,7 +289,13 @@ main(){
             fi
         fi
 
-        # btrfs reports
+        # BTRFS reports
+        #
+        # examples:
+        # Jul 16 21:30:51 Spaceship kernel: [29930.222471] BTRFS error (device dm-0): fixed up error at logical 2869947400192 on dev /dev/mapper/luks-d8ce1556-4f5d-45ba-8ed7-d01eb76b7378 physical 2843112243200
+        # Jul 16 15:28:14 Spaceship kernel: [ 8173.312591] BTRFS error (device dm-0): unable to fixup (regular) error at logical 342490873856 on dev /dev/mapper/luks-d8ce1556-4f5d-45ba-8ed7-d01eb76b7378 physical 345720487936
+        # Jul 16 15:27:10 Spaceship kernel: [ 8108.636278] BTRFS error (device dm-0): unable to fixup (regular) error at logical 335801679872 on dev /dev/mapper/luks-d8ce1556-4f5d-45ba-8ed7-d01eb76b7378 physical 339031293952
+
         if dmesg | LC_ALL=C grep -qsiE "BTRFS .*(fixed up error at logical|unable to fixup|checksum verify failed on)" ; then
             btrfs_dmesg_errors="$( dmesg | LC_ALL=C grep -iE "BTRFS .*(fixed up error at logical|unable to fixup|checksum verify failed on)" | sed -e 's|^.*] BTRFS |BTRFS |Ig' | sort -u )"
             if [[ "$btrfs_dmesg_errors" != "$conf_btrfs_dmesg_errors" ]] ; then
@@ -299,7 +305,7 @@ main(){
                 message_btrfs_knowmore="$( printf "$( eval_gettext "Know more" )" "" )"
                 message_btrfs_1="$( eval_gettext "Your filesystem has detected errors that it was unable to fix. This could lead to data loss. Use the BTRFS check and scrub tools to know more" )"
                 message_btrfs_2="$( eval_gettext "BTRFS detected errors in your system. This filesystem is self-healing, but it is recommended to back up your data and run a filesystem check to prevent data loss." )"
-                message_btrfs_repair="$( eval_gettext "Run a full check repairing error?" )"
+                message_btrfs_repair="$( eval_gettext "Run a full check?" )"
 
                 if dmesg | grep -qs "BTRFS error.* unable to fixup)" ; then
                     # import to show the unrecoverable errors
@@ -326,7 +332,7 @@ main(){
                                     btrfs scrub status "$mountpoint" | tail -n 3
                                     echo ""
                                     if el_confirm "'"$message_btrfs_repair"'" ; then
-                                        btrfs check --repair "$mountpoint"
+                                        btrfs check "$mountpoint"
                                     fi
                                     echo
                                     is_shown=1
