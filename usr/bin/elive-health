@@ -317,7 +317,7 @@ main(){
                 message_btrfs_repair="$( eval_gettext "Run a full check?" )"
                 message_btrfs_affected_files="$( eval_gettext "These are the damaged files, try to recover them from a backup copy if you have any. Make sure to delete the damaged files after that to free up the problematic location:" )"
                 message_btrfs_filename="$( eval_gettext "Damaged files in your hard disk" )"
-                message_btrfs_3="$( eval_gettext "A file has been created in your user directory with the details of the affected files and inodes so you can verify them better." )"
+                message_btrfs_3="$( eval_gettext "A file has been created in your user directory with the affected files so you can verify them better." )"
                 message_btrfs_4="$( eval_gettext "Error messages found:" )"
 
                 if dmesg | grep -qs "BTRFS error.* unable to fixup" ; then
