@@ -290,8 +290,8 @@ main(){
         fi
 
         # btrfs reports
-        if dmesg | LC_ALL=C grep -qsE "BTRFS error.*(fixed up error at logical|unable to fixup)" ; then
-            btrfs_dmesg_errors="$( dmesg | LC_ALL=C grep -E "BTRFS error.*(fixed up error at logical|unable to fixup)" | sed -e 's|^.*] BTRFS |BTRFS |g' | sort -u )"
+        if dmesg | LC_ALL=C grep -qsiE "BTRFS .*(fixed up error at logical|unable to fixup|checksum verify failed on)" ; then
+            btrfs_dmesg_errors="$( dmesg | LC_ALL=C grep -iE "BTRFS .*(fixed up error at logical|unable to fixup|checksum verify failed on)" | sed -e 's|^.*] BTRFS |BTRFS |Ig' | sort -u )"
             if [[ "$btrfs_dmesg_errors" != "$conf_btrfs_dmesg_errors" ]] ; then
 
                 local message_btrfs_title message_btrfs_1 message_btrfs_2 message_btrfs_knowmore message_btrfs_repair
