@@ -324,6 +324,7 @@ main(){
                                 if ! btrfs scrub status "$mountpoint" | grep -qs "no errors found" ; then
                                     echo "Status for ${mountpoint}:"
                                     btrfs scrub status "$mountpoint" | tail -n 3
+                                    echo ""
                                     if el_confirm "'"$message_btrfs_repair"'" ; then
                                         btrfs check --repair "$mountpoint"
                                     fi
