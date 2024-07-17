@@ -325,7 +325,7 @@ main(){
                                     echo "Status for ${mountpoint}:"
                                     btrfs scrub status "$mountpoint" | tail -n 3
                                     if el_confirm "'"$message_btrfs_repair"'" ; then
-                                        btrfs check --force --repair "$mountpoint"
+                                        btrfs check --repair "$mountpoint"
                                     fi
                                     echo
                                     is_shown=1
