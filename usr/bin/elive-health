@@ -305,25 +305,35 @@ main(){
             btrfs_dmesg_errors="$( dmesg | LC_ALL=C grep -iE "BTRFS error.*(fixed up error at logical|unable to fixup|checksum verify failed on)" | sed -e 's|^.*] BTRFS |BTRFS |Ig' | sort -u )"
             if [[ "$btrfs_dmesg_errors" != "$conf_btrfs_dmesg_errors" ]] ; then
 
-                local message_btrfs_title message_btrfs_1 message_btrfs_2 message_btrfs_knowmore message_btrfs_repair message_btrfs_affected_files message_btrfs_3
+                # save to not repeat
+                conf_btrfs_dmesg_errors="$btrfs_dmesg_errors"
+                el_config_save "conf_btrfs_dmesg_errors"
+
+                local message_btrfs_title message_btrfs_1 message_btrfs_2 message_btrfs_knowmore message_btrfs_repair message_btrfs_affected_files message_btrfs_4 message_btrfs_filename message_btrfs_3
                 message_btrfs_title="$( printf "$( eval_gettext "Data integrity failures" )" "" )"
                 message_btrfs_knowmore="$( printf "$( eval_gettext "Know more" )" "" )"
                 message_btrfs_1="$( eval_gettext "Your filesystem has detected errors in files that was unable to fix. Use manually the BTRFS maintenance tools to know more of them." )"
                 message_btrfs_2="$( eval_gettext "BTRFS detected errors in your files. Elive is doing a self-healing, but it is recommended to back up your data and run a filesystem check to prevent data loss." )"
                 message_btrfs_repair="$( eval_gettext "Run a full check?" )"
                 message_btrfs_affected_files="$( eval_gettext "These are the damaged files, try to recover them from a backup copy if you have any. Make sure to delete the damaged files after that to free up the problematic location:" )"
-                message_btrfs_3="$( eval_gettext "Damaged files in your hard disk" )"
+                message_btrfs_filename="$( eval_gettext "Damaged files in your hard disk" )"
+                message_btrfs_3="$( eval_gettext "A file has been created in your user directory with the details of the affected files and inodes so you can verify them better." )"
+                message_btrfs_4="$( eval_gettext "Error messages found:" )"
 
                 if dmesg | grep -qs "BTRFS error.* unable to fixup" ; then
                     btrfs_damaged_files="$( dmesg | grep "BTRFS.*inode.*path:" | sed -e 's|^.*path: ||g' -e 's|)$||g' )"
                     # show the unrecoverable errors
                     if [[ -n "$btrfs_damaged_files" ]] ; then
-                        result="$( el_notify wait bomb "$message_btrfs_title" "${message_btrfs_1}\n\n$( echo "${btrfs_damaged_files}" )" --action=open="$message_btrfs_knowmore" )"
                         # save results to a file in the home of the user
-                        echo -e "${message_btrfs_affected_files}\n\n$btrfs_damaged_files" >> "$HOME/${message_btrfs_3} - $( date +%F ).txt"
+                        echo -e "${message_btrfs_1}\n\n${message_btrfs_affected_files}\n\n${btrfs_damaged_files}\n\n${message_btrfs_4}\n\n${btrfs_dmesg_errors}" >> "$HOME/${message_btrfs_filename} - $( date +%F ).txt"
                     else
-                        result="$( el_notify wait bomb "$message_btrfs_title" "${message_btrfs_1}\n\n$( echo "${btrfs_dmesg_errors}" )" --action=open="$message_btrfs_knowmore" )"
+                        # save results to a file in the home of the user
+                        echo -e "${message_btrfs_1}\n\n${message_btrfs_4}\n\n${btrfs_dmesg_errors}" >> "$HOME/${message_btrfs_filename} - $( date +%F ).txt"
                     fi
+
+                    # show popup
+                    result="$( el_notify wait bomb "$message_btrfs_title" "${message_btrfs_1}\n\n${message_btrfs_3}" --action=open="$message_btrfs_knowmore" )"
+
 
                     if [[ "$result" == "open" ]] ; then
                         is_know_more=1
@@ -361,9 +371,6 @@ main(){
                     $guitool --info --text="To know which files are affected you may try to run the command: sudo find '$mountpoint' -inum INODE-NUMBER"
                 fi
 
-                # save to not repeat
-                conf_btrfs_dmesg_errors="$btrfs_dmesg_errors"
-                el_config_save "conf_btrfs_dmesg_errors"
             fi
         fi
     fi
