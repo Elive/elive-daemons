@@ -301,47 +301,53 @@ main(){
 # }
 
         if dmesg | LC_ALL=C grep -qsiE "BTRFS (error|warning).*(fixed up error at logical|unable to fixup|checksum verify failed on|: i/o error at logical)" ; then
+
             btrfs_dmesg_errors="$( dmesg | LC_ALL=C grep -iE "BTRFS error.*(fixed up error at logical|unable to fixup|checksum verify failed on)" | sed -e 's|^.*] BTRFS |BTRFS |Ig' | sort -u )"
+
+            # only if not already reported
             if [[ "$btrfs_dmesg_errors" != "$conf_btrfs_dmesg_errors" ]] ; then
 
                 # save to not repeat
                 conf_btrfs_dmesg_errors="$btrfs_dmesg_errors"
                 el_config_save "conf_btrfs_dmesg_errors"
 
-                local message_btrfs_title message_btrfs_1 message_btrfs_2 message_btrfs_knowmore message_btrfs_repair message_btrfs_affected_files message_btrfs_4 message_btrfs_filename message_btrfs_3
+                local message_btrfs_title message_btrfs_1 message_btrfs_knowmore message_btrfs_repair message_btrfs_affected_files message_btrfs_4 message_btrfs_filename message_btrfs_3 message_btrfs_5
+
                 message_btrfs_title="$( printf "$( eval_gettext "Data integrity failures" )" "" )"
                 message_btrfs_knowmore="$( printf "$( eval_gettext "Know more" )" "" )"
-                message_btrfs_1="$( eval_gettext "Your filesystem has detected errors in files that was unable to fix. Use manually the BTRFS maintenance tools to know more of them." )"
-                message_btrfs_2="$( eval_gettext "BTRFS detected errors in your files. Elive is doing a self-healing, but it is recommended to back up your data and run a filesystem check to prevent data loss." )"
+                message_btrfs_1="$( eval_gettext "Detected integrity failures in your files. But Elive is doing a self-healing to them! " )"
+                message_btrfs_5="$( eval_gettext "Detected integrity failures in your files. Elive was able to repair some of these files but a few ones were unrecoverable." )"
                 message_btrfs_repair="$( eval_gettext "Run a full check?" )"
                 message_btrfs_affected_files="$( eval_gettext "These are the damaged files, try to recover them from a backup copy if you have any. Make sure to delete the damaged files after that to free up the problematic location:" )"
                 message_btrfs_filename="$( eval_gettext "Damaged files in your hard disk" )"
-                message_btrfs_3="$( eval_gettext "A file has been created in your user directory with the affected files so you can verify them better." )"
+                message_btrfs_3="$( eval_gettext "A file has been created in your user directory with more details so you can verify your files better." )"
                 message_btrfs_4="$( eval_gettext "Error messages found:" )"
 
                 if dmesg | grep -qs "BTRFS error.* unable to fixup" ; then
-                    btrfs_damaged_files="$( dmesg | grep "BTRFS.*inode.*path:" | sed -e 's|^.*path: ||g' -e 's|)$||g' )"
+                    # know the affected files
+                    btrfs_damaged_files="$( { dmesg ; cat /var/log/kern.log /var/log/kern.log.1 ; } | grep "BTRFS.*inode.*path:" | sed -e 's|^.*path: ||g' -e 's|)$||g' | sort -u )"
+
                     # show the unrecoverable errors
                     if [[ -n "$btrfs_damaged_files" ]] ; then
                         # save results to a file in the home of the user
-                        echo -e "${message_btrfs_1}\n\n${message_btrfs_affected_files}\n\n${btrfs_damaged_files}\n\n${message_btrfs_4}\n\n${btrfs_dmesg_errors}" >> "$HOME/${message_btrfs_filename} - $( date +%F ).txt"
+                        echo -e "${message_btrfs_5}\n\n${message_btrfs_affected_files}\n\n${btrfs_damaged_files}\n\n${message_btrfs_4}\n\n${btrfs_dmesg_errors}" >> "$HOME/${message_btrfs_filename} - $( date +%F ).txt"
                     else
                         # save results to a file in the home of the user
                         echo -e "${message_btrfs_1}\n\n${message_btrfs_4}\n\n${btrfs_dmesg_errors}" >> "$HOME/${message_btrfs_filename} - $( date +%F ).txt"
                     fi
 
-                    # show popup
-                    result="$( el_notify wait bomb "$message_btrfs_title" "${message_btrfs_1}\n\n${message_btrfs_3}" --action=open="$message_btrfs_knowmore" )"
-
-
-                    if [[ "$result" == "open" ]] ; then
-                        is_know_more=1
-                    fi
+                    # show message: some files were unrecoverable
+                    result="$( el_notify wait bomb "$message_btrfs_title" "${message_btrfs_5}\n\n${message_btrfs_3}" --action=open="$message_btrfs_knowmore" )"
 
                 else
-                    if ! $guitool --question --title="$message_btrfs_title" --cancel-label="$message_btrfs_knowmore" --text="${message_btrfs_2}\n\n$btrfs_dmesg_errors" ; then
-                        is_know_more=1
-                    fi
+
+                    # show message: files repaired
+                    result="$( el_notify wait "utilities-system-monitor" "$message_btrfs_title" "${message_btrfs_1}" --action=open="$message_btrfs_knowmore" )"
+                fi
+
+                # know more
+                if [[ "$result" == "open" ]] ; then
+                    is_know_more=1
                 fi
 
                 if ((is_know_more)) ; then
