@@ -291,15 +291,14 @@ main(){
 
         # BTRFS reports
         #
-        # examples:
-        # /var/log/{syslog,kernel.log}:
-        # Jul 16 21:30:51 Spaceship kernel: [29930.222471] BTRFS error (device dm-0): fixed up error at logical 2869947400192 on dev /dev/mapper/luks-d8ce1556-4f5d-45ba-8ed7-d01eb76b7378 physical 2843112243200
-        # Jul 16 15:28:14 Spaceship kernel: [ 8173.312591] BTRFS error (device dm-0): unable to fixup (regular) error at logical 342490873856 on dev /dev/mapper/luks-d8ce1556-4f5d-45ba-8ed7-d01eb76b7378 physical 345720487936
-        # Jul 16 15:27:10 Spaceship kernel: [ 8108.636278] BTRFS error (device dm-0): unable to fixup (regular) error at logical 335801679872 on dev /dev/mapper/luks-d8ce1556-4f5d-45ba-8ed7-d01eb76b7378 physical 339031293952
-        # dmesg:
-        # [ 5379.898700] BTRFS error (device dm-0): fixed up error at logical 342490742784 on dev /dev/mapper/luks-d8ce1556-4f5d-45ba-8ed7-d01eb76b7378 physical 345720356864
-        # [ 5381.221865] BTRFS error (device dm-0): unable to fixup (regular) error at logical 342490873856 on dev /dev/mapper/luks-d8ce1556-4f5d-45ba-8ed7-d01eb76b7378 physical 345720487936
-        # [ 5381.242322] BTRFS warning (device dm-0): i/o error at logical 342490873856 on dev /dev/mapper/luks-d8ce1556-4f5d-45ba-8ed7-d01eb76b7378, physical 345720487936, root 5, inode 3342010, offset 393216, length 4096, links 1 (path: DataExtra/debootstraps/mkdeb-chroots/debootstrap_bookworm_trixiesources_amd64/usr/share/locale/zh_TW/LC_MESSAGES/git.mo)
+        # enable for betatesting:
+#         function dmesg(){
+#             echo "
+# [ 5379.898700] BTRFS error (device dm-0): fixed up error at logical 342490742784 on dev /dev/mapper/luks-d8ce1556-4f5d-45ba-8ed7-d01eb76b7378 physical 345720356864
+# [ 5381.221865] BTRFS error (device dm-0): unable to fixup (regular) error at logical 342490873856 on dev /dev/mapper/luks-d8ce1556-4f5d-45ba-8ed7-d01eb76b7378 physical 345720487936
+# [ 5381.242322] BTRFS warning (device dm-0): i/o error at logical 342490873856 on dev /dev/mapper/luks-d8ce1556-4f5d-45ba-8ed7-d01eb76b7378, physical 345720487936, root 5, inode 3342010, offset 393216, length 4096, links 1 (path: DataExtra/debootstraps/mkdeb-chroots/debootstrap_bookworm_trixiesources_amd64/usr/share/locale/zh_TW/LC_MESSAGES/git.mo)
+# "
+# }
 
         if dmesg | LC_ALL=C grep -qsiE "BTRFS (error|warning).*(fixed up error at logical|unable to fixup|checksum verify failed on|: i/o error at logical)" ; then
             btrfs_dmesg_errors="$( dmesg | LC_ALL=C grep -iE "BTRFS error.*(fixed up error at logical|unable to fixup|checksum verify failed on)" | sed -e 's|^.*] BTRFS |BTRFS |Ig' | sort -u )"
