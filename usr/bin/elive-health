@@ -330,10 +330,10 @@ main(){
                     # show the unrecoverable errors
                     if [[ -n "$btrfs_damaged_files" ]] ; then
                         # save results to a file in the home of the user
-                        echo -e "${message_btrfs_5}\n\n${message_btrfs_affected_files}\n\n${btrfs_damaged_files}\n\n${message_btrfs_4}\n\n${btrfs_dmesg_errors}" >> "$HOME/${message_btrfs_filename} - $( date +%F ).txt"
+                        echo -e "${message_btrfs_5}\n\n${message_btrfs_affected_files}\n\n${btrfs_damaged_files}\n\n${message_btrfs_4}\n\n${btrfs_dmesg_errors}" >> "$HOME/${message_btrfs_filename} - $(hostname) - $( date +%F ).txt"
                     else
                         # save results to a file in the home of the user
-                        echo -e "${message_btrfs_1}\n\n${message_btrfs_4}\n\n${btrfs_dmesg_errors}" >> "$HOME/${message_btrfs_filename} - $( date +%F ).txt"
+                        echo -e "${message_btrfs_1}\n\n${message_btrfs_4}\n\n${btrfs_dmesg_errors}" >> "$HOME/${message_btrfs_filename} - $(hostname) - $( date +%F ).txt"
                     fi
 
                     # show message: some files were unrecoverable
