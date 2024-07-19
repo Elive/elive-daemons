@@ -237,6 +237,14 @@ do_start(){
     find /boot/ -iname '*'.old-dkms -delete
 
     # }}}
+    # re-create machine-id if needed
+    if [[ ! -s /etc/machine-id ]] ; then
+        if ! systemd-machine-id-setup ; then
+            rm -f /etc/machine-id /var/lib/dbus/machine-id
+            dbus-uuidgen --ensure=/etc/machine-id
+            ln -fs /etc/machine-id /var/lib/dbus/machine-id
+        fi
+    fi
 
     # make sure that the working console reads and outputs things correctly (otherwise tab not works on dialog's unless we do a "login" or "getty")
     #exec 0</dev/console 1>/dev/console 2>&1
