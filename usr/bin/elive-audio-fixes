@@ -18,23 +18,14 @@ reconfigure_applications(){
 
 # note: same code exists in ctrl-alt-del tool
 audio_reconfigure(){
-    if [[ -e /var/lib/dpkg/info/pulseaudio.list ]] ; then
-        if ((is_systemd)) ; then
-            systemctl --user stop pulseaudio.service pulseaudio.socket 2>/dev/null || true
-        fi
-        killall -9 pulseaudio 2>/dev/null || true
+    el_pulseaudio stop
 
-        rm -rf ~/.config/pulse/cookie ~/.pulse/* ~/.asoundrc 2>/dev/null || true
-        audio-configurator  --quiet --auto --smart --no-messages
+    rm -rf ~/.config/pulse/cookie ~/.pulse/* ~/.asoundrc 2>/dev/null || true
 
-        if ((is_systemd)) ; then
-            systemctl --user start pulseaudio.service pulseaudio.socket
-        else
-            ( pulseaudio --start & )
-        fi
-    else
-        audio-configurator  --quiet --auto --smart --no-messages
-    fi
+    audio-configurator  --quiet --auto --smart --no-messages
+
+    el_pulseaudio start
+
 
     # fix volumes
     rm -f "$HOME/.config/setvolume" 2>/dev/null 1>&2
@@ -66,26 +57,7 @@ main(){
 
     # reconfigure audio when its deconfigured
     if [[ ! -e ~/.asoundrc ]] || [[ -e ~/.asoundrc-reconfigureme ]] ; then
-        if ((is_systemd)) ; then
-            systemctl --user stop pulseaudio.service pulseaudio.socket
-        fi
-        killall -9 pulseaudio
-        rm -rf ~/.config/pulse/cookie ~/.pulse/* ~/.asoundrc 2>/dev/null || true
-
-        audio-configurator --quiet --auto --smart
-
-        # fix volumes
-        rm -f "$HOME/.config/setvolume" 2>/dev/null 1>&2
-        setvolume defaults
-
-        if ((is_systemd)) ; then
-            systemctl --user start pulseaudio.service pulseaudio.socket
-        else
-            ( pulseaudio --start & )
-        fi
-
-        timeout 5 aplay /dev/null 2>/dev/null
-        LC_ALL=C sleep 0.2
+        audio_reconfigure
 
         rm -f ~/.asoundrc-reconfigureme
     fi
