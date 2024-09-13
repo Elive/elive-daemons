@@ -402,7 +402,7 @@ main(){
                     fi
                     ;;
 
-                "yad")
+                */"yad")
                     # yad can be stuck and consume cpu, if this happens for enough time, just kill the dialog
                     if [[ "${time_minutes}" -gt 30 ]] && [[ "${cpu_usage}" -gt 60 ]] ; then
                         kill_process "$pid" "${status}" "$cmd"
@@ -410,7 +410,7 @@ main(){
                     ;;
 
 
-                "cairo-dock")
+                */"cairo-dock")
                     if [[ "${time_minutes}" -gt 40 ]] && [[ "${cpu_usage}" -gt 60 ]] ; then
                         kill_process_restart "$pid" "${status}" "$cmd"
                     fi
