@@ -92,7 +92,7 @@ do_enable(){
         fi
     fi
 
-    sed -i -e 's|^.*conf_browsers_on_ram=.*$|declare -g -- conf_browsers_on_ram="1"|g' "$HOME/.config/elive/elive-tools/el_config/*elive-health*sh" 2>/dev/null || true
+    sed -i -e 's|^.*conf_browsers_on_ram=.*$|declare -g -- conf_browsers_on_ram="1"|g' $HOME/.config/elive/elive-tools/el_config/*elive-health*sh 2>/dev/null || true
 }
 
 do_disable(){
@@ -105,7 +105,7 @@ do_disable(){
     LC_ALL=C sleep 0.5
     rm -f "$HOME/.config/psd/psd.conf" 1>/dev/null 2>&1 || true
 
-    sed -i -e 's|^.*conf_browsers_on_ram=.*$|declare -g -- conf_browsers_on_ram="0"|g' "$HOME/.config/elive/elive-tools/el_config/*elive-health*sh" 2>/dev/null || true
+    sed -i -e 's|^.*conf_browsers_on_ram=.*$|declare -g -- conf_browsers_on_ram="0"|g' $HOME/.config/elive/elive-tools/el_config/*elive-health*sh 2>/dev/null || true
 }
 
 do_configure(){
@@ -235,6 +235,11 @@ main(){
     # }}}
 
     if [[ -z "$@" ]] ; then
+        # exit if user didn't wanted it
+        if grep -qs 'conf_browsers_on_ram="0"' $HOME/.config/elive/elive-tools/el_config/*elive-health*sh ; then
+            exit
+        fi
+
         if $guitool --question --text="$( eval_gettext "Do you want to enable the feature of Browsers under RAM? This feature will make your browser's slightly faster and especially it will protect your hard disks increasing their lifespan." )" ; then
             do_configure
         else
