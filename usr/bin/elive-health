@@ -437,6 +437,13 @@ main(){
             fi
         fi
 
+        # disable daemon if user wanted to not having it using
+        if grep -qs 'conf_browsers_on_ram="0"' $HOME/.config/elive/elive-tools/el_config/*elive-health*sh 2>/dev/null ; then
+            if LC_ALL=C systemctl --user status psd.service | colors-remove | grep -Fqs "Active: active" ; then
+                elive-browsers-on-ram --quiet "disable"
+            fi
+        fi
+
         if [[ -z "$conf_browsers_on_ram" ]] || [[ ! -L "$HOME/.config/systemd/user/default.target.wants/psd.service" ]] ; then
             # default
             _browsers_on_ram=0
