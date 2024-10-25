@@ -1,10 +1,10 @@
 [Desktop Entry]
 Name=Touchpad configurations
-Name[az]=Touchpad konfiqurasiyaları
-Name[bg]=Конфигурации на тъчпада
-Name[bn]=টাচপ্যাড কনফিগারেশন
+Name[az]=Touchpad konfiqurasiyası
+Name[bg]=Конфигурации за тъчпад
+Name[bn]=টাচপ্যাড কনফিগারেশনস
 Name[ca]=Configuració del touchpad
-Name[cs]=Konfigurace dotykového panelu
+Name[cs]=Konfigurace dotykové plochy
 Name[da]=Touchpad-konfigurationer
 Name[de]=Touchpad-Konfigurationen
 Name[el]=Ρυθμίσεις Touchpad
@@ -36,7 +36,7 @@ Name[sv]=Touchpad-konfigurationer
 Name[te]=టచ్ప్యాడ్ కాన్ఫిగరేషన్లు
 Name[tl]=Mga configuration ng touchpad
 Name[tr]=Touchpad yapılandırmaları
-Name[uk]=Конфігурації тачпад
+Name[uk]=Конфігурації тачпада
 Name[vi]=Cấu hình bàn di chuột
 Comment=Configurations for your touchpad mouse
 Comment[az]=Touchpad siçanınız üçün konfiqurasiyalar

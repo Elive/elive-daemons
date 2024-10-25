@@ -1,12 +1,12 @@
 [Desktop Entry]
 Name=Elive Health
 Comment=Checks the health of the system and hardware
-Comment[az]=Sistemin və donanımın sağlamlığını yoxlayır
+Comment[az]=Sistem və donanımın sağlamlığını yoxlayır
 Comment[bg]=Проверява здравето на системата и хардуера
-Comment[bn]=সিস্টেম এবং হার্ডওয়্যার স্বাস্থ্য পরীক্ষা করে
+Comment[bn]=সিস্টেম এবং হার্ডওয়্যারের স্বাস্থ্য পরীক্ষা করে
 Comment[ca]=Comprova la salut del sistema i el maquinari
-Comment[cs]=Kontroluje zdravotní stav systému a hardware
-Comment[da]=Kontrollerer systemets og hardwareens sundhed
+Comment[cs]=Kontroluje zdraví systému a hardware
+Comment[da]=Kontrollerer systemets og hardwarens sundhed
 Comment[de]=Überprüft den Zustand des Systems und der Hardware
 Comment[el]=Ελέγχει την υγεία του συστήματος και του υλικού
 Comment[eo]=Kontrolas la sanon de la sistemo kaj aparataro
@@ -15,7 +15,7 @@ Comment[et]=Kontrollib süsteemi ja riistvara tervist
 Comment[fi]=Tarkistaa järjestelmän ja laitteiston terveyden
 Comment[fr]=Vérifie la santé du système et du matériel
 Comment[hi]=सिस्टम और हार्डवेयर के स्वास्थ्य की जांच करता है
-Comment[hr]=Provjera zdravlja sustava i hardvera
+Comment[hr]=Provjerava zdravlje sustava i hardvera
 Comment[hu]=Ellenőrzi a rendszer és a hardver egészségét
 Comment[id]=Memeriksa kesehatan sistem dan perangkat keras
 Comment[it]=Controlla lo stato del sistema e dell'hardware
