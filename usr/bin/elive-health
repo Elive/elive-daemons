@@ -96,7 +96,7 @@ main(){
     if ! ((is_soft)) ; then
         if [[ -e "/var/tmp/elivehealth/elive-system-shutdown-forced" ]] && grep -qsE "^(yes|user notified pre)$" "/var/tmp/elivehealth/elive-system-shutdown-forced" ; then
             local message_shutdown_warn
-            message_shutdown_warn="$( printf "$( eval_gettext "You previously turned off the computer incorrectly. A forced shutdown can be very damaging to your data. You should shut down the computer properly by clicking on your desktop to bring up the menu and selecting the shutdown option. If your computer freezes unexpectedly, consider trying a different kernel version or graphics drivers." )" "" )"
+            message_shutdown_warn="$( printf "$( eval_gettext "You turned off the computer the wrong way before, forcing a shutdown can harm your data, so make sure to shut it down properly by clicking on the desktop menu and choosing the shutdown option. But if it freezes unexpectedly, you might want to try a different kernel version or graphics drivers." )" "" )"
             # warn the user
             el_notify "important" "utilities-system-monitor" "$( eval_gettext "Forced shutdown detected" )" "$message_shutdown_warn"
 
@@ -223,7 +223,7 @@ main(){
                 baobab "$HOME" &
 
                 sleep 3
-                $guitool --info --text="$( eval_gettext "Please wait for the scan to complete to view the results. Meanwhile, consider removing unnecessary files from your Downloads folder, where most of the unused space is likely located." )"
+                $guitool --info --text="$( eval_gettext "Please wait for the scan to complete to view the results. Meanwhile, consider removing unnecessary files from your Downloads folder, where most of the wasted space may likely be located." )"
             fi
         fi
     fi
@@ -255,7 +255,7 @@ main(){
                 fi
 
                 local message_badblocks
-                message_badblocks="$( printf "$( eval_gettext "One of your hard disks has bad blocks, indicating degradation. Data may be lost if saved to undetected bad blocks. Backup important information, and consider replacing the hard drive if this message appears frequently." )" "" )"
+                message_badblocks="$( printf "$( eval_gettext "One of your hard disks has bad blocks, which means it’s wearing out, you could lose data if you save it to these bad blocks, so back up your important files and think about replacing the hard drive if you keep seeing this message." )" "" )"
                 local message_badblocks_counted
                 message_badblocks_counted="$( printf "$( eval_gettext "Bad blocks registered:" )" "" )"
                 local message_badblocks_counted_before
@@ -318,7 +318,7 @@ main(){
                 message_btrfs_1="$( eval_gettext "Detected integrity failures in your files. But Elive is doing a self-healing to them! " )"
                 message_btrfs_5="$( eval_gettext "Detected integrity failures in your files. Elive was able to repair some of these files but a few ones were unrecoverable." )"
                 message_btrfs_repair="$( eval_gettext "Run a full check?" )"
-                message_btrfs_affected_files="$( eval_gettext "These are the damaged files, try to recover them from a backup copy if you have any. Make sure to delete the damaged files after that to free up the problematic location:" )"
+                message_btrfs_affected_files="$( eval_gettext "These are the damaged files, try to recover them from a backup copy if you have any. Make sure to delete the damaged files after doing that to free up the problematic location:" )"
                 message_btrfs_filename="$( eval_gettext "Damaged files in your hard disk" )"
                 message_btrfs_3="$( eval_gettext "A file has been created in your user directory with more details so you can verify your files better." )"
                 message_btrfs_4="$( eval_gettext "Error messages found:" )"
@@ -396,19 +396,19 @@ main(){
     if ((is_bookworm)) ; then
         if echo "$repos" | grep -Fv "dropbox.com" | grep -qsE "(\Wwheezy|\Wbuster|\Wbullseye|\Wtesting|\Wsid|ubuntu|ppa.launchpad|\Wrestricted)" ; then
             echo "$repos" | grep -Fv "dropbox.com" | grep -E "(\Wwheezy|\Wbuster|\Wbullseye|\Wtesting|\Wsid|ubuntu|ppa.launchpad|\Wrestricted)"
-            el_notify normal computer-fail "$( eval_gettext "Wrong repositories" )" "$( eval_gettext "You have mixed repositories configured in your system. This is strongly discouraged and can cause your system to malfunction if you don't know what you're doing. If you encounter issues with your system, we advise you to reinstall Elive without modifying the default provided repositories. Note that PPAs, commonly used with Ubuntu, are often misconfigured for Debian (on which Elive is based)." )"
+            el_notify normal computer-fail "$( eval_gettext "Wrong repositories" )" "$( eval_gettext "You have mixed repositories set up, which is not recommended and can lead to problems if you're not careful, if you have issues, it's best to reinstall Elive without changing the default repositories, and remember that PPAs meant for Ubuntu often don't work well with Debian." )"
         fi
     fi
     if ((is_bullseye)) ; then
         if echo "$repos" | grep -Fv "dropbox.com" | grep -qsE "(\Wwheezy|\Wbuster|\Wbookworm|\Wtesting|\Wsid|ubuntu|ppa.launchpad|\Wrestricted)" ; then
             echo "$repos" | grep -Fv "dropbox.com" | grep -E "(\Wwheezy|\Wbuster|\Wbookworm|\Wtesting|\Wsid|ubuntu|ppa.launchpad|\Wrestricted)"
-            el_notify normal computer-fail "$( eval_gettext "Wrong repositories" )" "$( eval_gettext "You have mixed repositories configured in your system. This is strongly discouraged and can cause your system to malfunction if you don't know what you're doing. If you encounter issues with your system, we advise you to reinstall Elive without modifying the default provided repositories. Note that PPAs, commonly used with Ubuntu, are often misconfigured for Debian (on which Elive is based)." )"
+            el_notify normal computer-fail "$( eval_gettext "Wrong repositories" )" "$( eval_gettext "You have mixed repositories set up, which is not recommended and can lead to problems if you're not careful, if you have issues, it's best to reinstall Elive without changing the default repositories, and remember that PPAs meant for Ubuntu often don't work well with Debian." )"
         fi
     fi
     if ((is_buster)) ; then
         if echo "$repos" | grep -Fv "dropbox.com" | grep -qsE "(\Wwheezy|\Wbullseye|\Wtesting|\Wsid|ubuntu|ppa.launchpad|\Wrestricted)" ; then
             echo "$repos" | grep -Fv "dropbox.com" | grep -E "(\Wwheezy|\Wbullseye|\Wtesting|\Wsid|ubuntu|ppa.launchpad|\Wrestricted)"
-            el_notify normal computer-fail "$( eval_gettext "Wrong repositories" )" "$( eval_gettext "You have mixed repositories configured in your system. This is strongly discouraged and can cause your system to malfunction if you don't know what you're doing. If you encounter issues with your system, we advise you to reinstall Elive without modifying the default provided repositories. Note that PPAs, commonly used with Ubuntu, are often misconfigured for Debian (on which Elive is based)." )"
+            el_notify normal computer-fail "$( eval_gettext "Wrong repositories" )" "$( eval_gettext "You have mixed repositories set up, which is not recommended and can lead to problems if you're not careful, if you have issues, it's best to reinstall Elive without changing the default repositories, and remember that PPAs meant for Ubuntu often don't work well with Debian." )"
         fi
     fi
     # - repo issues }}}
