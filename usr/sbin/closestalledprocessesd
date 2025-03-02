@@ -103,7 +103,7 @@ kill_processes_zombie(){
             logger "$(basename $0) - Trying to recover the zombie '$z_pid' which parent is '$z_ppid' - (${z_comm})"
 
             if kill -s SIGCHLD "$z_ppid" ; then
-                logger "$(basename $0) - $z_ppid killed"
+                logger "$(basename $0) - $z_ppid (${z_ppid_comm}) killed: sent SIGCHLD to recover the zombie '$z_pid' (${z_comm})"
             fi
 
             sleep 3
@@ -112,6 +112,7 @@ kill_processes_zombie(){
 
                 if kill -9 "$z_ppid" ; then
                     logger "$(basename $0) - $z_ppid killed"
+                    logger "$(basename $0) - $z_ppid (${z_ppid_comm}) killed: no luck, forcing a crash SIGSEGV (-9) to recover the zombie '$z_pid' (${z_comm})"
                 fi
             fi
             sleep 3
@@ -162,8 +163,8 @@ kill_process_restart(){
             logger "$(basename $0) - $message"
         else
             if [[ -n "$cmd" ]] ; then
-                echo "killing $cmd at ${pid}, cpu is at ${cpu_usage} since ${time_minutes} minutes" 1>&2
-                logger "$(basename $0) - killing $cmd at ${pid}, cpu is at ${cpu_usage} since ${time_minutes} minutes"
+                echo "killing $cmd at ${pid}, cpu is at ${cpu_usage} % since ${time_minutes} minutes" 1>&2
+                logger "$(basename $0) - killing $cmd at ${pid}, cpu is at ${cpu_usage} % since ${time_minutes} minutes"
             fi
         fi
 
@@ -180,14 +181,15 @@ kill_process_restart(){
 
         if kill -0 "$pid" 2>/dev/null ; then
             if kill "$pid" 2>/dev/null 1>/dev/null ; then
-                logger "$(basename $0) - $pid killed"
+                # logger "$(basename $0) - $pid killed"
+                logger "$(basename $0) - $pid ($cmd) killed: it was responsive"
             fi
             sleep 1
         fi
 
         if kill -0 "$pid" 2>/dev/null ; then
             if kill -9 "$pid" 2>/dev/null 1>/dev/null ; then
-                logger "$(basename $0) - $pid killed with -9"
+                logger "$(basename $0) - $pid killed with a forced crash (-9)"
             fi
             sleep 1
         fi
@@ -235,8 +237,8 @@ kill_process(){
             logger "$(basename $0) - $message"
         else
             if [[ -n "$cmd" ]] ; then
-                echo "killing $cmd at ${pid}, cpu is at ${cpu_usage} since ${time_minutes} minutes" 1>&2
-                logger "$(basename $0) - killing $cmd at ${pid}, cpu is at ${cpu_usage} since ${time_minutes} minutes"
+                echo "killing $cmd at ${pid}, cpu is at ${cpu_usage} % since ${time_minutes} minutes" 1>&2
+                logger "$(basename $0) - killing $cmd at ${pid}, cpu is at ${cpu_usage} % since ${time_minutes} minutes"
             fi
         fi
 
@@ -253,14 +255,14 @@ kill_process(){
 
         if kill -0 "$pid" 2>/dev/null ; then
             if kill "$pid" 2>/dev/null 1>/dev/null ; then
-                logger "$(basename $0) - $pid killed"
+                logger "$(basename $0) - $pid ($cmd) killed: it was responsive"
             fi
             sleep 1
         fi
 
         if kill -0 "$pid" 2>/dev/null ; then
             if kill -9 "$pid" 2>/dev/null 1>/dev/null ; then
-                logger "$(basename $0) - $pid killed with -9"
+                logger "$(basename $0) - $pid ($cmd) killed: with a forced crash (-9)"
             fi
             sleep 1
         fi
