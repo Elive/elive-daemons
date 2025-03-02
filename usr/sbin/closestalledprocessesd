@@ -273,7 +273,7 @@ main(){
                     fi
 
                     ;;
-                */bin/vlc|*/bin/mplayer|*/bin/gmplayer|*/bin/smplayer)
+                */bin/vlc|*/bin/mplayer|*/bin/gmplayer|*/bin/smplayer|*/bin/mpv)
                     if [[ "${time_minutes}" -ge 180 ]] && [[ "${cpu_usage}" -gt 60 ]] ; then
                         # more than 4 hours with a video player consuming cpu == player stuck
                         kill_process "$pid" "${status}" "$cmd" "cpu was high (gt 60) for $cmd"
@@ -293,13 +293,13 @@ main(){
                     ;;
                 */bin/enlightenment)
                     # cpu sucking
-                    if [[ "${time_minutes}" -ge 30 ]] && [[ "${cpu_usage}" -gt 80 ]] ; then
+                    if [[ "${time_minutes}" -ge 30 ]] && [[ "${cpu_usage}" -gt 92 ]] ; then
                         el_warning "enlightenment is consuming high cpu for more than 30 min, pidofs: $(pidof enlightenment), ps: $(ps aux | grep -F "enlightenment" | grep -vE '(grep|enlightenment_s)' | tr '\n' ';' ), top: $( COLUMNS=200 top -c -b -n 1 | head -n 200 | tail -n +8 | grep -F "enlightenment" | grep -vE '(grep|enlightenment_s)' | tr '\n' ';' )"
-                        kill_process "$pid" "${status}" "$cmd" "cpu was high (gt 80) for $cmd"
+                        kill_process "$pid" "${status}" "$cmd" "cpu was high (gt 92) for $cmd"
                     fi
                     # huge mem usage
-                    if [[ "${time_minutes}" -ge 30 ]] && [[ "${memvirt}" -gt 1200000 ]] ; then
-                        kill_process "$pid" "${status}" "$cmd" "memvirt was high (gt 1200000) for $cmd"
+                    if [[ "${time_minutes}" -ge 30 ]] && [[ "${memvirt}" -gt 1600000 ]] ; then
+                        kill_process "$pid" "${status}" "$cmd" "memvirt was high (gt 1600000) for $cmd"
                     fi
                     ;;
                 */ecomorph)
