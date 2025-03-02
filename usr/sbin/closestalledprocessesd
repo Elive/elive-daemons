@@ -160,19 +160,19 @@ kill_process(){
 
         if [[ -n "$message" ]] ; then
             echo -e "$message" 1>&2
-            logger "$(basename $0) - $message"
-        else
-            if [[ -n "$cmd" ]] ; then
-                echo "killing $cmd at ${pid}, cpu is at ${cpu_usage} % since ${time_minutes} minutes" 1>&2
-                logger "$(basename $0) - killing $cmd at ${pid}, cpu is at ${cpu_usage} % since ${time_minutes} minutes"
-            fi
+            message=" - $message"
+        fi
+
+        if [[ -n "$cmd" ]] ; then
+            echo "killing $cmd at ${pid}, cpu is at ${cpu_usage} % since ${time_minutes} minutes" 1>&2
+            logger "$(basename $0) - killing $cmd at ${pid}, cpu is at ${cpu_usage} % since ${time_minutes} minutes $message"
         fi
 
         # always kill E with a SIGSEGV in order  to recover it
         # TODO: sometimes we have duplicated/zombified E processes that should be killed -9
         if [[ "$cmd" = *enlightenment* ]] ; then
             if kill -s SIGSEGV "$pid" 2>/dev/null 1>/dev/null ; then
-                logger "$(basename $0) - $pid given a segfault to recover"
+                logger "$(basename $0) - $pid given a segfault to recover $message"
             fi
             sleep 1
             # nothing more here, we don't want to kill it more than a SEGV
@@ -181,14 +181,14 @@ kill_process(){
 
         if kill -0 "$pid" 2>/dev/null ; then
             if kill "$pid" 2>/dev/null 1>/dev/null ; then
-                logger "$(basename $0) - $pid ($cmd) killed: it was responsive"
+                logger "$(basename $0) - $pid ($cmd) killed: it was responsive $message"
             fi
             sleep 1
         fi
 
         if kill -0 "$pid" 2>/dev/null ; then
             if kill -9 "$pid" 2>/dev/null 1>/dev/null ; then
-                logger "$(basename $0) - $pid ($cmd) killed: with a forced crash (-9)"
+                logger "$(basename $0) - $pid ($cmd) killed: with a forced crash (-9) $message"
             fi
             sleep 1
         fi
@@ -253,7 +253,7 @@ main(){
                     # gvfsd-daemon sometimes blocks sucking cpu cycles
                     if [[ "${time_minutes}" -ge 3 ]] && [[ "${cpu_usage}" -gt 60 ]] ; then
                         logger "$(basename $0) - annoying process detected (${cmd}), minutes: ${time_minutes}, cpu usage: ${cpu_usage}, at pid: ${pid} "
-                        kill_process "$pid" "${status}" "$cmd"
+                        kill_process "$pid" "${status}" "$cmd" "cpu was high (gt 60) for $cmd"
                     fi
 
                     ;;
@@ -261,7 +261,7 @@ main(){
                     # tumblerd sucking around
                     if [[ "${time_minutes}" -ge 10 ]] && [[ "${cpu_usage}" -gt 60 ]] ; then
                         logger "$(basename $0) - annoying process detected (${cmd}), minutes: ${time_minutes}, cpu usage: ${cpu_usage}, at pid: ${pid} "
-                        kill_process "$pid" "${status}" "$cmd"
+                        kill_process "$pid" "${status}" "$cmd" "cpu was high (gt 60) for $cmd"
                     fi
 
                     ;;
@@ -269,14 +269,14 @@ main(){
                     # mpg123 sometimes got stucked eating cpu
                     if [[ "${time_minutes}" -ge 15 ]] && [[ "${cpu_usage}" -gt 60 ]] ; then
                         logger "$(basename $0) - annoying process detected (${cmd}), minutes: ${time_minutes}, cpu usage: ${cpu_usage}, at pid: ${pid} "
-                        kill_process "$pid" "${status}" "$cmd"
+                        kill_process "$pid" "${status}" "$cmd" "cpu was high (gt 60) for $cmd"
                     fi
 
                     ;;
                 */bin/vlc|*/bin/mplayer|*/bin/gmplayer|*/bin/smplayer)
                     if [[ "${time_minutes}" -ge 180 ]] && [[ "${cpu_usage}" -gt 60 ]] ; then
                         # more than 4 hours with a video player consuming cpu == player stuck
-                        kill_process "$pid" "${status}" "$cmd"
+                        kill_process "$pid" "${status}" "$cmd" "cpu was high (gt 60) for $cmd"
                     fi
 
                     ;;
@@ -284,29 +284,29 @@ main(){
                     # cpu sucking
                     if [[ "${time_minutes}" -ge 20 ]] && [[ "${cpu_usage}" -gt 80 ]] ; then
                         # note: eating cpu' FM's seems like to be in the R status
-                        kill_process "$pid" "${status}" "$cmd"
+                        kill_process "$pid" "${status}" "$cmd" "cpu was high (gt 80) for $cmd"
                     fi
                     # huge mem usage
                     if [[ "${time_minutes}" -ge 30 ]] && [[ "${memvirt}" -gt 700000 ]] ; then
-                        kill_process "$pid" "${status}" "$cmd"
+                        kill_process "$pid" "${status}" "$cmd" "memvirt was high (gt 700000) for $cmd"
                     fi
                     ;;
                 */bin/enlightenment)
                     # cpu sucking
                     if [[ "${time_minutes}" -ge 30 ]] && [[ "${cpu_usage}" -gt 80 ]] ; then
                         el_warning "enlightenment is consuming high cpu for more than 30 min, pidofs: $(pidof enlightenment), ps: $(ps aux | grep -F "enlightenment" | grep -vE '(grep|enlightenment_s)' | tr '\n' ';' ), top: $( COLUMNS=200 top -c -b -n 1 | head -n 200 | tail -n +8 | grep -F "enlightenment" | grep -vE '(grep|enlightenment_s)' | tr '\n' ';' )"
-                        kill_process "$pid" "${status}" "$cmd"
+                        kill_process "$pid" "${status}" "$cmd" "cpu was high (gt 80) for $cmd"
                     fi
                     # huge mem usage
                     if [[ "${time_minutes}" -ge 30 ]] && [[ "${memvirt}" -gt 1200000 ]] ; then
-                        kill_process "$pid" "${status}" "$cmd"
+                        kill_process "$pid" "${status}" "$cmd" "memvirt was high (gt 1200000) for $cmd"
                     fi
                     ;;
                 */ecomorph)
                     # huge mem usage
                     if [[ "${time_minutes}" -ge 30 ]] && [[ "${memvirt}" -gt 400000 ]] ; then
                         # it should use 50 mb on a small screen computer
-                        kill_process "$pid" "${status}" "$cmd"
+                        kill_process "$pid" "${status}" "$cmd" "memvirt was high (gt 400000) for $cmd"
                     fi
                     ;;
                 # whitelisted ones:  yeah, we know that they sucks, and we love them on this way :/
@@ -319,28 +319,28 @@ main(){
                 */"rage_thumb")
                     # sometimes block
                     if [[ "${time_minutes}" -ge 30 ]] && [[ "${cpu_usage}" -gt 60 ]] ; then
-                        kill_process "$pid" "${status}" "$cmd"
+                        kill_process "$pid" "${status}" "$cmd" "cpu was high (gt 60) for $cmd"
                     fi
                     ;;
                 */vlc)
                     # vlc like from /usr/lib/i386-linux-gnu/emotion/generic_players/v-1.13/vlc
                     # it should never run for more than 3 hours (long long movies?)
                     if [[ "${time_minutes}" -ge 180 ]] && [[ "${cpu_usage}" -gt 60 ]] ; then
-                        kill_process "$pid" "${status}" "$cmd"
+                        kill_process "$pid" "${status}" "$cmd" "cpu was high (gt 60) for $cmd"
                     fi
                     ;;
 
                 */"yad")
                     # yad can be stuck and consume cpu, if this happens for enough time, just kill the dialog
                     if [[ "${time_minutes}" -gt 30 ]] && [[ "${cpu_usage}" -gt 60 ]] ; then
-                        kill_process "$pid" "${status}" "$cmd"
+                        kill_process "$pid" "${status}" "$cmd" "cpu was high (gt 60) for $cmd"
                     fi
                     ;;
 
 
                 */"cairo-dock")
                     if [[ "${time_minutes}" -gt 40 ]] && [[ "${cpu_usage}" -gt 60 ]] ; then
-                        kill_process "$pid" "${status}" "$cmd"
+                        kill_process "$pid" "${status}" "$cmd" "cpu was high (gt 60) for $cmd"
                         # run it again the process
                         su -c "elive-cron-gui-run --replace $cmd" $user
 
