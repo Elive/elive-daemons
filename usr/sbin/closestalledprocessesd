@@ -132,80 +132,6 @@ kill_processes_zombie(){
         fi
     done
 }
-#===  FUNCTION  ================================================================
-#          NAME:  kill_process_restart
-#   DESCRIPTION:  kills and restarts a process
-#    PARAMETERS:  $1 = pid, $2 (opt) = state, $3 (opt) = command/name , $4 (opt) = message
-#       RETURNS:  -
-#===============================================================================
-kill_process_restart(){
-    # pre {{{
-    local pid cmd state message user
-
-    pid="$1"
-    state="$2"
-    cmd="$3"
-    message="$4"
-
-    # get full name of command
-    cmd="$( ps --no-headers -p $pid -o comm )"
-    user="$( ps --no-headers -o uname= -p $pid )"
-
-    # }}}
-    if [[ -n "$pid" ]] && kill -0 "$pid" 2>/dev/null ; then
-        # zombies around, kill them
-        if [[ "$state" = *Z* ]] ; then
-            kill_processes_zombie
-        fi
-
-        if [[ -n "$message" ]] ; then
-            echo -e "$message" 1>&2
-            logger "$(basename $0) - $message"
-        else
-            if [[ -n "$cmd" ]] ; then
-                echo "killing $cmd at ${pid}, cpu is at ${cpu_usage} % since ${time_minutes} minutes" 1>&2
-                logger "$(basename $0) - killing $cmd at ${pid}, cpu is at ${cpu_usage} % since ${time_minutes} minutes"
-            fi
-        fi
-
-        # always kill E with a SIGSEGV in order  to recover it
-        # TODO: sometimes we have duplicated/zombified E processes that should be killed -9
-        if [[ "$cmd" = *enlightenment* ]] ; then
-            if kill -s SIGSEGV "$pid" 2>/dev/null 1>/dev/null ; then
-                logger "$(basename $0) - $pid given a segfault to recover"
-            fi
-            sleep 1
-            # nothing more here, we don't want to kill it more than a SEGV
-            return 0
-        fi
-
-        if kill -0 "$pid" 2>/dev/null ; then
-            if kill "$pid" 2>/dev/null 1>/dev/null ; then
-                # logger "$(basename $0) - $pid killed"
-                logger "$(basename $0) - $pid ($cmd) killed: it was responsive"
-            fi
-            sleep 1
-        fi
-
-        if kill -0 "$pid" 2>/dev/null ; then
-            if kill -9 "$pid" 2>/dev/null 1>/dev/null ; then
-                logger "$(basename $0) - $pid killed with a forced crash (-9)"
-            fi
-            sleep 1
-        fi
-
-        if kill -0 "$pid" 2>/dev/null ; then
-            el_warning "unable to kill process ${pid}, state ${state}, command ${cmd}, message ${message}"
-        fi
-    fi
-
-    # run it again
-    su -c "elive-cron-gui-run --replace $cmd" $user
-
-    # temporal verification of restarted process
-    sleep 3
-    el_warning "temporal debug: does the process '$cmd' was restarted?\n$(ps axo user,stat,pid,ppid,comm | grep "$cmd" )"
-}
 
 #===  FUNCTION  ================================================================
 #          NAME:  kill_process
@@ -414,7 +340,13 @@ main(){
 
                 */"cairo-dock")
                     if [[ "${time_minutes}" -gt 40 ]] && [[ "${cpu_usage}" -gt 60 ]] ; then
-                        kill_process_restart "$pid" "${status}" "$cmd"
+                        kill_process "$pid" "${status}" "$cmd"
+                        # run it again the process
+                        su -c "elive-cron-gui-run --replace $cmd" $user
+
+                        # temporal verification of restarted process
+                        # sleep 3
+                        # el_warning "temporal debug: does the process '$cmd' was restarted?\n$(ps axo user,stat,pid,ppid,comm | grep "$cmd" )"
                     fi
                     ;;
 
