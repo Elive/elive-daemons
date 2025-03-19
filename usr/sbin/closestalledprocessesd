@@ -293,10 +293,12 @@ main(){
                     ;;
                 */bin/enlightenment)
                     # cpu sucking
-                    if [[ "${time_minutes}" -ge 30 ]] && [[ "${cpu_usage}" -gt 92 ]] ; then
-                        el_warning "enlightenment is consuming high cpu for more than 30 min, pidofs: $(pidof enlightenment), ps: $(ps aux | grep -F "enlightenment" | grep -vE '(grep|enlightenment_s)' | tr '\n' ';' ), top: $( COLUMNS=200 top -c -b -n 1 | head -n 200 | tail -n +8 | grep -F "enlightenment" | grep -vE '(grep|enlightenment_s)' | tr '\n' ';' )"
-                        kill_process "$pid" "${status}" "$cmd" "cpu was high (gt 92) for $cmd"
-                    fi
+                    # Update: disabled to kill from high cpu usage, which is also broken at the moment because:
+                    # FIXME: cpu usage can have spikes, and we need to know their previous values or their average values more exactly
+                    # if [[ "${time_minutes}" -ge 30 ]] && [[ "${cpu_usage}" -gt 94 ]] ; then
+                    #     el_warning "enlightenment is consuming high cpu for more than 30 min, pidofs: $(pidof enlightenment), ps: $(ps aux | grep -F "enlightenment" | grep -vE '(grep|enlightenment_s)' | tr '\n' ';' ), top: $( COLUMNS=200 top -c -b -n 1 | head -n 200 | tail -n +8 | grep -F "enlightenment" | grep -vE '(grep|enlightenment_s)' | tr '\n' ';' )"
+                    #     kill_process "$pid" "${status}" "$cmd" "cpu was high (gt 92) for $cmd"
+                    # fi
                     # huge mem usage
                     if [[ "${time_minutes}" -ge 30 ]] && [[ "${memvirt}" -gt 1600000 ]] ; then
                         kill_process "$pid" "${status}" "$cmd" "memvirt was high (gt 1600000) for $cmd"
