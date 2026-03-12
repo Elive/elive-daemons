@@ -3,14 +3,6 @@ SOURCE="$0"
 source /usr/lib/elive-tools/functions
 EL_REPORTS="1"
 
-if pidof -cq systemd ; then
-    is_systemd=1
-else
-    if ! [[ -e "/var/lib/dpkg/info/sysvinit-core.list" ]] ; then
-        is_systemd=1
-    fi
-fi
-
 reconfigure_applications(){
     # audacious: it needs to be modified the file ~/.config/audacious/config but is based in newlines (a little complex to implement right now), where "output...*alsa" should be changed its enabled line, same for pulseaudio
     true
