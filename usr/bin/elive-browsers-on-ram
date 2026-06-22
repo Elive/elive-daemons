@@ -80,9 +80,15 @@ install_deps(){
 
 do_enable(){
     # configure if needed first
+    local BROWSERS=()
     source "$HOME/.config/psd/psd.conf" 2>/dev/null || true
-    if [[ -z "$BROWSERS" ]] ; then
+    if [[ -z "${BROWSERS[*]}" ]] ; then
+        if [[ "${is_configuring:-0}" -eq 1 ]] ; then
+            echo "E: Configuration failed to set BROWSERS, aborting to prevent loop" >&2
+            exit 1
+        fi
         do_configure
+        return
     fi
 
     if [[ -s "$HOME/.config/psd/psd.conf" ]] ; then
@@ -109,6 +115,7 @@ do_disable(){
 }
 
 do_configure(){
+    local is_configuring=1
     close_browsers
     install_deps
     do_stop
@@ -204,15 +211,42 @@ do_configure(){
     LC_ALL=C sleep 0.5
 
     # configure
-    sed -i -e "s|^.*USE_OVERLAYFS=\".*|USE_OVERLAYFS=\"yes\"|g" "$HOME/.config/psd/psd.conf"
-    sed -i -e "s|^.*BROWSERS=\".*|BROWSERS=\"${result}\"|g" "$HOME/.config/psd/psd.conf"
+    if grep -q "^[# ]*USE_OVERLAYFS=" "$HOME/.config/psd/psd.conf" 2>/dev/null ; then
+        sed -i -e "s|^[# ]*USE_OVERLAYFS=.*|USE_OVERLAYFS=\"yes\"|g" "$HOME/.config/psd/psd.conf"
+    else
+        echo 'USE_OVERLAYFS="yes"' >> "$HOME/.config/psd/psd.conf"
+    fi
+
+    if grep -q "^[# ]*BROWSERS=" "$HOME/.config/psd/psd.conf" 2>/dev/null ; then
+        sed -i -e "s|^[# ]*BROWSERS=.*|BROWSERS=(${result})|g" "$HOME/.config/psd/psd.conf"
+    else
+        echo "BROWSERS=(${result})" >> "$HOME/.config/psd/psd.conf"
+    fi
 
     if grep -qs "boot=live" /proc/cmdline ; then
-        sed -i -e "s|^.*USE_BACKUPS=\".*|USE_BACKUPS=\"no\"|g" "$HOME/.config/psd/psd.conf"
-        sed -i -e "s|^.*BACKUP_LIMIT=.*|#BACKUP_LIMIT=1|g" "$HOME/.config/psd/psd.conf"
+        if grep -q "^[# ]*USE_BACKUPS=" "$HOME/.config/psd/psd.conf" 2>/dev/null ; then
+            sed -i -e "s|^[# ]*USE_BACKUPS=.*|USE_BACKUPS=\"no\"|g" "$HOME/.config/psd/psd.conf"
+        else
+            echo 'USE_BACKUPS="no"' >> "$HOME/.config/psd/psd.conf"
+        fi
+
+        if grep -q "^[# ]*BACKUP_LIMIT=" "$HOME/.config/psd/psd.conf" 2>/dev/null ; then
+            sed -i -e "s|^[# ]*BACKUP_LIMIT=.*|#BACKUP_LIMIT=1|g" "$HOME/.config/psd/psd.conf"
+        else
+            echo '#BACKUP_LIMIT=1' >> "$HOME/.config/psd/psd.conf"
+        fi
     else
-        sed -i -e "s|^.*USE_BACKUPS=\".*|USE_BACKUPS=\"yes\"|g" "$HOME/.config/psd/psd.conf"
-        sed -i -e "s|^.*BACKUP_LIMIT=.*|BACKUP_LIMIT=1|g" "$HOME/.config/psd/psd.conf"
+        if grep -q "^[# ]*USE_BACKUPS=" "$HOME/.config/psd/psd.conf" 2>/dev/null ; then
+            sed -i -e "s|^[# ]*USE_BACKUPS=.*|USE_BACKUPS=\"yes\"|g" "$HOME/.config/psd/psd.conf"
+        else
+            echo 'USE_BACKUPS="yes"' >> "$HOME/.config/psd/psd.conf"
+        fi
+
+        if grep -q "^[# ]*BACKUP_LIMIT=" "$HOME/.config/psd/psd.conf" 2>/dev/null ; then
+            sed -i -e "s|^[# ]*BACKUP_LIMIT=.*|BACKUP_LIMIT=1|g" "$HOME/.config/psd/psd.conf"
+        else
+            echo 'BACKUP_LIMIT=1' >> "$HOME/.config/psd/psd.conf"
+        fi
     fi
 
     # enable daemon for user
