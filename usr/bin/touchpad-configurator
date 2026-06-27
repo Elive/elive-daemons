@@ -111,6 +111,7 @@ main(){
     conf_touchpad_activated="TRUE"
     #conf_movement_disabled_while_typing="FALSE"
     conf_taps_disabled_while_typing_seconds="0.9"
+    conf_horiz_area_reduction_percent="15"
 
     # }}}
 
@@ -159,6 +160,16 @@ main(){
     if [[ -z "$conf_bottom_area_size" ]] ; then
         el_debug "bottom size incorrectly get: $( synclient -l | grep BottomEdge )"
     fi
+    conf_left_edge="$( synclient -l | grep -E "\s+LeftEdge\s+.*=" | sed -e 's|^.*= ||' | tail -1 )"
+    if [[ -z "$conf_left_edge" ]] ; then
+        conf_left_edge="0"
+        el_debug "left edge incorrectly get: $( synclient -l | grep LeftEdge )"
+    fi
+    conf_right_edge="$( synclient -l | grep -E "\s+RightEdge\s+.*=" | sed -e 's|^.*= ||' | tail -1 )"
+    if [[ -z "$conf_right_edge" ]] ; then
+        conf_right_edge="0"
+        el_debug "right edge incorrectly get: $( synclient -l | grep RightEdge )"
+    fi
 
     # }}}
     # get user confs {{{
@@ -177,6 +188,7 @@ main(){
     el_config_get "conf_touchpad_activated"
     el_config_get "conf_movement_disabled_while_typing"
     el_config_get "conf_taps_disabled_while_typing_seconds"
+    el_config_get "conf_horiz_area_reduction_percent"
     # - get user confs }}}
 
     # WARNING: if you change the order you need to change the order of the next get confs too!
@@ -192,6 +204,7 @@ main(){
             --field="$( eval_gettext "Emulate the other mouse clicks tapping with multiple fingers" )":CHK ${conf_emulate_click_multifinger} \
             --field="$( eval_gettext "Double tap to lock your mouse drag until the next tap" )":CHK ${conf_locked_drags} \
             --field="$( eval_gettext "Disable movement in the bottom edge area" )":CHK ${conf_bottom_area_disabled} \
+            --field="$( eval_gettext "Reduce horizontal active area (percent)" )":SCL "${conf_horiz_area_reduction_percent}!0..30!1!0" \
             --field="$( eval_gettext "Scroll by dragging the side edges" )":CHK ${conf_scroll_edges} \
             --field="$( eval_gettext "Scroll by swiping with two fingers" )":CHK ${conf_scroll_fingers} \
             --field="$( eval_gettext "Natural/inverted scrolling (Mac mode)" )":CHK ${conf_scroll_natural} \
@@ -217,13 +230,14 @@ main(){
         conf_emulate_click_multifinger="$( echo "${result}" | awk -v FS="|" '{print $6}' )"
         conf_locked_drags="$( echo "${result}" | awk -v FS="|" '{print $7}' )"
         conf_bottom_area_disabled="$( echo "${result}" | awk -v FS="|" '{print $8}' )"
-        conf_scroll_edges="$( echo "${result}" | awk -v FS="|" '{print $9}' )"
-        conf_scroll_fingers="$( echo "${result}" | awk -v FS="|" '{print $10}' )"
-        conf_scroll_natural="$( echo "${result}" | awk -v FS="|" '{print $11}' )"
-        conf_scroll_staying="$( echo "${result}" | awk -v FS="|" '{print $12}' )"
-        conf_speed_min="$( echo "${result}" | awk -v FS="|" '{print $13}' )"
-        conf_speed_max="$( echo "${result}" | awk -v FS="|" '{print $14}' )"
-        conf_speed_accel="$( echo "${result}" | awk -v FS="|" '{print $15}' )"
+        conf_horiz_area_reduction_percent="$( echo "${result}" | awk -v FS="|" '{print $9}' )"
+        conf_scroll_edges="$( echo "${result}" | awk -v FS="|" '{print $10}' )"
+        conf_scroll_fingers="$( echo "${result}" | awk -v FS="|" '{print $11}' )"
+        conf_scroll_natural="$( echo "${result}" | awk -v FS="|" '{print $12}' )"
+        conf_scroll_staying="$( echo "${result}" | awk -v FS="|" '{print $13}' )"
+        conf_speed_min="$( echo "${result}" | awk -v FS="|" '{print $14}' )"
+        conf_speed_max="$( echo "${result}" | awk -v FS="|" '{print $15}' )"
+        conf_speed_accel="$( echo "${result}" | awk -v FS="|" '{print $16}' )"
 
         # }}}
         # save new selected configurations {{{
@@ -242,6 +256,7 @@ main(){
         el_config_save "conf_touchpad_activated"
         el_config_save "conf_movement_disabled_while_typing"
         el_config_save "conf_taps_disabled_while_typing_seconds"
+        el_config_save "conf_horiz_area_reduction_percent"
         # - save new selected configurations }}}
     fi
 
@@ -334,6 +349,23 @@ main(){
             el_error "touchpad configurator: conf_bottom_area_disabled wrongly set: $conf_bottom_area_disabled"
             ;;
     esac
+
+    # horizontal area reduction
+    if [[ -n "$conf_horiz_area_reduction_percent" ]] && (( conf_horiz_area_reduction_percent > 0 )) ; then
+        if [[ -n "$conf_left_edge" ]] && [[ -n "$conf_right_edge" ]] ; then
+            local width=$(( conf_right_edge - conf_left_edge ))
+            local reduction="$( echo "(${width} / 100) * ${conf_horiz_area_reduction_percent}" | LC_ALL=C bc -l | sed -e 's|\..*$||g' )"
+            local area_left="$( echo "${conf_left_edge} + ${reduction}" | LC_ALL=C bc -l | sed -e 's|\..*$||g' )"
+            local area_right="$( echo "${conf_right_edge} - ${reduction}" | LC_ALL=C bc -l | sed -e 's|\..*$||g' )"
+            synclient AreaLeftEdge="${area_left}"
+            synclient AreaRightEdge="${area_right}"
+        else
+            el_error "touchpad configurator: unable to get left/right edge values to set horizontal area reduction"
+        fi
+    else
+        synclient AreaLeftEdge=0
+        synclient AreaRightEdge=0
+    fi
 
     # scroll with edges
     case "$conf_scroll_edges" in
