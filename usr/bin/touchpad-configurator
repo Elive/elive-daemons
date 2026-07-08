@@ -98,6 +98,7 @@ main(){
     conf_emulate_click_corners="TRUE"
     conf_emulate_click_multifinger="TRUE"
     conf_locked_drags="FALSE"
+    conf_locked_drags_timeout="300"
     #conf_bottom_area_disabled="TRUE"
     conf_bottom_area_disabled_percent="12" # static for now, should the user be able to configure it?
     conf_scroll_edges="FALSE"
@@ -111,7 +112,7 @@ main(){
     conf_touchpad_activated="TRUE"
     #conf_movement_disabled_while_typing="FALSE"
     conf_taps_disabled_while_typing_seconds="0.9"
-    conf_horiz_area_reduction_percent="15"
+    conf_horiz_area_reduction_percent="12"
 
     # }}}
 
@@ -176,6 +177,7 @@ main(){
     el_config_get "conf_emulate_click_corners"
     el_config_get "conf_emulate_click_multifinger"
     el_config_get "conf_locked_drags"
+    el_config_get "conf_locked_drags_timeout"
     el_config_get "conf_bottom_area_disabled"
     el_config_get "conf_scroll_edges"
     el_config_get "conf_scroll_fingers"
@@ -204,7 +206,7 @@ main(){
             --field="$( eval_gettext "Emulate the other mouse clicks tapping with multiple fingers" )":CHK ${conf_emulate_click_multifinger} \
             --field="$( eval_gettext "Double tap to lock your mouse drag until the next tap" )":CHK ${conf_locked_drags} \
             --field="$( eval_gettext "Disable movement in the bottom edge area" )":CHK ${conf_bottom_area_disabled} \
-            --field="$( eval_gettext "Reduce horizontal active area (percent)" )":SCL "${conf_horiz_area_reduction_percent}!0..30!1!0" \
+            --field="$( eval_gettext "Reduce horizontal active area in %" )":SCL "${conf_horiz_area_reduction_percent}!0..30!1!0" \
             --field="$( eval_gettext "Scroll by dragging the side edges" )":CHK ${conf_scroll_edges} \
             --field="$( eval_gettext "Scroll by swiping with two fingers" )":CHK ${conf_scroll_fingers} \
             --field="$( eval_gettext "Natural/inverted scrolling (Mac mode)" )":CHK ${conf_scroll_natural} \
@@ -212,6 +214,7 @@ main(){
             --field="$( eval_gettext "Minimum speed" )":NUM "${conf_speed_min}!0.0..10!0.02!2" \
             --field="$( eval_gettext "Maximum speed" )":NUM "${conf_speed_max}!0.1..30!0.02!2" \
             --field="$( eval_gettext "Acceleration speed" )":NUM "${conf_speed_accel}!0.001..2.0!0.0002!5" \
+            --field="$( eval_gettext "Double tap drag timeout (ms)" )":NUM "${conf_locked_drags_timeout}!0..5000!10!0" \
             $NULL )"
         #--field="$( eval_gettext "" )":CHK ${conf_locked_drags}
         #--field="$( eval_gettext "Improve this tool" )":FBTN
@@ -229,6 +232,7 @@ main(){
         conf_emulate_click_corners="$( echo "${result}" | awk -v FS="|" '{print $5}' )"
         conf_emulate_click_multifinger="$( echo "${result}" | awk -v FS="|" '{print $6}' )"
         conf_locked_drags="$( echo "${result}" | awk -v FS="|" '{print $7}' )"
+        conf_locked_drags_timeout="$( echo "${result}" | awk -v FS="|" '{print $17}' )"
         conf_bottom_area_disabled="$( echo "${result}" | awk -v FS="|" '{print $8}' )"
         conf_horiz_area_reduction_percent="$( echo "${result}" | awk -v FS="|" '{print $9}' )"
         conf_scroll_edges="$( echo "${result}" | awk -v FS="|" '{print $10}' )"
@@ -244,6 +248,7 @@ main(){
         el_config_save "conf_emulate_click_corners"
         el_config_save "conf_emulate_click_multifinger"
         el_config_save "conf_locked_drags"
+        el_config_save "conf_locked_drags_timeout"
         el_config_save "conf_scroll_edges"
         el_config_save "conf_bottom_area_disabled"
         el_config_save "conf_scroll_fingers"
@@ -328,6 +333,7 @@ main(){
     case "$conf_locked_drags" in
         TRUE)
             synclient LockedDrags=1
+            synclient LockedDragTimeout="$conf_locked_drags_timeout"
             ;;
         FALSE)
             synclient LockedDrags=0
