@@ -597,6 +597,8 @@ main(){
             if el_check_sudo_automated ; then
                 sudo -H bash -c 'source /usr/lib/elive-tools/functions ; id="$( el_get_machine_id )" ; sed -i "/^machine-id:.*$/d" /etc/elive-version ; echo "machine-id: $id" >> /etc/elive-version'
                 machine_id="$( grep "^machine-id: " /etc/elive-version 2>/dev/null | sed -e 's|^machine-id: ||g' | tail -1 )"
+            else
+                machine_id="$( el_get_machine_id )"
             fi
         fi
         if [[ -z "$machine_id" ]] ; then
