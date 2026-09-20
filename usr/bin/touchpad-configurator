@@ -39,6 +39,139 @@ echo "$$" > "$lockfile"
 
 # end lock system }}}
 
+# touchscreen support (generic: ELAN, eGalax, Goodix, Wacom, ...) {{{
+
+touchscreens_detect(){
+    # fills the global TOUCHSCREEN_DEVICES variable with the device names of all
+    # the detected touchscreens, using the same names that xinput uses
+    local name node evt awkblock is_touch
+
+    TOUCHSCREEN_DEVICES=""
+
+    if ! command -v xinput 1>/dev/null 2>&1 ; then
+        el_debug "touchscreen detection: xinput not available, cannot detect touchscreens"
+        return
+    fi
+
+    el_debug "touchscreen detection: devices reported by xinput: $( xinput list --name-only 2>/dev/null | tr '\n' ';' )"
+    while IFS= read -r name ; do
+        name="$( echo "$name" | sed -e 's|^[^[:alnum:]]*||' -e 's|[[:space:]]*id=.*$||' )"
+        [[ -z "$name" ]] && continue
+
+        # discard devices which can never be a touchscreen
+        if grep -qiE 'touchpad|trackpoint|mouse|xtest|virtual core|keyboard|button' <<< "$name" ; then
+            el_debug "touchscreen detection: '$name' discarded by name (known non-touchscreen device)"
+            continue
+        fi
+
+        is_touch="no"
+
+        # verify the device type on the kernel side, this is the most reliable way
+        node="$( xinput list-props "$name" 2>/dev/null | grep -F 'Device Node' | sed -e 's|^.*"/dev/input/|/dev/input/|' -e 's|".*$||' )"
+        evt="${node##*/}"
+        if [[ -n "$evt" ]] ; then
+            awkblock="$( awk -v evt="$evt" '
+                /^I: /{ capture=1 }
+                capture{ block=block $0 "\n" }
+                /^$/{ if ( capture && index(block,evt) ) print block ; capture=0 ; block="" }
+            ' /proc/bus/input/devices 2>/dev/null )"
+            if grep -qiE 'name=.*touchscreen' <<< "$awkblock" ; then
+                is_touch="yes"
+                el_debug "touchscreen detection: '$name' ($node) detected by its kernel name"
+            fi
+        else
+            el_debug "touchscreen detection: '$name' no device node found (xinput list-props failed?)"
+        fi
+
+        # fallback: udev knows the device type, this is reliable when the kernel
+        # name doesn't specify it explicitly (ex: some ELAN/hid-multitouch models)
+        if [[ "$is_touch" != "yes" ]] && [[ -n "$node" ]] && command -v udevadm 1>/dev/null 2>&1 ; then
+            if udevadm info -q property -n "$node" 2>/dev/null | grep -qs '^ID_INPUT_TOUCHSCREEN=1' ; then
+                is_touch="yes"
+                el_debug "touchscreen detection: '$name' ($node) detected by udev (ID_INPUT_TOUCHSCREEN)"
+            fi
+        fi
+
+        # fallback for devices which don't specify it explicitly on the kernel side
+        if [[ "$is_touch" != "yes" ]] && grep -qiE 'touch ?screen' <<< "$name" ; then
+            is_touch="yes"
+            el_debug "touchscreen detection: '$name' detected by its xinput name"
+        fi
+
+        if [[ "$is_touch" = "yes" ]] ; then
+            TOUCHSCREEN_DEVICES+="${name}"$'\n'
+        else
+            el_debug "touchscreen detection: '$name' ($node) is not a touchscreen (kernel name: $( echo "$awkblock" | grep -oE 'Name=.*' | head -1 ))"
+        fi
+    done < <( xinput list --name-only 2>/dev/null )
+
+    TOUCHSCREEN_DEVICES="${TOUCHSCREEN_DEVICES%$'\n'}"
+
+    if [[ -n "$TOUCHSCREEN_DEVICES" ]] ; then
+        el_debug "touchscreen detection: detected touchscreen(s): $( echo "$TOUCHSCREEN_DEVICES" | tr '\n' ';' )"
+    else
+        el_debug "touchscreen detection: no touchscreen detected"
+    fi
+}
+
+touchscreen_apply(){
+    # applies the touchscreen settings: the activation is done on the session
+    # by xinput (enable / disable the touchscreen devices)
+    local ts
+
+    if [[ -z "$TOUCHSCREEN_DEVICES" ]] ; then
+        el_debug "touchscreen apply: no touchscreen devices detected, nothing to apply"
+        return
+    fi
+
+    el_debug "touchscreen apply: devices: $( echo "$TOUCHSCREEN_DEVICES" | tr '\n' ';' ) activated='$conf_touchscreen_activated' sensitivity='$conf_touchscreen_sensitivity' is_configure=$is_configure session=${XDG_SESSION_TYPE:-unknown}"
+
+    # activate / deactivate the touchscreens of this session
+    while IFS= read -r ts ; do
+        [[ -z "$ts" ]] && continue
+        case "$conf_touchscreen_activated" in
+            TRUE)
+                if xinput enable "$ts" 1>/dev/null 2>&1 ; then
+                    el_debug "touchscreen apply: '$ts' enabled"
+                else
+                    el_debug "touchscreen apply: ERROR: xinput enable failed on '$ts' (device name mismatch or non-X11 session?)"
+                fi
+                ;;
+            FALSE)
+                if xinput disable "$ts" 1>/dev/null 2>&1 ; then
+                    el_debug "touchscreen apply: '$ts' disabled"
+                else
+                    el_debug "touchscreen apply: ERROR: xinput disable failed on '$ts' (device name mismatch or non-X11 session?)"
+                fi
+                ;;
+            *)
+                el_error "touchpad configurator: conf_touchscreen_activated wrongly set: $conf_touchscreen_activated"
+                el_debug "touchscreen apply: '$ts' left untouched, wrongly set conf_touchscreen_activated='$conf_touchscreen_activated'"
+                ;;
+        esac
+    done <<< "$TOUCHSCREEN_DEVICES"
+}
+
+touchscreen_configure_and_apply(){
+    # used when the device only has a touchscreen (no synaptics touchpad driver)
+    local result
+    if ((is_configure)) ; then
+        result="$( yad --form --center --image-on-top --image=input-touchpad \
+            --title="Touchpad Configurator" \
+            --text="$( eval_gettext "The Amazing Touchpad Configurator for Elive" )" \
+            --field="$( eval_gettext "Activate touchscreen" )":CHK ${conf_touchscreen_activated} \
+            $NULL )"
+        if [[ -z "$result" ]] ; then
+            el_debug "canceled by the user"
+            return
+        fi
+        conf_touchscreen_activated="$( echo "${result}" | awk -v FS="|" '{print $1}' )"
+        el_config_save "conf_touchscreen_activated"
+    fi
+    touchscreen_apply
+}
+# touchscreen support }}}
+
 main(){
     # pre {{{
     local result arg
@@ -74,8 +207,17 @@ main(){
         esac
     done
 
+    # detect touchscreens, they can be configured even without a touchpad
+    touchscreens_detect
+    if [[ -n "$TOUCHSCREEN_DEVICES" ]] ; then
+        HAS_TOUCHSCREEN=1
+        el_debug "touchscreen detected: $( echo "$TOUCHSCREEN_DEVICES" | tr '\n' ',' )"
+    else
+        HAS_TOUCHSCREEN=0
+    fi
+
     # exit if we don't have a touchpad to use
-    if ! grep -qsiE 'synap|alps|cyapa|trackpad|etps|elan|touchpad' /proc/bus/input/devices && ! ((is_force)) ; then
+    if ! grep -qsiE 'synap|alps|cyapa|trackpad|etps|elan|touchpad|touchscreen' /proc/bus/input/devices && ! ((is_force)) && ! ((HAS_TOUCHSCREEN)) ; then
         if ((is_configure)) && ! ((is_load)) ; then
             notify-send -t 30000 -i input-touchpad "$( eval_gettext "Touchpad" )" "$( eval_gettext "Couldn't detect a touchpad, so there is nothing to configure. If this is a fault in the application please report it on our forums!" )"
         fi
@@ -113,6 +255,7 @@ main(){
     #conf_movement_disabled_while_typing="FALSE"
     conf_taps_disabled_while_typing_seconds="0.9"
     conf_horiz_area_reduction_percent="12"
+    conf_touchscreen_activated="TRUE"
 
     # }}}
 
@@ -135,6 +278,12 @@ main(){
         #conf_taps_disabled_while_typing_seconds="1.2"
     #fi
     if ! synclient -l 1>/dev/null 2>&1 ; then
+        if ((HAS_TOUCHSCREEN)) ; then
+            # no synaptics-compatible touchpad, but we can still configure the touchscreen
+            el_config_get "conf_touchscreen_activated"
+            touchscreen_configure_and_apply
+            return
+        fi
         if laptop-detect ; then
             $guitool --error --text="$( eval_gettext "No touchpad hardware was detected. If you have it, try using a different kernel to see if it includes a better driver." )"
         fi
@@ -191,6 +340,7 @@ main(){
     el_config_get "conf_movement_disabled_while_typing"
     el_config_get "conf_taps_disabled_while_typing_seconds"
     el_config_get "conf_horiz_area_reduction_percent"
+    el_config_get "conf_touchscreen_activated"
     # - get user confs }}}
 
     # WARNING: if you change the order you need to change the order of the next get confs too!
@@ -215,6 +365,7 @@ main(){
             --field="$( eval_gettext "Maximum speed" )":NUM "${conf_speed_max}!0.1..30!0.02!2" \
             --field="$( eval_gettext "Acceleration speed" )":NUM "${conf_speed_accel}!0.001..2.0!0.0002!5" \
             --field="$( eval_gettext "Double tap drag timeout (ms)" )":NUM "${conf_locked_drags_timeout}!0..5000!10!0" \
+            --field="$( eval_gettext "Activate touchscreen" )":CHK ${conf_touchscreen_activated} \
             $NULL )"
         #--field="$( eval_gettext "" )":CHK ${conf_locked_drags}
         #--field="$( eval_gettext "Improve this tool" )":FBTN
@@ -242,6 +393,7 @@ main(){
         conf_speed_min="$( echo "${result}" | awk -v FS="|" '{print $14}' )"
         conf_speed_max="$( echo "${result}" | awk -v FS="|" '{print $15}' )"
         conf_speed_accel="$( echo "${result}" | awk -v FS="|" '{print $16}' )"
+        conf_touchscreen_activated="$( echo "${result}" | awk -v FS="|" '{print $18}' )"
 
         # }}}
         # save new selected configurations {{{
@@ -262,6 +414,7 @@ main(){
         el_config_save "conf_movement_disabled_while_typing"
         el_config_save "conf_taps_disabled_while_typing_seconds"
         el_config_save "conf_horiz_area_reduction_percent"
+        el_config_save "conf_touchscreen_activated"
         # - save new selected configurations }}}
     fi
 
@@ -445,6 +598,9 @@ main(){
     synclient MinSpeed=$conf_speed_min
     synclient MaxSpeed=$conf_speed_max
     synclient AccelFactor=$conf_speed_accel
+
+    # touchscreen (activation + ghost presses filter)
+    touchscreen_apply
 
 
 
