@@ -10,13 +10,13 @@ reconfigure_applications(){
 
 # note: same code exists in ctrl-alt-del tool
 audio_reconfigure(){
-    el_pulseaudio stop
+    el_audio_daemon stop
 
     rm -rf ~/.config/pulse/cookie ~/.pulse/* ~/.asoundrc 2>/dev/null || true
 
     audio-configurator  --quiet --auto --smart --no-messages
 
-    el_pulseaudio start
+    el_audio_daemon start
 
 
     # fix volumes
